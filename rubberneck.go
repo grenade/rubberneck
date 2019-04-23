@@ -1,6 +1,6 @@
 package main
 
 func main() {
-  GoogleCompute()
-  //AwsEc2()
+  //GoogleCompute()
+  AwsEc2()
 }

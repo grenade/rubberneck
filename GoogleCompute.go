@@ -66,17 +66,17 @@ func GoogleCompute() {
               }
               workerState, err := GetWorkerState(provisionerId, workerType, r[len(r)-1], instance.Name)
               if err != nil {
-              	fmt.Println("Error", err)
+                fmt.Println("Error", err)
               } else {
-	              if !workerState.FirstClaim.IsZero() {
-	                fmt.Printf(", first claim: %v", workerState.FirstClaim)
-	              }
-	              if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-	                fmt.Printf(", last task: %v/%v",
-	                  workerState.RecentTasks[len(workerState.RecentTasks)-1].TaskId,
-	                  workerState.RecentTasks[len(workerState.RecentTasks)-1].RunId)
-	              }
-	              fmt.Printf("\n")
+                if !workerState.FirstClaim.IsZero() {
+                  fmt.Printf(", first claim: %v", workerState.FirstClaim)
+                }
+                if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
+                  fmt.Printf(", last task: %v/%v",
+                    workerState.RecentTasks[len(workerState.RecentTasks)-1].TaskId,
+                    workerState.RecentTasks[len(workerState.RecentTasks)-1].RunId)
+                }
+                fmt.Printf("\n")
               }
             }
           }
