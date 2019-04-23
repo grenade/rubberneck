@@ -41,6 +41,7 @@ func GoogleCompute() {
       fmt.Println("Error", err)
     } else {
       for _, zone := range zoneList.Items {
+        r := strings.Split(zone.Region, "/")
         instanceListCall := computeService.Instances.List(project, zone.Name)
         instanceListCall.Filter(strings.Join(filters[:], " "))
         instanceList, err := instanceListCall.Do()
@@ -50,13 +51,33 @@ func GoogleCompute() {
           for _, instance := range instanceList.Items {
             if workerType, isWorker := instance.Labels["worker-type"]; isWorker {
               m := strings.Split(instance.MachineType, "/")
-              fmt.Printf("cloud: gcp, zone: %v, name: %v, instance id: %v, machine type: %v, worker type: %v, launch time: %v\n",
+              fmt.Printf("cloud: gcp, zone: %v, name: %v, instance id: %v, machine type: %v, worker type: %v, launch time: %v",
                 zone.Name,
                 instance.Name,
                 instance.Id,
                 m[len(m)-1],
                 workerType,
                 instance.CreationTimestamp)
+              var provisionerId string
+              if strings.Contains(workerType, "linux") {
+                provisionerId = "gce"
+              } else {
+                provisionerId = "releng-hardware"
+              }
+              workerState, err := GetWorkerState(provisionerId, workerType, r[len(r)-1], instance.Name)
+              if err != nil {
+              	fmt.Println("Error", err)
+              } else {
+	              if !workerState.FirstClaim.IsZero() {
+	                fmt.Printf(", first claim: %v", workerState.FirstClaim)
+	              }
+	              if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
+	                fmt.Printf(", last task: %v/%v",
+	                  workerState.RecentTasks[len(workerState.RecentTasks)-1].TaskId,
+	                  workerState.RecentTasks[len(workerState.RecentTasks)-1].RunId)
+	              }
+	              fmt.Printf("\n")
+              }
             }
           }
         }

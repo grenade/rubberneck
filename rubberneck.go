@@ -2,5 +2,5 @@ package main
 
 func main() {
   GoogleCompute()
-  AwsEc2()
+  //AwsEc2()
 }
