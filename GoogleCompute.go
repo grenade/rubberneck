@@ -14,6 +14,19 @@ func GoogleCompute() {
   projects := [...]string{
     "windows-workers",
   }
+  filters := [...]string{
+    "status = RUNNING",
+    "name != releng-gcp-provisioner-0",
+    "name != releng-gcp-provisioner-1",
+    "name != releng-gcp-provisioner-2",
+    "name != releng-gcp-provisioner-3",
+    "name != releng-gcp-provisioner-4",
+    "name != releng-gcp-provisioner-5",
+    "name != releng-gcp-provisioner-6",
+    "name != releng-gcp-provisioner-7",
+    "name != releng-gcp-provisioner-8",
+    "name != releng-gcp-provisioner-9",
+  }
 
   ctx := context.Background()
   client, err := google.DefaultClient(ctx,compute.ComputeScope)
@@ -29,6 +42,7 @@ func GoogleCompute() {
     } else {
       for _, zone := range zoneList.Items {
         instanceListCall := computeService.Instances.List(project, zone.Name)
+        instanceListCall.Filter(strings.Join(filters[:], " "))
         instanceList, err := instanceListCall.Do()
         if err != nil {
           fmt.Println("Error", err)
