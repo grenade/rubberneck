@@ -8,7 +8,7 @@ import (
   "fmt"
 )
 
-func main() {
+func AwsEc2() {
 
   regions := []*string{
     aws.String("us-east-1"),
@@ -75,7 +75,7 @@ func main() {
               break
             }
           }
-          fmt.Printf("az: %v, instance id: %v, instance type: %v, worker type: %v, image id: %v, launch time: %v\n",
+          fmt.Printf("cloud: ec2, az: %v, instance id: %v, instance type: %v, worker type: %v, image id: %v, launch time: %v\n",
             *instance.Placement.AvailabilityZone,
             *instance.InstanceId,
             *instance.InstanceType,
