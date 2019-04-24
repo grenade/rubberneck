@@ -25,13 +25,12 @@ func gcpInstanceList(project string, zone string, filters []string) ([]Machine, 
   instanceListCall.Filter(strings.Join(filters[:], " "))
   instanceList, err := instanceListCall.Do()
   if err != nil {
-    fmt.Println("error", err)
     return nil, err
   } else {
     machines := make([]Machine, len(instanceList.Items))
     for i, instance := range instanceList.Items {
-    	m := strings.Split(instance.MachineType, "/")
-    	t, _ := time.Parse(time.RFC3339, instance.CreationTimestamp)
+      m := strings.Split(instance.MachineType, "/")
+      t, _ := time.Parse(time.RFC3339, instance.CreationTimestamp)
       machines[i] = Machine {
         Id: strconv.FormatUint(instance.Id, 10),
         Name: instance.Name,
