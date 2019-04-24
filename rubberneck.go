@@ -9,7 +9,6 @@ import (
 
 func main() {
   instances := make([]Instance, 0)
-  /*
   for _, gcpProject := range gcpProjects {
     gcpZones, err := gcpZoneList(gcpProject)
     if err != nil {
@@ -70,7 +69,6 @@ func main() {
       }
     }
   }
-  */
   for _, ec2WorkerType := range ec2WorkerTypes {
     for _, ec2Region := range ec2Regions {
       machines, err := ec2InstanceList(ec2Region, append(ec2Filters, &ec2.Filter { Name: aws.String("tag:Name"), Values: []*string{aws.String(ec2WorkerType)}}))
