@@ -32,6 +32,7 @@ type WorkerState struct {
 }
 
 func GetWorkerState(provisionerId string, workerType string, workerGroup string, workerId string) (*WorkerState, error) {
+	// todo: handle special gce docker-worker worker ids (by calling the workers endpoint)
   endpoint := fmt.Sprintf("https://queue.taskcluster.net/v1/provisioners/%v/worker-types/%v/workers/%v/%v",
     provisionerId,
     workerType,

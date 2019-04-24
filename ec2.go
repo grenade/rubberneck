@@ -8,7 +8,7 @@ import (
   "fmt"
 )
 
-func AwsEc2() {
+func ec2Observe() {
 
   regions := []*string{
     aws.String("us-east-1"),
