@@ -28,19 +28,21 @@ func main() {
                   Id: func() string { if strings.Contains(gcpWorkerType, "linux") { return machine.Id } else { return machine.Name } }(),
                   Provisioner: func() string { if strings.Contains(gcpWorkerType, "linux") { return "gce" } else { return "releng-hardware" } }(),
                   Type: gcpWorkerType,
-                  Group: machine.Region,
+                  Group: func() string { if strings.Contains(gcpWorkerType, "linux") { return machine.Zone } else { return machine.Region } }(),
                   Implementation: func() string { if strings.Contains(gcpWorkerType, "linux") { return "docker-worker" } else { return "generic-worker" } }(),
                 },
               }
-              message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v, created: %v",
+              message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
                 instance.Machine.Cloud,
                 instance.Machine.Zone,
                 instance.Machine.Name,
                 instance.Machine.Id,
                 instance.Machine.Type,
                 instance.Worker.Type,
+                instance.Worker.Group,
+                instance.Worker.Id,
                 instance.Machine.Spawned)
-              workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Machine.Region, instance.Worker.Id)
+              workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
               if err != nil {
                 fmt.Println("error", err)
               } else {
@@ -87,15 +89,17 @@ func main() {
               Implementation: func() string { if strings.Contains(ec2WorkerType, "win") { return "generic-worker" } else { return "docker-worker" } }(),
             },
           }
-          message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v, created: %v",
+          message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
             instance.Machine.Cloud,
             instance.Machine.Zone,
             instance.Machine.Name,
             instance.Machine.Id,
             instance.Machine.Type,
             instance.Worker.Type,
+            instance.Worker.Group,
+            instance.Worker.Id,
             instance.Machine.Spawned)
-          workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Machine.Region, instance.Worker.Id)
+          workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
           if err != nil {
             fmt.Println("error", err)
           } else {

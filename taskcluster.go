@@ -6,6 +6,7 @@ import (
   "fmt"
   "io/ioutil"
   "net/http"
+  "strings"
   "time"
   //"strings"
 )
@@ -31,8 +32,42 @@ type WorkerState struct {
   } `json:"actions"`
 }
 
+type WorkerTypeState struct {
+  Workers []struct {
+    WorkerGroup string    `json:"workerGroup"`
+    WorkerId    string    `json:"workerId"`
+    FirstClaim  time.Time `json:"firstClaim"`
+    LatestTask  struct {
+      TaskId string `json:"taskId"`
+      RunId  int    `json:"runId"`
+    } `json:"latestTask"`
+  } `json:"workers"`
+}
+
 func GetWorkerState(provisionerId string, workerType string, workerGroup string, workerId string) (*WorkerState, error) {
-	// todo: handle special gce docker-worker worker ids (by calling the workers endpoint)
+  if provisionerId == "gce" && strings.Contains(workerType, "linux") {
+    workerTypeEndpoint := fmt.Sprintf("https://queue.taskcluster.net/v1/provisioners/%v/worker-types/%v/workers",
+      provisionerId,
+      workerType,
+    )
+    response, err := http.Get(workerTypeEndpoint)
+    if err != nil {
+      return nil, err
+    } else {
+      var workerTypeState WorkerTypeState
+      data, _ := ioutil.ReadAll(response.Body)
+      err := json.Unmarshal(data, &workerTypeState)
+      if err != nil {
+        return nil, err
+      }
+      for i := range workerTypeState.Workers {
+        if strings.HasPrefix(workerTypeState.Workers[i].WorkerId, workerId[0:len(workerId)-4]) {
+          workerId = workerTypeState.Workers[i].WorkerId
+          break
+        }
+      }
+    }
+  }
   endpoint := fmt.Sprintf("https://queue.taskcluster.net/v1/provisioners/%v/worker-types/%v/workers/%v/%v",
     provisionerId,
     workerType,
@@ -40,15 +75,15 @@ func GetWorkerState(provisionerId string, workerType string, workerGroup string,
     workerId,
   )
   response, err := http.Get(endpoint)
-  var workerState WorkerState
   if err != nil {
     return nil, err
   } else {
+    var workerState WorkerState
     data, _ := ioutil.ReadAll(response.Body)
     err := json.Unmarshal(data, &workerState)
     if err != nil {
       return nil, err
     }
+    return &workerState, nil
   }
-  return &workerState, nil
 }
