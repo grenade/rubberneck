@@ -76,13 +76,40 @@ func main() {
                             message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
                           }
                           if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-                            tasks := make([]Task, 0)
-                            for _, task := range workerState.RecentTasks {
-                              tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
+                            taskRuns := make([]TaskRun, 0)
+                            var taskWaitGroup sync.WaitGroup
+                            taskWaitGroup.Add(len(workerState.RecentTasks))
+                            for taskIndex, _ := range workerState.RecentTasks {
+                              go func(taskIndex int) {
+                                defer taskWaitGroup.Done()
+                                taskState, err := GetTaskState(workerState.RecentTasks[taskIndex].TaskId)
+                                if err != nil {
+                                  fmt.Println("error", err)
+                                  taskRuns = append(taskRuns, TaskRun { TaskId: workerState.RecentTasks[taskIndex].TaskId, Run: workerState.RecentTasks[taskIndex].RunId })
+                                } else {
+                                  taskRun := TaskRun {
+                                    TaskId: taskState.Status.TaskId,
+                                    TaskGroupId: taskState.Status.TaskGroupId,
+                                    Run: workerState.RecentTasks[taskIndex].RunId,
+                                  }
+                                  for runIndex := range taskState.Status.Runs {
+                                    if (taskState.Status.Runs[runIndex].RunId == workerState.RecentTasks[taskIndex].RunId) {
+                                      taskRun.State = taskState.Status.Runs[runIndex].State
+                                      taskRun.ReasonCreated = taskState.Status.Runs[runIndex].ReasonCreated
+                                      taskRun.WorkerGroup = taskState.Status.Runs[runIndex].WorkerGroup
+                                      taskRun.TakenUntil = taskState.Status.Runs[runIndex].TakenUntil
+                                      taskRun.Scheduled = taskState.Status.Runs[runIndex].Scheduled
+                                      taskRun.Started = taskState.Status.Runs[runIndex].Started
+                                      break
+                                    }
+                                  }
+                                  taskRuns = append(taskRuns, taskRun)
+                                }
+                              }(taskIndex)
                             }
-                            instance.Worker.Tasks = tasks
+                            instance.Worker.TaskRuns = taskRuns
                             instance.State = "working"
-                            message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
+                            message = message + fmt.Sprintf(", last task run: %v/%v", instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].TaskId, instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].Run)
                           }
                         }
                         fmt.Println(message)
@@ -156,13 +183,40 @@ func main() {
                       message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
                     }
                     if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-                      tasks := make([]Task, 0)
-                      for _, task := range workerState.RecentTasks {
-                        tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
+                      taskRuns := make([]TaskRun, 0)
+                      var taskWaitGroup sync.WaitGroup
+                      taskWaitGroup.Add(len(workerState.RecentTasks))
+                      for taskIndex, _ := range workerState.RecentTasks {
+                        go func(taskIndex int) {
+                          defer taskWaitGroup.Done()
+                          taskState, err := GetTaskState(workerState.RecentTasks[taskIndex].TaskId)
+                          if err != nil {
+                            fmt.Println("error", err)
+                            taskRuns = append(taskRuns, TaskRun { TaskId: workerState.RecentTasks[taskIndex].TaskId, Run: workerState.RecentTasks[taskIndex].RunId })
+                          } else {
+                            taskRun := TaskRun {
+                              TaskId: taskState.Status.TaskId,
+                              TaskGroupId: taskState.Status.TaskGroupId,
+                              Run: workerState.RecentTasks[taskIndex].RunId,
+                            }
+                            for runIndex := range taskState.Status.Runs {
+                              if (taskState.Status.Runs[runIndex].RunId == workerState.RecentTasks[taskIndex].RunId) {
+                                taskRun.State = taskState.Status.Runs[runIndex].State
+                                taskRun.ReasonCreated = taskState.Status.Runs[runIndex].ReasonCreated
+                                taskRun.WorkerGroup = taskState.Status.Runs[runIndex].WorkerGroup
+                                taskRun.TakenUntil = taskState.Status.Runs[runIndex].TakenUntil
+                                taskRun.Scheduled = taskState.Status.Runs[runIndex].Scheduled
+                                taskRun.Started = taskState.Status.Runs[runIndex].Started
+                                break
+                              }
+                            }
+                            taskRuns = append(taskRuns, taskRun)
+                          }
+                        }(taskIndex)
                       }
-                      instance.Worker.Tasks = tasks
+                      instance.Worker.TaskRuns = taskRuns
                       instance.State = "working"
-                      message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
+                      message = message + fmt.Sprintf(", last task run: %v/%v", instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].TaskId, instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].Run)
                     }
                   }
                   fmt.Println(message)
@@ -185,10 +239,11 @@ func main() {
       m[instances[i].Worker.Type]["working"] = 0
     }
     m[instances[i].Worker.Type]["running"] = m[instances[i].Worker.Type]["running"] + 1
-    if (instances[i].State != "") {
+    if (instances[i].State == "") { //todo: find out why state is sometimes empty
+      m[instances[i].Worker.Type]["unknown"] = m[instances[i].Worker.Type]["unknown"] + 1
+    } else {
       m[instances[i].Worker.Type][instances[i].State] = m[instances[i].Worker.Type][instances[i].State] + 1
     }
-    
   }
   fm, err := json.MarshalIndent(m, "", "  ")
   if err != nil {

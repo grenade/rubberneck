@@ -29,10 +29,18 @@ type Worker struct {
   Implementation string `json:"implementation"`
   Expires time.Time `json:"expires"`
   FirstClaim time.Time `json:"firstClaim"`
-  Tasks []Task `json:"tasks"`
+  TaskRuns []TaskRun `json:"tasks"`
 }
 
-type Task struct {
-  Id string `json:"id"`
+type TaskRun struct {
+  TaskId string `json:"id"`
+  TaskGroupId string `json:"taskGroupId"`
   Run int `json:"run"`
+  State string `json:"state"`
+  ReasonCreated string `json:"reasonCreated"`
+  WorkerGroup string `json:"workerGroup"`
+  WorkerId string `json:"workerId"`
+  TakenUntil time.Time `json:"takenUntil"`
+  Scheduled time.Time `json:"scheduled"`
+  Started time.Time `json:"started"`
 }

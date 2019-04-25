@@ -44,6 +44,30 @@ type WorkerTypeState struct {
   } `json:"workers"`
 }
 
+type TaskState struct {
+  Status struct {
+    TaskId        string    `json:"taskId"`
+    ProvisionerId string    `json:"provisionerId"`
+    WorkerType    string    `json:"workerType"`
+    SchedulerId   string    `json:"schedulerId"`
+    TaskGroupId   string    `json:"taskGroupId"`
+    Deadline      time.Time `json:"deadline"`
+    Expires       time.Time `json:"expires"`
+    RetriesLeft   int       `json:"retriesLeft"`
+    State         string    `json:"state"`
+    Runs          []struct {
+      RunId         int       `json:"runId"`
+      State         string    `json:"state"`
+      ReasonCreated string    `json:"reasonCreated"`
+      WorkerGroup   string    `json:"workerGroup"`
+      WorkerId      string    `json:"workerId"`
+      TakenUntil    time.Time `json:"takenUntil"`
+      Scheduled     time.Time `json:"scheduled"`
+      Started       time.Time `json:"started"`
+    } `json:"runs"`
+  } `json:"status"`
+}
+
 func GetWorkerState(provisionerId string, workerType string, workerGroup string, workerId string) (*WorkerState, error) {
   if provisionerId == "gce" && strings.Contains(workerType, "linux") {
     workerTypeEndpoint := fmt.Sprintf("https://queue.taskcluster.net/v1/provisioners/%v/worker-types/%v/workers",
@@ -85,5 +109,21 @@ func GetWorkerState(provisionerId string, workerType string, workerGroup string,
       return nil, err
     }
     return &workerState, nil
+  }
+}
+
+func GetTaskState(taskId string) (*TaskState, error) {
+  endpoint := fmt.Sprintf("https://queue.taskcluster.net/v1/task/%v/status", taskId)
+  response, err := http.Get(endpoint)
+  if err != nil {
+    return nil, err
+  } else {
+    var taskState TaskState
+    data, _ := ioutil.ReadAll(response.Body)
+    err := json.Unmarshal(data, &taskState)
+    if err != nil {
+      return nil, err
+    }
+    return &taskState, nil
   }
 }
