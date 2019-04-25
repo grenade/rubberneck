@@ -176,25 +176,20 @@ func main() {
     }
   }()
   cloudWaitGroup.Wait()
-
-  pending := 0
-  waiting := 0
-  working := 0
   m := make(map[string]map[string]int)
   for i := range instances {
     if (m[instances[i].Worker.Type] == nil) {
       m[instances[i].Worker.Type] = make(map[string]int)
+      m[instances[i].Worker.Type]["pending"] = 0
+      m[instances[i].Worker.Type]["waiting"] = 0
+      m[instances[i].Worker.Type]["working"] = 0
     }
-    m[instances[i].Worker.Type][instances[i].State] = m[instances[i].Worker.Type][instances[i].State] + 1
-    if (instances[i].State == "pending") {
-      pending ++
-    } else if (instances[i].State == "waiting") {
-      waiting ++
-    } else if (instances[i].State == "working") {
-      working ++
+    m[instances[i].Worker.Type]["running"] = m[instances[i].Worker.Type]["running"] + 1
+    if (instances[i].State != "") {
+      m[instances[i].Worker.Type][instances[i].State] = m[instances[i].Worker.Type][instances[i].State] + 1
     }
+    
   }
-  fmt.Printf("instances: %v, pending: %v, waiting: %v, working: %v\n", len(instances), pending, waiting, working)
   fm, err := json.MarshalIndent(m, "", "  ")
   if err != nil {
     fmt.Println("error:", err)
