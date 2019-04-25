@@ -29,7 +29,13 @@ type Worker struct {
   Implementation string `json:"implementation"`
   Expires time.Time `json:"expires"`
   FirstClaim time.Time `json:"firstClaim"`
-  TaskRuns []TaskRun `json:"tasks"`
+  RecentTaskRuns []RecentTaskRun `json:"recentTaskRuns"`
+  LastTaskRun TaskRun `json:"lastTaskRun"`
+}
+
+type RecentTaskRun struct {
+  TaskId string `json:"id"`
+  Run int `json:"run"`
 }
 
 type TaskRun struct {
