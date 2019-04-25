@@ -3,127 +3,178 @@ package main
 import (
   "fmt"
   "strings"
+  "sync"
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/service/ec2"
 )
 
 func main() {
   instances := make([]Instance, 0)
-  for _, gcpProject := range gcpProjects {
-    gcpZones, err := gcpZoneList(gcpProject)
-    if err != nil {
-      fmt.Println("error:", err)
-    } else {
-      for _, gcpWorkerType := range gcpWorkerTypes {
-        for _, gcpZone := range gcpZones {
-          machines, err := gcpInstanceList(gcpProject, gcpZone, append(gcpFilters, fmt.Sprintf("labels.worker-type = %v", gcpWorkerType)))
+  var cloudWaitGroup sync.WaitGroup
+  cloudWaitGroup.Add(2)
+  go func() {
+    defer cloudWaitGroup.Done()
+    var projectWaitGroup sync.WaitGroup
+    projectWaitGroup.Add(len(gcpProjects))
+    for projectIndex, _ := range gcpProjects {
+      go func(projectIndex int) {
+        defer projectWaitGroup.Done()
+        var workerTypeWaitGroup sync.WaitGroup
+        workerTypeWaitGroup.Add(len(gcpWorkerTypes))
+        for workerTypeIndex, _ := range gcpWorkerTypes {
+          gcpZones, err := gcpZoneList(gcpProjects[projectIndex])
           if err != nil {
             fmt.Println("error:", err)
           } else {
-            fmt.Printf("%v gcp/%v machine count: %v\n", gcpWorkerType, gcpZone, len(machines))
-            for _, machine := range machines {
-              instance := Instance {
-                Machine: machine,
-                Worker: Worker {
-                  Id: func() string { if strings.Contains(gcpWorkerType, "linux") { return machine.Id } else { return machine.Name } }(),
-                  Provisioner: func() string { if strings.Contains(gcpWorkerType, "linux") { return "gce" } else { return "releng-hardware" } }(),
-                  Type: gcpWorkerType,
-                  Group: func() string { if strings.Contains(gcpWorkerType, "linux") { return machine.Zone } else { return machine.Region } }(),
-                  Implementation: func() string { if strings.Contains(gcpWorkerType, "linux") { return "docker-worker" } else { return "generic-worker" } }(),
-                },
-              }
-              message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
-                instance.Machine.Cloud,
-                instance.Machine.Zone,
-                instance.Machine.Name,
-                instance.Machine.Id,
-                instance.Machine.Type,
-                instance.Worker.Type,
-                instance.Worker.Group,
-                instance.Worker.Id,
-                instance.Machine.Spawned)
-              workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
-              if err != nil {
-                fmt.Println("error", err)
-              } else {
-                if workerState.FirstClaim.IsZero() {
-                  instance.State = "pending"
-                } else {
-                  instance.Worker.FirstClaim = workerState.FirstClaim
-                  instance.State = "waiting"
-                  message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
-                }
-                if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-                  tasks := make([]Task, 0)
-                  for _, task := range workerState.RecentTasks {
-                    tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
+            go func(workerTypeIndex int) {
+              defer workerTypeWaitGroup.Done()
+              var zoneWaitGroup sync.WaitGroup
+              zoneWaitGroup.Add(len(gcpZones))
+              for zoneIndex, _ := range gcpZones {
+                go func(zoneIndex int) {
+                  defer zoneWaitGroup.Done()
+                  machines, err := gcpMachineList(gcpProjects[projectIndex], gcpZones[zoneIndex], append(gcpFilters, fmt.Sprintf("labels.worker-type = %v", gcpWorkerTypes[workerTypeIndex])))
+                  if err != nil {
+                    fmt.Printf("error retrieving %v machine list for gcp %v in zone %v\n", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex])
+                    fmt.Println(err)
+                  } else {
+                    fmt.Printf("%v machine count for gcp %v in zone %v is: %v\n", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex], len(machines))
+                    var machineWaitGroup sync.WaitGroup
+                    machineWaitGroup.Add(len(machines))
+                    for machineIndex, _ := range machines {
+                      go func(machineIndex int) {
+                        defer machineWaitGroup.Done()
+                        instance := Instance {
+                          Machine: machines[machineIndex],
+                          Worker: Worker {
+                            Id: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return machines[machineIndex].Id } else { return machines[machineIndex].Name } }(),
+                            Provisioner: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return "gce" } else { return "releng-hardware" } }(),
+                            Type: gcpWorkerTypes[workerTypeIndex],
+                            Group: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return machines[machineIndex].Zone } else { return machines[machineIndex].Region } }(),
+                            Implementation: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return "docker-worker" } else { return "generic-worker" } }(),
+                          },
+                        }
+                        message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
+                          instance.Machine.Cloud,
+                          instance.Machine.Zone,
+                          instance.Machine.Name,
+                          instance.Machine.Id,
+                          instance.Machine.Type,
+                          instance.Worker.Type,
+                          instance.Worker.Group,
+                          instance.Worker.Id,
+                          instance.Machine.Spawned)
+                        workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                        if err != nil {
+                          fmt.Println("error", err)
+                        } else {
+                          if workerState.FirstClaim.IsZero() {
+                            instance.State = "pending"
+                          } else {
+                            instance.Worker.FirstClaim = workerState.FirstClaim
+                            instance.State = "waiting"
+                            message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
+                          }
+                          if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
+                            tasks := make([]Task, 0)
+                            for _, task := range workerState.RecentTasks {
+                              tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
+                            }
+                            instance.Worker.Tasks = tasks
+                            instance.State = "working"
+                            message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
+                          }
+                        }
+                        fmt.Println(message)
+                        instances = append(instances, instance)
+                      }(machineIndex)
+                    }
+                    machineWaitGroup.Wait()
                   }
-                  instance.Worker.Tasks = tasks
-                  instance.State = "working"
-                  message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
-                }
+                }(zoneIndex)
               }
-              fmt.Println(message)
-              instances = append(instances, instance)
-            }
+              zoneWaitGroup.Wait()
+            }(workerTypeIndex)
           }
         }
-      }
+        workerTypeWaitGroup.Wait()
+      }(projectIndex)
     }
-  }
-  for _, ec2WorkerType := range ec2WorkerTypes {
-    for _, ec2Region := range ec2Regions {
-      machines, err := ec2InstanceList(ec2Region, append(ec2Filters, &ec2.Filter { Name: aws.String("tag:Name"), Values: []*string{aws.String(ec2WorkerType)}}))
-      if err != nil {
-        fmt.Println("error:", err)
-      } else {
-        fmt.Printf("%v ec2/%v machine count: %v\n", ec2WorkerType, ec2Region, len(machines))
-        for _, machine := range machines {
-          instance := Instance {
-            Machine: machine,
-            Worker: Worker {
-              Id: machine.Name,
-              Provisioner: "aws-provisioner-v1",
-              Type: ec2WorkerType,
-              Group: machine.Region,
-              Implementation: func() string { if strings.Contains(ec2WorkerType, "win") { return "generic-worker" } else { return "docker-worker" } }(),
-            },
-          }
-          message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
-            instance.Machine.Cloud,
-            instance.Machine.Zone,
-            instance.Machine.Name,
-            instance.Machine.Id,
-            instance.Machine.Type,
-            instance.Worker.Type,
-            instance.Worker.Group,
-            instance.Worker.Id,
-            instance.Machine.Spawned)
-          workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
-          if err != nil {
-            fmt.Println("error", err)
-          } else {
-            if workerState.FirstClaim.IsZero() {
-              instance.State = "pending"
+    projectWaitGroup.Wait()
+  }()
+  go func() {
+    defer cloudWaitGroup.Done()
+    var workerTypeWaitGroup sync.WaitGroup
+    workerTypeWaitGroup.Add(len(ec2WorkerTypes))
+    for workerTypeIndex, _ := range ec2WorkerTypes {
+      go func(workerTypeIndex int) {
+        defer workerTypeWaitGroup.Done()
+        var regionWaitGroup sync.WaitGroup
+        regionWaitGroup.Add(len(ec2Regions))
+        for regionIndex, _ := range ec2Regions {
+          go func(regionIndex int) {
+            defer regionWaitGroup.Done()
+            machines, err := ec2InstanceList(ec2Regions[regionIndex], append(ec2Filters, &ec2.Filter { Name: aws.String("tag:Name"), Values: []*string{aws.String(ec2WorkerTypes[workerTypeIndex])}}))
+            if err != nil {
+              fmt.Printf("error retrieving %v machine list for ec2 in region %v\n", ec2WorkerTypes[workerTypeIndex], ec2Regions[regionIndex])
+              fmt.Println(err)
             } else {
-              instance.Worker.FirstClaim = workerState.FirstClaim
-              instance.State = "waiting"
-              message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
-            }
-            if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-              tasks := make([]Task, 0)
-              for _, task := range workerState.RecentTasks {
-                tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
+              fmt.Printf("%v machine count for ec2 in region %v is: %v\n", ec2WorkerTypes[workerTypeIndex], ec2Regions[regionIndex], len(machines))
+              var machineWaitGroup sync.WaitGroup
+              machineWaitGroup.Add(len(machines))
+              for machineIndex, _ := range machines {
+                go func(machineIndex int) {
+                  defer machineWaitGroup.Done()
+                  instance := Instance {
+                    Machine: machines[machineIndex],
+                    Worker: Worker {
+                      Id: machines[machineIndex].Name,
+                      Provisioner: "aws-provisioner-v1",
+                      Type: ec2WorkerTypes[workerTypeIndex],
+                      Group: machines[machineIndex].Region,
+                      Implementation: func() string { if strings.Contains(ec2WorkerTypes[workerTypeIndex], "win") { return "generic-worker" } else { return "docker-worker" } }(),
+                    },
+                  }
+                  message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
+                    instance.Machine.Cloud,
+                    instance.Machine.Zone,
+                    instance.Machine.Name,
+                    instance.Machine.Id,
+                    instance.Machine.Type,
+                    instance.Worker.Type,
+                    instance.Worker.Group,
+                    instance.Worker.Id,
+                    instance.Machine.Spawned)
+                  workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                  if err != nil {
+                    fmt.Println("error", err)
+                  } else {
+                    if workerState.FirstClaim.IsZero() {
+                      instance.State = "pending"
+                    } else {
+                      instance.Worker.FirstClaim = workerState.FirstClaim
+                      instance.State = "waiting"
+                      message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
+                    }
+                    if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
+                      tasks := make([]Task, 0)
+                      for _, task := range workerState.RecentTasks {
+                        tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
+                      }
+                      instance.Worker.Tasks = tasks
+                      instance.State = "working"
+                      message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
+                    }
+                  }
+                  fmt.Println(message)
+                  instances = append(instances, instance)
+                }(machineIndex)
               }
-              instance.Worker.Tasks = tasks
-              instance.State = "working"
-              message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
             }
-          }
-          fmt.Println(message)
-          instances = append(instances, instance)
+          }(regionIndex)
         }
-      }
+      }(workerTypeIndex)
     }
-  }
+  }()
+  cloudWaitGroup.Wait()
 }

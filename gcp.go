@@ -11,7 +11,7 @@ import (
   "time"
 )
 
-func gcpInstanceList(project string, zone string, filters []string) ([]Machine, error) {
+func gcpMachineList(project string, zone string, filters []string) ([]Machine, error) {
   ctx := context.Background()
   client, err := google.DefaultClient(ctx,compute.ComputeScope)
   if err != nil {
