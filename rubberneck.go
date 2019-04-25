@@ -1,6 +1,7 @@
 package main
 
 import (
+  "encoding/json"
   "fmt"
   "strings"
   "sync"
@@ -35,10 +36,9 @@ func main() {
                   defer zoneWaitGroup.Done()
                   machines, err := gcpMachineList(gcpProjects[projectIndex], gcpZones[zoneIndex], append(gcpFilters, fmt.Sprintf("labels.worker-type = %v", gcpWorkerTypes[workerTypeIndex])))
                   if err != nil {
-                    fmt.Printf("error retrieving %v machine list for gcp %v in zone %v\n", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex])
-                    fmt.Println(err)
+                    fmt.Println(fmt.Sprintf("error retrieving %v machine list for gcp %v in zone %v", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex]), err)
                   } else {
-                    fmt.Printf("%v machine count for gcp %v in zone %v is: %v\n", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex], len(machines))
+                    //fmt.Printf("%v machine count for gcp %v in zone %v is: %v\n", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex], len(machines))
                     var machineWaitGroup sync.WaitGroup
                     machineWaitGroup.Add(len(machines))
                     for machineIndex, _ := range machines {
@@ -116,10 +116,9 @@ func main() {
             defer regionWaitGroup.Done()
             machines, err := ec2InstanceList(ec2Regions[regionIndex], append(ec2Filters, &ec2.Filter { Name: aws.String("tag:Name"), Values: []*string{aws.String(ec2WorkerTypes[workerTypeIndex])}}))
             if err != nil {
-              fmt.Printf("error retrieving %v machine list for ec2 in region %v\n", ec2WorkerTypes[workerTypeIndex], ec2Regions[regionIndex])
-              fmt.Println(err)
+              fmt.Println(fmt.Sprintf("error retrieving %v machine list for ec2 in region %v", ec2WorkerTypes[workerTypeIndex], ec2Regions[regionIndex]), err)
             } else {
-              fmt.Printf("%v machine count for ec2 in region %v is: %v\n", ec2WorkerTypes[workerTypeIndex], ec2Regions[regionIndex], len(machines))
+              //fmt.Printf("%v machine count for ec2 in region %v is: %v\n", ec2WorkerTypes[workerTypeIndex], ec2Regions[regionIndex], len(machines))
               var machineWaitGroup sync.WaitGroup
               machineWaitGroup.Add(len(machines))
               for machineIndex, _ := range machines {
@@ -177,4 +176,28 @@ func main() {
     }
   }()
   cloudWaitGroup.Wait()
+
+  pending := 0
+  waiting := 0
+  working := 0
+  m := make(map[string]map[string]int)
+  for i := range instances {
+    if (m[instances[i].Worker.Type] == nil) {
+      m[instances[i].Worker.Type] = make(map[string]int)
+    }
+    m[instances[i].Worker.Type][instances[i].State] = m[instances[i].Worker.Type][instances[i].State] + 1
+    if (instances[i].State == "pending") {
+      pending ++
+    } else if (instances[i].State == "waiting") {
+      waiting ++
+    } else if (instances[i].State == "working") {
+      working ++
+    }
+  }
+  fmt.Printf("instances: %v, pending: %v, waiting: %v, working: %v\n", len(instances), pending, waiting, working)
+  fm, err := json.MarshalIndent(m, "", "  ")
+  if err != nil {
+    fmt.Println("error:", err)
+  }
+  fmt.Println(string(fm))
 }
