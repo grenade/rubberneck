@@ -1,0 +1,28 @@
+{
+  "machine": {
+    "id": "6191981986926921624",
+    "name": "vm-hvs18tvvdupb7gwcs",
+    "type": "n1-standard-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "us-east1-c",
+    "region": "us-east1",
+    "spawned": "2019-04-30T05:03:05.236-07:00"
+  },
+  "worker": {
+    "id": "vm-hvs18tvvdupb7gwcs",
+    "provisioner": "releng-hardware",
+    "type": "gecko-3-b-win2012-gamma",
+    "group": "us-east1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "2019-04-30T12:27:35.113Z",
+    "tasks": [
+      {
+        "id": "DeG6Lt5vQjy4Iba-2503ZA",
+        "run": 0
+      }
+    ]
+  },
+  "state": "working"
+}
