@@ -1,0 +1,28 @@
+{
+  "machine": {
+    "id": "4047887875577285837",
+    "name": "vm-piheosdrs5qcointc",
+    "type": "n1-highcpu-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "europe-west1-c",
+    "region": "europe-west1",
+    "spawned": "2019-04-30T13:37:55.321-07:00"
+  },
+  "worker": {
+    "id": "vm-piheosdrs5qcointc",
+    "provisioner": "releng-hardware",
+    "type": "gecko-1-b-win2012-gamma",
+    "group": "europe-west1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "2019-04-30T21:01:46.061Z",
+    "tasks": [
+      {
+        "id": "N8RI-7ecRv-3yaVQColevw",
+        "run": 0
+      }
+    ]
+  },
+  "state": "working"
+}
