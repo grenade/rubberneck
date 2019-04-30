@@ -4,6 +4,7 @@ import (
   "encoding/json"
   "fmt"
   "io/ioutil"
+  "net/http"
   "os"
   "path"
   "path/filepath"
@@ -32,20 +33,20 @@ func main() {
     SingleBranch: true,
   })
   if err != nil {
-    fmt.Println("error:", err)
+    fmt.Println("clone error:", err)
   }
   ref, err := r.Head()
   if err != nil {
-    fmt.Println("error:", err)
+    fmt.Println("head error:", err)
   }
   fmt.Println(ref.Hash())
   w, err := r.Worktree()
   if err != nil {
-    fmt.Println("error:", err)
+    fmt.Println("worktree error:", err)
   }
   files, err := filepath.Glob(fmt.Sprintf("%v/**/*.json", observationDirectory))
   if err != nil {
-    fmt.Println("error:", err)
+    fmt.Println("json files glob error:", err)
   }
   for _, f := range files {
     if err := os.Remove(f); err != nil {
@@ -92,6 +93,23 @@ func main() {
                       go func(machineIndex int) {
                         defer machineWaitGroup.Done()
                         instance, _ := ObserveInstance(c, machines[machineIndex], gcpWorkerTypes[workerTypeIndex], observationDirectory)
+                        if (instance.Worker.FirstClaim.IsZero()) {
+                          instanceRevision, err := GetInstanceRevision(ref.Hash(), instance.Worker.Type, instance.Worker.Id)
+                          if err == nil && !instanceRevision.Worker.FirstClaim.IsZero() {
+                            jsonInstance, err := json.MarshalIndent(instanceRevision, "", "  ")
+                            if err != nil {
+                              fmt.Println("json marshall indent error:", err)
+                            } else {
+                              jsonFile := path.Join(observationDirectory, instance.Worker.Type, fmt.Sprintf("%v.json", instance.Worker.Id))
+                              err = ioutil.WriteFile(jsonFile, jsonInstance, 0644)
+                              if err != nil {
+                                fmt.Println("file write error:", err)
+                              } else {
+                                instance = instanceRevision
+                              }
+                            }
+                          }
+                        }
                         instances = append(instances, instance)
                       }(machineIndex)
                     }
@@ -137,6 +155,23 @@ func main() {
                 go func(machineIndex int) {
                   defer machineWaitGroup.Done()
                   instance, _ := ObserveInstance(c, machines[machineIndex], ec2WorkerTypes[workerTypeIndex], observationDirectory)
+                  if (instance.Worker.FirstClaim.IsZero()) {
+                    instanceRevision, err := GetInstanceRevision(ref.Hash(), instance.Worker.Type, instance.Worker.Id)
+                    if err == nil && !instanceRevision.Worker.FirstClaim.IsZero() {
+                      jsonInstance, err := json.MarshalIndent(instanceRevision, "", "  ")
+                      if err != nil {
+                        fmt.Println("json marshall indent error:", err)
+                      } else {
+                        jsonFile := path.Join(observationDirectory, instance.Worker.Type, fmt.Sprintf("%v.json", instance.Worker.Id))
+                        err = ioutil.WriteFile(jsonFile, jsonInstance, 0644)
+                        if err != nil {
+                          fmt.Println("file write error:", err)
+                        } else {
+                          instance = instanceRevision
+                        }
+                      }
+                    }
+                  }
                   instances = append(instances, instance)
                 }(machineIndex)
               }
@@ -352,4 +387,25 @@ func ObserveInstance(c *cache.Cache, machine Machine, workerType string, observa
     fmt.Println("file write error:", err)
   }
   return instance, nil
+}
+
+func GetInstanceRevision(sha plumbing.Hash, workerType string, workerId string) (Instance, error) {
+  endpoint := fmt.Sprintf("https://raw.githubusercontent.com/grenade/rubberneck/%v/%v/%v.json",
+    sha,
+    workerType,
+    workerId,
+  )
+  var instance Instance
+  response, err := http.Get(endpoint)
+  if err != nil {
+    return instance, err
+  } else {
+    
+    data, _ := ioutil.ReadAll(response.Body)
+    err := json.Unmarshal(data, &instance)
+    if err != nil {
+      return instance, err
+    }
+    return instance, nil
+  }
 }
