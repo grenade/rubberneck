@@ -15,6 +15,10 @@ func main() {
   cloudWaitGroup.Add(2)
   go func() {
     defer cloudWaitGroup.Done()
+    computeService, err := gcpComputeService()
+    if err != nil {
+      return
+    }
     var projectWaitGroup sync.WaitGroup
     projectWaitGroup.Add(len(gcpProjects))
     for projectIndex, _ := range gcpProjects {
@@ -23,7 +27,7 @@ func main() {
         var workerTypeWaitGroup sync.WaitGroup
         workerTypeWaitGroup.Add(len(gcpWorkerTypes))
         for workerTypeIndex, _ := range gcpWorkerTypes {
-          gcpZones, err := gcpZoneList(gcpProjects[projectIndex])
+          gcpZones, err := gcpZoneList(computeService, gcpProjects[projectIndex])
           if err != nil {
             fmt.Println("error:", err)
           } else {
@@ -34,7 +38,7 @@ func main() {
               for zoneIndex, _ := range gcpZones {
                 go func(zoneIndex int) {
                   defer zoneWaitGroup.Done()
-                  machines, err := gcpMachineList(gcpProjects[projectIndex], gcpZones[zoneIndex], append(gcpFilters, fmt.Sprintf("labels.worker-type = %v", gcpWorkerTypes[workerTypeIndex])))
+                  machines, err := gcpMachineList(computeService, gcpProjects[projectIndex], gcpZones[zoneIndex], append(gcpFilters, fmt.Sprintf("labels.worker-type = %v", gcpWorkerTypes[workerTypeIndex])))
                   if err != nil {
                     fmt.Println(fmt.Sprintf("error retrieving %v machine list for gcp %v in zone %v", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex]), err)
                   } else {
