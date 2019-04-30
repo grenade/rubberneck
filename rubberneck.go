@@ -92,58 +92,8 @@ func main() {
                     for machineIndex, _ := range machines {
                       go func(machineIndex int) {
                         defer machineWaitGroup.Done()
-                        instance := Instance {
-                          Machine: machines[machineIndex],
-                          Worker: Worker {
-                            Id: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return machines[machineIndex].Id } else { return machines[machineIndex].Name } }(),
-                            Provisioner: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return "gce" } else { return "releng-hardware" } }(),
-                            Type: gcpWorkerTypes[workerTypeIndex],
-                            Group: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return machines[machineIndex].Zone } else { return machines[machineIndex].Region } }(),
-                            Implementation: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return "docker-worker" } else { return "generic-worker" } }(),
-                          },
-                        }
-                        message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
-                          instance.Machine.Cloud,
-                          instance.Machine.Zone,
-                          instance.Machine.Name,
-                          instance.Machine.Id,
-                          instance.Machine.Type,
-                          instance.Worker.Type,
-                          instance.Worker.Group,
-                          instance.Worker.Id,
-                          instance.Machine.Spawned)
-                        workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
-                        if err != nil {
-                          fmt.Println("error", err)
-                        } else {
-                          if workerState.FirstClaim.IsZero() {
-                            instance.State = "pending"
-                          } else {
-                            instance.Worker.FirstClaim = workerState.FirstClaim
-                            instance.State = "waiting"
-                            message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
-                          }
-                          if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-                            tasks := make([]Task, 0)
-                            for _, task := range workerState.RecentTasks {
-                              tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
-                            }
-                            instance.Worker.Tasks = tasks
-                            instance.State = "working"
-                            message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
-                          }
-                        }
-                        fmt.Println(message)
+                        instance, _ := ObserveInstance(c, machines[machineIndex], gcpWorkerTypes[workerTypeIndex], observationDirectory)
                         instances = append(instances, instance)
-                        jsonInstance, err := json.MarshalIndent(instance, "", "  ")
-                        if err != nil {
-                          fmt.Println("json marshall indent error:", err)
-                        }
-                        os.MkdirAll(path.Join(observationDirectory, instance.Worker.Type), os.ModePerm)
-                        err = ioutil.WriteFile(path.Join(observationDirectory, instance.Worker.Type, fmt.Sprintf("%v.json", instance.Worker.Id)), jsonInstance, 0644)
-                        if err != nil {
-                          fmt.Println("file write error:", err)
-                        }
                       }(machineIndex)
                     }
                     machineWaitGroup.Wait()
@@ -151,11 +101,13 @@ func main() {
                 }(zoneIndex)
               }
               zoneWaitGroup.Wait()
+            }(workerTypeIndex)
+            if stat, err := os.Stat(path.Join(observationDirectory, gcpWorkerTypes[workerTypeIndex])); err == nil && stat.IsDir() {
               _, err = w.Add(gcpWorkerTypes[workerTypeIndex])
               if err != nil {
                 fmt.Println("git add error:", observationDirectory, gcpWorkerTypes[workerTypeIndex], err)
               }
-            }(workerTypeIndex)
+            }
           }
         }
         workerTypeWaitGroup.Wait()
@@ -185,58 +137,8 @@ func main() {
               for machineIndex, _ := range machines {
                 go func(machineIndex int) {
                   defer machineWaitGroup.Done()
-                  instance := Instance {
-                    Machine: machines[machineIndex],
-                    Worker: Worker {
-                      Id: machines[machineIndex].Name,
-                      Provisioner: "aws-provisioner-v1",
-                      Type: ec2WorkerTypes[workerTypeIndex],
-                      Group: machines[machineIndex].Region,
-                      Implementation: func() string { if strings.Contains(ec2WorkerTypes[workerTypeIndex], "win") { return "generic-worker" } else { return "docker-worker" } }(),
-                    },
-                  }
-                  message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
-                    instance.Machine.Cloud,
-                    instance.Machine.Zone,
-                    instance.Machine.Name,
-                    instance.Machine.Id,
-                    instance.Machine.Type,
-                    instance.Worker.Type,
-                    instance.Worker.Group,
-                    instance.Worker.Id,
-                    instance.Machine.Spawned)
-                  workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
-                  if err != nil {
-                    fmt.Println("error", err)
-                  } else {
-                    if workerState.FirstClaim.IsZero() {
-                      instance.State = "pending"
-                    } else {
-                      instance.Worker.FirstClaim = workerState.FirstClaim
-                      instance.State = "waiting"
-                      message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
-                    }
-                    if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-                      tasks := make([]Task, 0)
-                      for _, task := range workerState.RecentTasks {
-                        tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
-                      }
-                      instance.Worker.Tasks = tasks
-                      instance.State = "working"
-                      message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
-                    }
-                  }
-                  fmt.Println(message)
+                  instance, _ := ObserveInstance(c, machines[machineIndex], ec2WorkerTypes[workerTypeIndex], observationDirectory)
                   instances = append(instances, instance)
-                  jsonInstance, err := json.MarshalIndent(instance, "", "  ")
-                  if err != nil {
-                    fmt.Println("json marshall indent error:", err)
-                  }
-                  os.MkdirAll(path.Join(observationDirectory, instance.Worker.Type), os.ModePerm)
-                  err = ioutil.WriteFile(path.Join(observationDirectory, instance.Worker.Type, fmt.Sprintf("%v.json", instance.Worker.Id)), jsonInstance, 0644)
-                  if err != nil {
-                    fmt.Println("file write error:", err)
-                  }
                 }(machineIndex)
               }
               machineWaitGroup.Wait()
@@ -244,11 +146,13 @@ func main() {
           }(regionIndex)
         }
         regionWaitGroup.Wait()
+      }(workerTypeIndex)
+      if stat, err := os.Stat(path.Join(observationDirectory, ec2WorkerTypes[workerTypeIndex])); err == nil && stat.IsDir() {
         _, err = w.Add(ec2WorkerTypes[workerTypeIndex])
         if err != nil {
           fmt.Println("git add error:", observationDirectory, ec2WorkerTypes[workerTypeIndex], err)
         }
-      }(workerTypeIndex)
+      }
     }
     workerTypeWaitGroup.Wait()
   }()
@@ -330,4 +234,112 @@ func RemoveContents(dir string) error {
     }
   }
   return nil
+}
+
+func ObserveInstance(c *cache.Cache, machine Machine, workerType string, observationDirectory string) (Instance, error) {
+  instance := Instance {
+    Machine: machine,
+    Worker: Worker {
+      Id: func() string {
+        if (machine.Cloud == "gcp") {
+          if strings.Contains(workerType, "linux") {
+            return machine.Id
+          } else {
+            return machine.Name
+          }
+        } else if machine.Cloud == "ec2" {
+          return machine.Name
+        } else {
+          return ""
+        }
+      }(),
+      Provisioner: func() string {
+        if (machine.Cloud == "gcp") {
+          if strings.Contains(workerType, "linux") {
+            return "gce"
+          } else {
+            return "releng-hardware"
+          }
+        } else if machine.Cloud == "ec2" {
+          return "aws-provisioner-v1"
+        } else {
+          return ""
+        }
+      }(),
+      Type: workerType,
+      Group: func() string {
+        if (machine.Cloud == "gcp") {
+          if strings.Contains(workerType, "linux") {
+            return machine.Zone
+          } else {
+            return machine.Region
+          }
+        } else if machine.Cloud == "ec2" {
+          return machine.Region
+        } else {
+          return ""
+        }
+      }(),
+      Implementation: func() string {
+        if (machine.Cloud == "gcp") {
+          if strings.Contains(workerType, "linux") {
+            return "docker-worker"
+          } else {
+            return "generic-worker"
+          }
+        } else if machine.Cloud == "ec2" {
+          if strings.Contains(workerType, "win") {
+            return "generic-worker"
+          } else {
+            return "docker-worker"
+          }
+        } else {
+          return ""
+        }
+      }(),
+    },
+  }
+  message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
+    instance.Machine.Cloud,
+    instance.Machine.Zone,
+    instance.Machine.Name,
+    instance.Machine.Id,
+    instance.Machine.Type,
+    instance.Worker.Type,
+    instance.Worker.Group,
+    instance.Worker.Id,
+    instance.Machine.Spawned)
+  workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+  if err != nil {
+    fmt.Println("error", err)
+  } else {
+    if workerState.FirstClaim.IsZero() {
+      instance.State = "pending"
+    } else {
+      instance.Worker.FirstClaim = workerState.FirstClaim
+      instance.State = "waiting"
+      message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
+    }
+    if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
+      tasks := make([]Task, 0)
+      for _, task := range workerState.RecentTasks {
+        tasks = append(tasks, Task { Id: task.TaskId, Run: task.RunId })
+      }
+      instance.Worker.Tasks = tasks
+      instance.State = "working"
+      message = message + fmt.Sprintf(", last task: %v/%v", instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Id, instance.Worker.Tasks[len(instance.Worker.Tasks) - 1].Run)
+    }
+  }
+  fmt.Println(message)
+  jsonInstance, err := json.MarshalIndent(instance, "", "  ")
+  if err != nil {
+    fmt.Println("json marshall indent error:", err)
+  }
+  os.MkdirAll(path.Join(observationDirectory, instance.Worker.Type), os.ModePerm)
+  jsonFile := path.Join(observationDirectory, instance.Worker.Type, fmt.Sprintf("%v.json", instance.Worker.Id))
+  err = ioutil.WriteFile(jsonFile, jsonInstance, 0644)
+  if err != nil {
+    fmt.Println("file write error:", err)
+  }
+  return instance, nil
 }
