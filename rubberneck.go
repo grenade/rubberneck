@@ -5,16 +5,23 @@ import (
   "fmt"
   "strings"
   "sync"
+  "time"
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/service/ec2"
+  "github.com/patrickmn/go-cache"
 )
 
 func main() {
+  c := cache.New(5*time.Minute, 10*time.Minute)
   instances := make([]Instance, 0)
   var cloudWaitGroup sync.WaitGroup
   cloudWaitGroup.Add(2)
   go func() {
     defer cloudWaitGroup.Done()
+    computeService, err := gcpComputeService()
+    if err != nil {
+      return
+    }
     var projectWaitGroup sync.WaitGroup
     projectWaitGroup.Add(len(gcpProjects))
     for projectIndex, _ := range gcpProjects {
@@ -23,7 +30,7 @@ func main() {
         var workerTypeWaitGroup sync.WaitGroup
         workerTypeWaitGroup.Add(len(gcpWorkerTypes))
         for workerTypeIndex, _ := range gcpWorkerTypes {
-          gcpZones, err := gcpZoneList(gcpProjects[projectIndex])
+          gcpZones, err := gcpZoneList(computeService, gcpProjects[projectIndex])
           if err != nil {
             fmt.Println("error:", err)
           } else {
@@ -34,7 +41,7 @@ func main() {
               for zoneIndex, _ := range gcpZones {
                 go func(zoneIndex int) {
                   defer zoneWaitGroup.Done()
-                  machines, err := gcpMachineList(gcpProjects[projectIndex], gcpZones[zoneIndex], append(gcpFilters, fmt.Sprintf("labels.worker-type = %v", gcpWorkerTypes[workerTypeIndex])))
+                  machines, err := gcpMachineList(computeService, gcpProjects[projectIndex], gcpZones[zoneIndex], append(gcpFilters, fmt.Sprintf("labels.worker-type = %v", gcpWorkerTypes[workerTypeIndex])))
                   if err != nil {
                     fmt.Println(fmt.Sprintf("error retrieving %v machine list for gcp %v in zone %v", gcpWorkerTypes[workerTypeIndex], gcpProjects[projectIndex], gcpZones[zoneIndex]), err)
                   } else {
@@ -64,7 +71,7 @@ func main() {
                           instance.Worker.Group,
                           instance.Worker.Id,
                           instance.Machine.Spawned)
-                        workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                        workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
                         if err != nil {
                           fmt.Println("error", err)
                         } else {
@@ -80,8 +87,8 @@ func main() {
                             var taskWaitGroup sync.WaitGroup
                             taskWaitGroup.Add(len(workerState.RecentTasks))
                             for taskIndex, _ := range workerState.RecentTasks {
-                              go func(taskIndex int) {
-                                defer taskWaitGroup.Done()
+                              //go func(taskIndex int) {
+                                //defer taskWaitGroup.Done()
                                 taskState, err := GetTaskState(workerState.RecentTasks[taskIndex].TaskId)
                                 if err != nil {
                                   fmt.Println("error", err)
@@ -105,7 +112,7 @@ func main() {
                                   }
                                   taskRuns = append(taskRuns, taskRun)
                                 }
-                              }(taskIndex)
+                              //}(taskIndex)
                             }
                             instance.Worker.TaskRuns = taskRuns
                             instance.State = "working"
@@ -171,7 +178,7 @@ func main() {
                     instance.Worker.Group,
                     instance.Worker.Id,
                     instance.Machine.Spawned)
-                  workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                  workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
                   if err != nil {
                     fmt.Println("error", err)
                   } else {
@@ -187,8 +194,8 @@ func main() {
                       var taskWaitGroup sync.WaitGroup
                       taskWaitGroup.Add(len(workerState.RecentTasks))
                       for taskIndex, _ := range workerState.RecentTasks {
-                        go func(taskIndex int) {
-                          defer taskWaitGroup.Done()
+                        //go func(taskIndex int) {
+                          //defer taskWaitGroup.Done()
                           taskState, err := GetTaskState(workerState.RecentTasks[taskIndex].TaskId)
                           if err != nil {
                             fmt.Println("error", err)
@@ -212,7 +219,7 @@ func main() {
                             }
                             taskRuns = append(taskRuns, taskRun)
                           }
-                        }(taskIndex)
+                        //}(taskIndex)
                       }
                       instance.Worker.TaskRuns = taskRuns
                       instance.State = "working"

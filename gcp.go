@@ -11,14 +11,17 @@ import (
   "time"
 )
 
-func gcpMachineList(project string, zone string, filters []string) ([]Machine, error) {
-  ctx := context.Background()
-  client, err := google.DefaultClient(ctx,compute.ComputeScope)
-  if err != nil {
-    fmt.Println(err)
-  }
-  computeService, err := compute.New(client)
 
+func gcpComputeService() (*compute.Service, error) {
+  ctx := context.Background()
+  client, err := google.DefaultClient(ctx, compute.ComputeScope)
+  if err != nil {
+    return nil, err
+  }
+  return compute.New(client)
+}
+
+func gcpMachineList(computeService *compute.Service, project string, zone string, filters []string) ([]Machine, error) {
   r := strings.Split(zone, "-")
   region := fmt.Sprintf("%v-%v", r[0], r[1])
   instanceListCall := computeService.Instances.List(project, zone)
@@ -46,13 +49,7 @@ func gcpMachineList(project string, zone string, filters []string) ([]Machine, e
   }
 }
 
-func gcpZoneList(project string) ([]string, error) {
-  ctx := context.Background()
-  client, err := google.DefaultClient(ctx,compute.ComputeScope)
-  if err != nil {
-    fmt.Println(err)
-  }
-  computeService, err := compute.New(client)
+func gcpZoneList(computeService *compute.Service, project string) ([]string, error) {
   zoneListCall := computeService.Zones.List(project)
   zoneList, err := zoneListCall.Do()
   if err != nil {

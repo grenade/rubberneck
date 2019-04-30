@@ -10,6 +10,7 @@ go get -u google.golang.org/api/compute/v1
 go get -u github.com/aws/aws-sdk-go/aws
 go get -u github.com/aws/aws-sdk-go/aws/session
 go get -u github.com/aws/aws-sdk-go/service/ec2
+go get -u github.com/patrickmn/go-cache
 
 # initialise gcloud credentials:
 gcloud_project=windows-workers
