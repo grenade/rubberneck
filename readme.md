@@ -11,6 +11,7 @@ go get -u github.com/aws/aws-sdk-go/aws
 go get -u github.com/aws/aws-sdk-go/aws/session
 go get -u github.com/aws/aws-sdk-go/service/ec2
 go get -u github.com/patrickmn/go-cache
+go get -u gopkg.in/src-d/go-git.v4/...
 
 # initialise gcloud credentials:
 gcloud_project=windows-workers

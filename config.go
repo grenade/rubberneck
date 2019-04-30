@@ -5,6 +5,11 @@ import (
   "github.com/aws/aws-sdk-go/service/ec2"
 )
 
+var observationRepository string = "git@github.com:grenade/rubberneck.git"
+var observationBranch string = "observe"
+var observationAuthorName string = "Rob Thijssen"
+var observationAuthorEmail string = "rthijssen@gmail.com"
+
 var gcpProjects = []string {
   "windows-workers",
 }

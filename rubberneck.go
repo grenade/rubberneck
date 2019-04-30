@@ -3,16 +3,57 @@ package main
 import (
   "encoding/json"
   "fmt"
+  "io/ioutil"
+  "os"
+  "path"
+  "path/filepath"
   "strings"
   "sync"
   "time"
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/service/ec2"
   "github.com/patrickmn/go-cache"
+  "gopkg.in/src-d/go-git.v4"
+  //"gopkg.in/src-d/go-git.v4/config"
+  "gopkg.in/src-d/go-git.v4/plumbing"
+  "gopkg.in/src-d/go-git.v4/plumbing/object"
 )
 
 func main() {
   c := cache.New(5*time.Minute, 10*time.Minute)
+
+  observationDirectory, err := ioutil.TempDir("", fmt.Sprintf("rubberneck-git-%v", observationBranch))
+  if err != nil {
+    fmt.Println("error:", err)
+  }
+  //defer os.RemoveAll(observationDirectory)
+  r, err := git.PlainClone(observationDirectory, false, &git.CloneOptions{
+    URL: observationRepository,
+    ReferenceName: plumbing.NewBranchReferenceName(observationBranch),
+    SingleBranch: true,
+  })
+  if err != nil {
+    fmt.Println("error:", err)
+  }
+  ref, err := r.Head()
+  if err != nil {
+    fmt.Println("error:", err)
+  }
+  fmt.Println(ref.Hash())
+  w, err := r.Worktree()
+  if err != nil {
+    fmt.Println("error:", err)
+  }
+  files, err := filepath.Glob(fmt.Sprintf("%v/**/*.json", observationDirectory))
+  if err != nil {
+    fmt.Println("error:", err)
+  }
+  for _, f := range files {
+    if err := os.Remove(f); err != nil {
+      fmt.Println("error:", err)
+    }
+  }
+
   instances := make([]Instance, 0)
   var cloudWaitGroup sync.WaitGroup
   cloudWaitGroup.Add(2)
@@ -94,6 +135,15 @@ func main() {
                         }
                         fmt.Println(message)
                         instances = append(instances, instance)
+                        jsonInstance, err := json.MarshalIndent(instance, "", "  ")
+                        if err != nil {
+                          fmt.Println("json marshall indent error:", err)
+                        }
+                        os.MkdirAll(path.Join(observationDirectory, instance.Worker.Type), os.ModePerm)
+                        err = ioutil.WriteFile(path.Join(observationDirectory, instance.Worker.Type, fmt.Sprintf("%v.json", instance.Worker.Id)), jsonInstance, 0644)
+                        if err != nil {
+                          fmt.Println("file write error:", err)
+                        }
                       }(machineIndex)
                     }
                     machineWaitGroup.Wait()
@@ -101,6 +151,10 @@ func main() {
                 }(zoneIndex)
               }
               zoneWaitGroup.Wait()
+              _, err = w.Add(gcpWorkerTypes[workerTypeIndex])
+              if err != nil {
+                fmt.Println("git add error:", observationDirectory, gcpWorkerTypes[workerTypeIndex], err)
+              }
             }(workerTypeIndex)
           }
         }
@@ -174,15 +228,32 @@ func main() {
                   }
                   fmt.Println(message)
                   instances = append(instances, instance)
+                  jsonInstance, err := json.MarshalIndent(instance, "", "  ")
+                  if err != nil {
+                    fmt.Println("json marshall indent error:", err)
+                  }
+                  os.MkdirAll(path.Join(observationDirectory, instance.Worker.Type), os.ModePerm)
+                  err = ioutil.WriteFile(path.Join(observationDirectory, instance.Worker.Type, fmt.Sprintf("%v.json", instance.Worker.Id)), jsonInstance, 0644)
+                  if err != nil {
+                    fmt.Println("file write error:", err)
+                  }
                 }(machineIndex)
               }
+              machineWaitGroup.Wait()
             }
           }(regionIndex)
         }
+        regionWaitGroup.Wait()
+        _, err = w.Add(ec2WorkerTypes[workerTypeIndex])
+        if err != nil {
+          fmt.Println("git add error:", observationDirectory, ec2WorkerTypes[workerTypeIndex], err)
+        }
       }(workerTypeIndex)
     }
+    workerTypeWaitGroup.Wait()
   }()
   cloudWaitGroup.Wait()
+
   m := make(map[string]map[string]int)
   for i := range instances {
     if (m[instances[i].Worker.Type] == nil) {
@@ -195,11 +266,68 @@ func main() {
     if (instances[i].State != "") {
       m[instances[i].Worker.Type][instances[i].State] = m[instances[i].Worker.Type][instances[i].State] + 1
     }
-    
   }
   fm, err := json.MarshalIndent(m, "", "  ")
   if err != nil {
-    fmt.Println("error:", err)
+    fmt.Println("json marshall indent error:", err)
   }
   fmt.Println(string(fm))
+  err = ioutil.WriteFile(path.Join(observationDirectory, "worker-type-counts.json"), fm, 0644)
+  if err != nil {
+    fmt.Println("file write error:", err)
+  }
+  _, err = w.Add("worker-type-counts.json")
+  if err != nil {
+    fmt.Println("git add error:", err)
+  }
+  status, err := w.Status()
+  if err != nil {
+    fmt.Println("read git status error:", err)
+  }
+  fmt.Println(status)
+  commit, err := w.Commit("updated worker-type counts", &git.CommitOptions{
+    Author: &object.Signature{
+      Name:  observationAuthorName,
+      Email: observationAuthorEmail,
+      When:  time.Now(),
+    },
+  })
+  if err != nil {
+    fmt.Println("git commit error:", err)
+  }
+  obj, err := r.CommitObject(commit)
+  if err != nil {
+    fmt.Println("read git commit error:", err)
+  }
+  fmt.Println(obj)
+  err = r.Push(&git.PushOptions{})
+  if err != nil {
+    fmt.Println("git push error:", err)
+  }
+  /*fileList, err := ioutil.ReadDir(observationDirectory)
+  if err != nil {
+    fmt.Println("read dir error:", err)
+  }
+  for _, f := range fileList {
+    fmt.Println(path.Join(observationDirectory, f.Name()))
+  }*/
+}
+
+func RemoveContents(dir string) error {
+  d, err := os.Open(dir)
+  if err != nil {
+    return err
+  }
+  defer d.Close()
+  names, err := d.Readdirnames(-1)
+  if err != nil {
+    return err
+  }
+  for _, name := range names {
+    err = os.RemoveAll(filepath.Join(dir, name))
+    if err != nil {
+      return err
+    }
+  }
+  return nil
 }
