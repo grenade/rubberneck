@@ -5,11 +5,14 @@ import (
   "fmt"
   "strings"
   "sync"
+  "time"
   "github.com/aws/aws-sdk-go/aws"
   "github.com/aws/aws-sdk-go/service/ec2"
+  "github.com/patrickmn/go-cache"
 )
 
 func main() {
+  c := cache.New(5*time.Minute, 10*time.Minute)
   instances := make([]Instance, 0)
   var cloudWaitGroup sync.WaitGroup
   cloudWaitGroup.Add(2)
@@ -68,7 +71,7 @@ func main() {
                           instance.Worker.Group,
                           instance.Worker.Id,
                           instance.Machine.Spawned)
-                        workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                        workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
                         if err != nil {
                           fmt.Println("error", err)
                         } else {
@@ -148,7 +151,7 @@ func main() {
                     instance.Worker.Group,
                     instance.Worker.Id,
                     instance.Machine.Spawned)
-                  workerState, err := GetWorkerState(instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                  workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
                   if err != nil {
                     fmt.Println("error", err)
                   } else {

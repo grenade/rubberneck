@@ -1,14 +1,13 @@
 package main
 
 import (
-  //"bytes"
   "encoding/json"
   "fmt"
   "io/ioutil"
   "net/http"
   "strings"
   "time"
-  //"strings"
+  "github.com/patrickmn/go-cache"
 )
 
 type WorkerState struct {
@@ -44,27 +43,34 @@ type WorkerTypeState struct {
   } `json:"workers"`
 }
 
-func GetWorkerState(provisionerId string, workerType string, workerGroup string, workerId string) (*WorkerState, error) {
+func GetWorkerState(c *cache.Cache, provisionerId string, workerType string, workerGroup string, workerId string) (*WorkerState, error) {
   if provisionerId == "gce" && strings.Contains(workerType, "linux") {
     workerTypeEndpoint := fmt.Sprintf("https://queue.taskcluster.net/v1/provisioners/%v/worker-types/%v/workers",
       provisionerId,
       workerType,
     )
-    response, err := http.Get(workerTypeEndpoint)
-    if err != nil {
-      return nil, err
+    var workerTypeState WorkerTypeState
+    x, cached := c.Get(workerTypeEndpoint)
+    if cached {
+      workerTypeState = x.(WorkerTypeState)
     } else {
-      var workerTypeState WorkerTypeState
-      data, _ := ioutil.ReadAll(response.Body)
-      err := json.Unmarshal(data, &workerTypeState)
+      response, err := http.Get(workerTypeEndpoint)
       if err != nil {
         return nil, err
-      }
-      for i := range workerTypeState.Workers {
-        if strings.HasPrefix(workerTypeState.Workers[i].WorkerId, workerId[0:len(workerId)-4]) {
-          workerId = workerTypeState.Workers[i].WorkerId
-          break
+      } else {
+        
+        data, _ := ioutil.ReadAll(response.Body)
+        err := json.Unmarshal(data, &workerTypeState)
+        if err != nil {
+          return nil, err
         }
+        c.Set(workerTypeEndpoint, workerTypeState, cache.DefaultExpiration)
+      }
+    }
+    for i := range workerTypeState.Workers {
+      if strings.HasPrefix(workerTypeState.Workers[i].WorkerId, workerId[0:len(workerId)-4]) {
+        workerId = workerTypeState.Workers[i].WorkerId
+        break
       }
     }
   }
