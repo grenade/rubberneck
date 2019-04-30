@@ -14,7 +14,6 @@ import (
   "github.com/aws/aws-sdk-go/service/ec2"
   "github.com/patrickmn/go-cache"
   "gopkg.in/src-d/go-git.v4"
-  //"gopkg.in/src-d/go-git.v4/config"
   "gopkg.in/src-d/go-git.v4/plumbing"
   "gopkg.in/src-d/go-git.v4/plumbing/object"
 )
@@ -180,15 +179,26 @@ func main() {
   if err != nil {
     fmt.Println("file write error:", err)
   }
-  _, err = w.Add("worker-type-counts.json")
+  _, err = w.Add(".")
   if err != nil {
     fmt.Println("git add error:", err)
   }
-  status, err := w.Status()
+  statii, err := w.Status()
   if err != nil {
     fmt.Println("read git status error:", err)
   }
-  fmt.Println(status)
+  for path, status := range statii {
+    if ((status.Worktree == git.Deleted) && (status.Staging == git.Unmodified)) {
+      _, err = w.Remove(path)
+      if err != nil {
+        fmt.Println("git remove error:", err)
+      }
+    }
+    //buf := bytes.NewBuffer(nil)
+    //fmt.Fprintf(buf, "%c%c %s", status.Staging, status.Worktree, path)
+    //fmt.Println(buf.String())
+  }
+  
   commit, err := w.Commit("updated worker-type counts", &git.CommitOptions{
     Author: &object.Signature{
       Name:  observationAuthorName,
