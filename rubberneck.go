@@ -11,8 +11,20 @@ import (
   "github.com/patrickmn/go-cache"
 )
 
+const (
+  maxWorkerStateQueueFileDescriptors = 100
+  maxTaskQueueFileDescriptors = 100
+)
+
 func main() {
   c := cache.New(5*time.Minute, 10*time.Minute)
+
+  var workerStateWaitGroup sync.WaitGroup
+  workerStateQueueChannel := make(chan bool, maxWorkerStateQueueFileDescriptors)
+
+  var taskWaitGroup sync.WaitGroup
+  taskQueueChannel := make(chan bool, maxTaskQueueFileDescriptors)
+
   instances := make([]Instance, 0)
   var cloudWaitGroup sync.WaitGroup
   cloudWaitGroup.Add(2)
@@ -61,7 +73,7 @@ func main() {
                             Implementation: func() string { if strings.Contains(gcpWorkerTypes[workerTypeIndex], "linux") { return "docker-worker" } else { return "generic-worker" } }(),
                           },
                         }
-                        message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
+                        /*message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
                           instance.Machine.Cloud,
                           instance.Machine.Zone,
                           instance.Machine.Name,
@@ -70,56 +82,64 @@ func main() {
                           instance.Worker.Type,
                           instance.Worker.Group,
                           instance.Worker.Id,
-                          instance.Machine.Spawned)
-                        workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
-                        if err != nil {
-                          fmt.Println("error", err)
-                        } else {
-                          if workerState.FirstClaim.IsZero() {
-                            instance.State = "pending"
+                          instance.Machine.Spawned)*/
+                        workerStateQueueChannel <- true
+                        go func (instance Instance, workerStateQueueChannel chan bool, workerStateWaitGroup *sync.WaitGroup) {
+                          workerStateWaitGroup.Add(1)
+                          defer workerStateWaitGroup.Done()
+                          defer func(workerStateQueueChannel chan bool) { <-workerStateQueueChannel }(workerStateQueueChannel)
+
+                          workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                          if err != nil {
+                            fmt.Println("error", err)
                           } else {
-                            instance.Worker.FirstClaim = workerState.FirstClaim
-                            instance.State = "waiting"
-                            message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
-                          }
-                          if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-                            taskRuns := make([]TaskRun, 0)
-                            var taskWaitGroup sync.WaitGroup
-                            taskWaitGroup.Add(len(workerState.RecentTasks))
-                            for taskIndex, _ := range workerState.RecentTasks {
-                              //go func(taskIndex int) {
-                                //defer taskWaitGroup.Done()
-                                taskState, err := GetTaskState(workerState.RecentTasks[taskIndex].TaskId)
-                                if err != nil {
-                                  fmt.Println("error", err)
-                                  taskRuns = append(taskRuns, TaskRun { TaskId: workerState.RecentTasks[taskIndex].TaskId, Run: workerState.RecentTasks[taskIndex].RunId })
-                                } else {
-                                  taskRun := TaskRun {
-                                    TaskId: taskState.Status.TaskId,
-                                    TaskGroupId: taskState.Status.TaskGroupId,
-                                    Run: workerState.RecentTasks[taskIndex].RunId,
-                                  }
-                                  for runIndex := range taskState.Status.Runs {
-                                    if (taskState.Status.Runs[runIndex].RunId == workerState.RecentTasks[taskIndex].RunId) {
-                                      taskRun.State = taskState.Status.Runs[runIndex].State
-                                      taskRun.ReasonCreated = taskState.Status.Runs[runIndex].ReasonCreated
-                                      taskRun.WorkerGroup = taskState.Status.Runs[runIndex].WorkerGroup
-                                      taskRun.TakenUntil = taskState.Status.Runs[runIndex].TakenUntil
-                                      taskRun.Scheduled = taskState.Status.Runs[runIndex].Scheduled
-                                      taskRun.Started = taskState.Status.Runs[runIndex].Started
-                                      break
-                                    }
-                                  }
-                                  taskRuns = append(taskRuns, taskRun)
-                                }
-                              //}(taskIndex)
+                            if workerState.FirstClaim.IsZero() {
+                              instance.State = "pending"
+                            } else {
+                              instance.Worker.FirstClaim = workerState.FirstClaim
+                              instance.State = "waiting"
+                              //message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
                             }
-                            instance.Worker.TaskRuns = taskRuns
-                            instance.State = "working"
-                            message = message + fmt.Sprintf(", last task run: %v/%v", instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].TaskId, instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].Run)
+                            if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
+                              taskRuns := make([]TaskRun, 0)
+                              for taskIndex, _ := range workerState.RecentTasks {
+                                  taskQueueChannel <- true
+                                  go func (taskId string, run int, taskQueueChannel chan bool, taskWaitGroup *sync.WaitGroup) {
+                                    taskWaitGroup.Add(1)
+                                    defer taskWaitGroup.Done()
+                                    defer func(taskQueueChannel chan bool) { <-taskQueueChannel }(taskQueueChannel)
+                                    taskState, err := GetTaskState(taskId)
+                                    if err != nil {
+                                      fmt.Println("error", err)
+                                      taskRuns = append(taskRuns, TaskRun { TaskId: taskId, Run: run })
+                                    } else {
+                                      taskRun := TaskRun {
+                                        TaskId: taskState.Status.TaskId,
+                                        TaskGroupId: taskState.Status.TaskGroupId,
+                                        Run: run,
+                                      }
+                                      for runIndex := range taskState.Status.Runs {
+                                        if (taskState.Status.Runs[runIndex].RunId == run) {
+                                          taskRun.State = taskState.Status.Runs[runIndex].State
+                                          taskRun.ReasonCreated = taskState.Status.Runs[runIndex].ReasonCreated
+                                          taskRun.WorkerGroup = taskState.Status.Runs[runIndex].WorkerGroup
+                                          taskRun.TakenUntil = taskState.Status.Runs[runIndex].TakenUntil
+                                          taskRun.Scheduled = taskState.Status.Runs[runIndex].Scheduled
+                                          taskRun.Started = taskState.Status.Runs[runIndex].Started
+                                          break
+                                        }
+                                      }
+                                      taskRuns = append(taskRuns, taskRun)
+                                    }
+                                  }(workerState.RecentTasks[taskIndex].TaskId, workerState.RecentTasks[taskIndex].RunId, taskQueueChannel, &taskWaitGroup)
+                              }
+                              instance.Worker.TaskRuns = taskRuns
+                              instance.State = "working"
+                              //message = message + fmt.Sprintf(", last task run: %v/%v", instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].TaskId, instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].Run)
+                            }
                           }
-                        }
-                        fmt.Println(message)
+                        }(instance, workerStateQueueChannel, &workerStateWaitGroup)
+                        //fmt.Println(message)
                         instances = append(instances, instance)
                       }(machineIndex)
                     }
@@ -168,7 +188,7 @@ func main() {
                       Implementation: func() string { if strings.Contains(ec2WorkerTypes[workerTypeIndex], "win") { return "generic-worker" } else { return "docker-worker" } }(),
                     },
                   }
-                  message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
+                  /*message := fmt.Sprintf("cloud: %v, zone: %v, name: %v, instance: %v, machine: %v, worker: %v/%v/%v, created: %v",
                     instance.Machine.Cloud,
                     instance.Machine.Zone,
                     instance.Machine.Name,
@@ -177,56 +197,64 @@ func main() {
                     instance.Worker.Type,
                     instance.Worker.Group,
                     instance.Worker.Id,
-                    instance.Machine.Spawned)
-                  workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
-                  if err != nil {
-                    fmt.Println("error", err)
-                  } else {
-                    if workerState.FirstClaim.IsZero() {
-                      instance.State = "pending"
+                    instance.Machine.Spawned)*/
+                  workerStateQueueChannel <- true
+                  go func (instance Instance, workerStateQueueChannel chan bool, workerStateWaitGroup *sync.WaitGroup) {
+                    workerStateWaitGroup.Add(1)
+                    defer workerStateWaitGroup.Done()
+                    defer func(workerStateQueueChannel chan bool) { <-workerStateQueueChannel }(workerStateQueueChannel)
+
+                    workerState, err := GetWorkerState(c, instance.Worker.Provisioner, instance.Worker.Type, instance.Worker.Group, instance.Worker.Id)
+                    if err != nil {
+                      fmt.Println("error", err)
                     } else {
-                      instance.Worker.FirstClaim = workerState.FirstClaim
-                      instance.State = "waiting"
-                      message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
-                    }
-                    if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
-                      taskRuns := make([]TaskRun, 0)
-                      var taskWaitGroup sync.WaitGroup
-                      taskWaitGroup.Add(len(workerState.RecentTasks))
-                      for taskIndex, _ := range workerState.RecentTasks {
-                        //go func(taskIndex int) {
-                          //defer taskWaitGroup.Done()
-                          taskState, err := GetTaskState(workerState.RecentTasks[taskIndex].TaskId)
-                          if err != nil {
-                            fmt.Println("error", err)
-                            taskRuns = append(taskRuns, TaskRun { TaskId: workerState.RecentTasks[taskIndex].TaskId, Run: workerState.RecentTasks[taskIndex].RunId })
-                          } else {
-                            taskRun := TaskRun {
-                              TaskId: taskState.Status.TaskId,
-                              TaskGroupId: taskState.Status.TaskGroupId,
-                              Run: workerState.RecentTasks[taskIndex].RunId,
-                            }
-                            for runIndex := range taskState.Status.Runs {
-                              if (taskState.Status.Runs[runIndex].RunId == workerState.RecentTasks[taskIndex].RunId) {
-                                taskRun.State = taskState.Status.Runs[runIndex].State
-                                taskRun.ReasonCreated = taskState.Status.Runs[runIndex].ReasonCreated
-                                taskRun.WorkerGroup = taskState.Status.Runs[runIndex].WorkerGroup
-                                taskRun.TakenUntil = taskState.Status.Runs[runIndex].TakenUntil
-                                taskRun.Scheduled = taskState.Status.Runs[runIndex].Scheduled
-                                taskRun.Started = taskState.Status.Runs[runIndex].Started
-                                break
-                              }
-                            }
-                            taskRuns = append(taskRuns, taskRun)
-                          }
-                        //}(taskIndex)
+                      if workerState.FirstClaim.IsZero() {
+                        instance.State = "pending"
+                      } else {
+                        instance.Worker.FirstClaim = workerState.FirstClaim
+                        instance.State = "waiting"
+                        //message = message + fmt.Sprintf(", first claim: %v", instance.Worker.FirstClaim)
                       }
-                      instance.Worker.TaskRuns = taskRuns
-                      instance.State = "working"
-                      message = message + fmt.Sprintf(", last task run: %v/%v", instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].TaskId, instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].Run)
+                      if workerState.RecentTasks != nil && len(workerState.RecentTasks) > 0 {
+                        taskRuns := make([]TaskRun, 0)
+                        for taskIndex, _ := range workerState.RecentTasks {
+                            taskQueueChannel <- true
+                            go func (taskId string, run int, taskQueueChannel chan bool, taskWaitGroup *sync.WaitGroup) {
+                              taskWaitGroup.Add(1)
+                              defer taskWaitGroup.Done()
+                              defer func(taskQueueChannel chan bool) { <-taskQueueChannel }(taskQueueChannel)
+                              taskState, err := GetTaskState(taskId)
+                              if err != nil {
+                                fmt.Println("error", err)
+                                taskRuns = append(taskRuns, TaskRun { TaskId: taskId, Run: run })
+                              } else {
+                                taskRun := TaskRun {
+                                  TaskId: taskState.Status.TaskId,
+                                  TaskGroupId: taskState.Status.TaskGroupId,
+                                  Run: run,
+                                }
+                                for runIndex := range taskState.Status.Runs {
+                                  if (taskState.Status.Runs[runIndex].RunId == run) {
+                                    taskRun.State = taskState.Status.Runs[runIndex].State
+                                    taskRun.ReasonCreated = taskState.Status.Runs[runIndex].ReasonCreated
+                                    taskRun.WorkerGroup = taskState.Status.Runs[runIndex].WorkerGroup
+                                    taskRun.TakenUntil = taskState.Status.Runs[runIndex].TakenUntil
+                                    taskRun.Scheduled = taskState.Status.Runs[runIndex].Scheduled
+                                    taskRun.Started = taskState.Status.Runs[runIndex].Started
+                                    break
+                                  }
+                                }
+                                taskRuns = append(taskRuns, taskRun)
+                              }
+                            }(workerState.RecentTasks[taskIndex].TaskId, workerState.RecentTasks[taskIndex].RunId, taskQueueChannel, &taskWaitGroup)
+                        }
+                        instance.Worker.TaskRuns = taskRuns
+                        instance.State = "working"
+                        //message = message + fmt.Sprintf(", last task run: %v/%v", instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].TaskId, instance.Worker.TaskRuns[len(instance.Worker.TaskRuns) - 1].Run)
+                      }
                     }
-                  }
-                  fmt.Println(message)
+                  }(instance, workerStateQueueChannel, &workerStateWaitGroup)
+                  //fmt.Println(message)
                   instances = append(instances, instance)
                 }(machineIndex)
               }
