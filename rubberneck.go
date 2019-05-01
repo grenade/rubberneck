@@ -26,7 +26,7 @@ func main() {
   if err != nil {
     fmt.Println("error:", err)
   }
-  //defer os.RemoveAll(observationDirectory)
+  defer os.RemoveAll(observationDirectory)
   r, err := git.PlainClone(observationDirectory, false, &git.CloneOptions{
     URL: observationRepository,
     ReferenceName: plumbing.NewBranchReferenceName(observationBranch),
