@@ -1,10 +1,10 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "002a78486315d236016f13083e8480a4",
+    "revision": "5464a5ecfefe3cec1b948ca720edc9b5",
     "url": "/rubberneck/index.html"
   },
   {
-    "revision": "228253612a7c31d48ab9",
+    "revision": "3f3dcdb59aa6bc856ba4",
     "url": "/rubberneck/static/css/main.b3059c06.chunk.css"
   },
   {
@@ -12,8 +12,8 @@ self.__precacheManifest = (self.__precacheManifest || []).concat([
     "url": "/rubberneck/static/js/2.9c4689c9.chunk.js"
   },
   {
-    "revision": "228253612a7c31d48ab9",
-    "url": "/rubberneck/static/js/main.d54e4ab3.chunk.js"
+    "revision": "3f3dcdb59aa6bc856ba4",
+    "url": "/rubberneck/static/js/main.34618ad1.chunk.js"
   },
   {
     "revision": "99e842052096534fb1ae",
