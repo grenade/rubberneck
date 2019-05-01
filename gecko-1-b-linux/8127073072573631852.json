@@ -1,0 +1,32 @@
+{
+  "machine": {
+    "id": "8127073072573631852",
+    "name": "vm-hoos4buuttzokbeel",
+    "type": "n1-highcpu-64",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "europe-west1-c",
+    "region": "europe-west1",
+    "spawned": "2019-05-01T03:23:00.934-07:00"
+  },
+  "worker": {
+    "id": "8127073072573631852",
+    "provisioner": "gce",
+    "type": "gecko-1-b-linux",
+    "group": "europe-west1-c",
+    "implementation": "docker-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "2019-05-01T10:24:57.274Z",
+    "tasks": [
+      {
+        "id": "W25F4VtqTdO_3_T3HP99Hw",
+        "run": 0
+      },
+      {
+        "id": "VLVivxyUTNyw4Ue9sLkDpg",
+        "run": 0
+      }
+    ]
+  },
+  "state": "working"
+}
