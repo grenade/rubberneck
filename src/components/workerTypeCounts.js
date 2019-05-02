@@ -71,7 +71,7 @@ const WorkerTypeCounts = ({ workerTypeCounts }) => {
                     </h6>
                     <p className="card-text">
                       <FontAwesomeIcon className="text-muted" icon={['fas', 'clock']} />
-                      pending: 0
+                      pending: {workerTypeCounts[workerType].tasks}
                     </p>
                   </div>
                 </div>
