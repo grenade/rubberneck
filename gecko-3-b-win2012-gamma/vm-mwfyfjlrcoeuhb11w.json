@@ -1,0 +1,36 @@
+{
+  "machine": {
+    "id": "6148958814191713905",
+    "name": "vm-mwfyfjlrcoeuhb11w",
+    "type": "n1-standard-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "us-west1-b",
+    "region": "us-west1",
+    "spawned": "2019-05-02T03:04:16.885-07:00"
+  },
+  "worker": {
+    "id": "vm-mwfyfjlrcoeuhb11w",
+    "provisioner": "releng-hardware",
+    "type": "gecko-3-b-win2012-gamma",
+    "group": "us-west1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "2019-05-02T10:33:38.236Z",
+    "tasks": [
+      {
+        "id": "Sthp6m8YRvGD0VaayRXrng",
+        "run": 0
+      },
+      {
+        "id": "foiyG2sjTmyAm3iaRfXZkQ",
+        "run": 0
+      },
+      {
+        "id": "CqukQKlZTRS0rcXatKRu4g",
+        "run": 0
+      }
+    ]
+  },
+  "state": "working"
+}
