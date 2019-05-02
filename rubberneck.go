@@ -199,6 +199,8 @@ func main() {
       m[instances[i].Worker.Type]["pending"] = 0
       m[instances[i].Worker.Type]["waiting"] = 0
       m[instances[i].Worker.Type]["working"] = 0
+      pendingTaskCount, _ := GetPendingTaskCount(instances[i].Worker.Provisioner, instances[i].Worker.Type)
+      m[instances[i].Worker.Type]["tasks"] = pendingTaskCount
     }
     m[instances[i].Worker.Type]["running"] = m[instances[i].Worker.Type]["running"] + 1
     if (instances[i].State != "") {

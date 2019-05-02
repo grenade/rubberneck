@@ -11,36 +11,42 @@ import (
 )
 
 type WorkerState struct {
-  WorkerType    string `json:"workerType"`
+  WorkerType string `json:"workerType"`
   ProvisionerId string `json:"provisionerId"`
-  WorkerId      string `json:"workerId"`
-  WorkerGroup   string `json:"workerGroup"`
-  RecentTasks   []struct {
+  WorkerId string `json:"workerId"`
+  WorkerGroup string `json:"workerGroup"`
+  RecentTasks []struct {
     TaskId string `json:"taskId"`
-    RunId  int    `json:"runId"`
+    RunId int `json:"runId"`
   } `json:"recentTasks"`
-  Expires    time.Time `json:"expires"`
+  Expires time.Time `json:"expires"`
   FirstClaim time.Time `json:"firstClaim"`
-  Actions    []struct {
-    Name        string `json:"name"`
-    Title       string `json:"title"`
-    Context     string `json:"context"`
-    URL         string `json:"url"`
-    Method      string `json:"method"`
+  Actions []struct {
+    Name string `json:"name"`
+    Title string `json:"title"`
+    Context string `json:"context"`
+    URL string `json:"url"`
+    Method string `json:"method"`
     Description string `json:"description"`
   } `json:"actions"`
 }
 
 type WorkerTypeState struct {
   Workers []struct {
-    WorkerGroup string    `json:"workerGroup"`
-    WorkerId    string    `json:"workerId"`
-    FirstClaim  time.Time `json:"firstClaim"`
-    LatestTask  struct {
+    WorkerGroup string `json:"workerGroup"`
+    WorkerId string `json:"workerId"`
+    FirstClaim time.Time `json:"firstClaim"`
+    LatestTask struct {
       TaskId string `json:"taskId"`
-      RunId  int    `json:"runId"`
+      RunId  int `json:"runId"`
     } `json:"latestTask"`
   } `json:"workers"`
+}
+
+type PendingTaskCount struct {
+  ProvisionerId string `json:"provisionerId"`
+  WorkerType string `json:"workerType"`
+  PendingTasks int `json:"pendingTasks"`
 }
 
 func GetWorkerState(c *cache.Cache, provisionerId string, workerType string, workerGroup string, workerId string) (*WorkerState, error) {
@@ -91,5 +97,24 @@ func GetWorkerState(c *cache.Cache, provisionerId string, workerType string, wor
       return nil, err
     }
     return &workerState, nil
+  }
+}
+
+func GetPendingTaskCount(provisionerId string, workerType string) (int, error) {
+  endpoint := fmt.Sprintf("https://queue.taskcluster.net/v1/pending/%v/%v",
+    provisionerId,
+    workerType,
+  )
+  response, err := http.Get(endpoint)
+  if err != nil {
+    return 0, err
+  } else {
+    var pendingTaskCount PendingTaskCount
+    data, _ := ioutil.ReadAll(response.Body)
+    err := json.Unmarshal(data, &pendingTaskCount)
+    if err != nil {
+      return 0, err
+    }
+    return pendingTaskCount.PendingTasks, nil
   }
 }

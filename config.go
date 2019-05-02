@@ -53,6 +53,10 @@ var ec2WorkerTypes = []string {
   "gecko-3-b-linux-large",
   "gecko-3-b-linux-xlarge",
 
+  "gecko-t-linux-large",
+  "gecko-t-linux-xlarge",
+  "gecko-3-t-linux-xlarge",
+
   "gecko-1-b-macosx64",
   "gecko-2-b-macosx64",
   "gecko-3-b-macosx64",
