@@ -1,0 +1,40 @@
+{
+  "machine": {
+    "id": "i-094c243fcbab5fd42",
+    "name": "i-094c243fcbab5fd42",
+    "type": "m3.xlarge",
+    "imageId": "ami-06adcae0cf519fda6",
+    "cloud": "ec2",
+    "zone": "us-west-1b",
+    "region": "us-west-1",
+    "spawned": "2019-05-03T04:48:05Z"
+  },
+  "worker": {
+    "id": "i-094c243fcbab5fd42",
+    "provisioner": "aws-provisioner-v1",
+    "type": "gecko-t-linux-xlarge",
+    "group": "us-west-1",
+    "implementation": "docker-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "2019-05-03T04:49:03.146Z",
+    "tasks": [
+      {
+        "id": "Lrc4rxVwQrCpPA0yRSDUYg",
+        "run": 0
+      },
+      {
+        "id": "aSSvhjhgRjOQM1mI8y9SdQ",
+        "run": 0
+      },
+      {
+        "id": "GsOE_JtpTdGuQB82rYSeUg",
+        "run": 0
+      },
+      {
+        "id": "SvzKevXlSui0IlF-vJChcA",
+        "run": 0
+      }
+    ]
+  },
+  "state": "working"
+}
