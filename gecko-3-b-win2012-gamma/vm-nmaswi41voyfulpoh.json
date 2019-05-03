@@ -1,0 +1,23 @@
+{
+  "machine": {
+    "id": "6143345455144220782",
+    "name": "vm-nmaswi41voyfulpoh",
+    "type": "n1-standard-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "europe-west1-b",
+    "region": "europe-west1",
+    "spawned": "2019-05-03T02:14:44.438-07:00"
+  },
+  "worker": {
+    "id": "vm-nmaswi41voyfulpoh",
+    "provisioner": "releng-hardware",
+    "type": "gecko-3-b-win2012-gamma",
+    "group": "europe-west1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "0001-01-01T00:00:00Z",
+    "tasks": null
+  },
+  "state": "pending"
+}
