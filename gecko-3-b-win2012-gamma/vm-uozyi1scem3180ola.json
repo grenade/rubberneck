@@ -1,0 +1,23 @@
+{
+  "machine": {
+    "id": "4038312465033969643",
+    "name": "vm-uozyi1scem3180ola",
+    "type": "n1-standard-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "us-central1-f",
+    "region": "us-central1",
+    "spawned": "2019-05-03T01:51:18.048-07:00"
+  },
+  "worker": {
+    "id": "vm-uozyi1scem3180ola",
+    "provisioner": "releng-hardware",
+    "type": "gecko-3-b-win2012-gamma",
+    "group": "us-central1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "0001-01-01T00:00:00Z",
+    "tasks": null
+  },
+  "state": "pending"
+}
