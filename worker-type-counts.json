@@ -1,10 +1,10 @@
 {
   "gecko-1-b-linux": {
     "pending": 0,
-    "running": 70,
-    "tasks": 11,
-    "waiting": 0,
-    "working": 70
+    "running": 82,
+    "tasks": 0,
+    "waiting": 2,
+    "working": 80
   },
   "gecko-1-b-linux-xlarge": {
     "pending": 0,
@@ -14,25 +14,25 @@
     "working": 1
   },
   "gecko-1-b-win2012": {
-    "pending": 15,
-    "running": 105,
+    "pending": 3,
+    "running": 104,
     "tasks": 0,
-    "waiting": 54,
+    "waiting": 65,
     "working": 36
   },
   "gecko-1-b-win2012-gamma": {
     "pending": 0,
-    "running": 9,
+    "running": 6,
     "tasks": 0,
     "waiting": 0,
-    "working": 9
+    "working": 6
   },
   "gecko-3-b-linux": {
     "pending": 4,
-    "running": 443,
+    "running": 458,
     "tasks": 0,
-    "waiting": 0,
-    "working": 439
+    "waiting": 4,
+    "working": 450
   },
   "gecko-3-b-win2012": {
     "pending": 8,
@@ -42,39 +42,39 @@
     "working": 574
   },
   "gecko-3-b-win2012-gamma": {
-    "pending": 7,
-    "running": 60,
-    "tasks": 7,
+    "pending": 10,
+    "running": 63,
+    "tasks": 9,
     "waiting": 0,
     "working": 53
   },
   "gecko-3-t-linux-xlarge": {
     "pending": 0,
-    "running": 7,
+    "running": 10,
     "tasks": 0,
     "waiting": 1,
-    "working": 6
+    "working": 9
   },
   "gecko-t-linux-large": {
-    "pending": 12,
-    "running": 892,
-    "tasks": 43,
+    "pending": 7,
+    "running": 1079,
+    "tasks": 360,
     "waiting": 0,
-    "working": 880
+    "working": 1034
   },
   "gecko-t-linux-xlarge": {
-    "pending": 3,
-    "running": 1120,
-    "tasks": 1,
-    "waiting": 4,
-    "working": 1113
+    "pending": 19,
+    "running": 1271,
+    "tasks": 301,
+    "waiting": 5,
+    "working": 1247
   },
   "gecko-t-win10-64": {
     "pending": 15,
-    "running": 364,
+    "running": 359,
     "tasks": 0,
-    "waiting": 3,
-    "working": 346
+    "waiting": 0,
+    "working": 344
   },
   "gecko-t-win10-64-cu": {
     "pending": 0,
@@ -85,10 +85,10 @@
   },
   "gecko-t-win10-64-gpu": {
     "pending": 2,
-    "running": 206,
+    "running": 202,
     "tasks": 0,
     "waiting": 2,
-    "working": 202
+    "working": 198
   },
   "gecko-t-win7-32": {
     "pending": 2,
@@ -110,12 +110,5 @@
     "tasks": 0,
     "waiting": 5,
     "working": 2
-  },
-  "gecko-t-win7-32-gpu": {
-    "pending": 1,
-    "running": 93,
-    "tasks": 0,
-    "waiting": 0,
-    "working": 92
   }
 }
