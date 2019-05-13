@@ -1,0 +1,23 @@
+{
+  "machine": {
+    "id": "2990910502935489951",
+    "name": "vm-imboudla4imcr1fsj",
+    "type": "n1-standard-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "us-west1-b",
+    "region": "us-west1",
+    "spawned": "2019-05-13T13:28:33.428-07:00"
+  },
+  "worker": {
+    "id": "vm-imboudla4imcr1fsj",
+    "provisioner": "releng-hardware",
+    "type": "gecko-1-b-win2012-gamma",
+    "group": "us-west1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "0001-01-01T00:00:00Z",
+    "tasks": null
+  },
+  "state": "pending"
+}
