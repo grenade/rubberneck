@@ -1,0 +1,23 @@
+{
+  "machine": {
+    "id": "1818444650863926287",
+    "name": "vm-wwbkbucuyrjxvqtvg",
+    "type": "n1-highcpu-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "us-central1-f",
+    "region": "us-central1",
+    "spawned": "2019-05-13T10:01:21.635-07:00"
+  },
+  "worker": {
+    "id": "vm-wwbkbucuyrjxvqtvg",
+    "provisioner": "releng-hardware",
+    "type": "gecko-3-b-win2012-gamma",
+    "group": "us-central1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "0001-01-01T00:00:00Z",
+    "tasks": null
+  },
+  "state": "pending"
+}
