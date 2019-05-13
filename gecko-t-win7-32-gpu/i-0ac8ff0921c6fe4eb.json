@@ -1,0 +1,36 @@
+{
+  "machine": {
+    "id": "i-0ac8ff0921c6fe4eb",
+    "name": "i-0ac8ff0921c6fe4eb",
+    "type": "g2.2xlarge",
+    "imageId": "ami-0aa76b5e3a79e6206",
+    "cloud": "ec2",
+    "zone": "us-west-1b",
+    "region": "us-west-1",
+    "spawned": "2019-05-13T09:25:41Z"
+  },
+  "worker": {
+    "id": "i-0ac8ff0921c6fe4eb",
+    "provisioner": "aws-provisioner-v1",
+    "type": "gecko-t-win7-32-gpu",
+    "group": "us-west-1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "2019-05-13T09:33:49.638Z",
+    "tasks": [
+      {
+        "id": "SNF7m98-T0mc7b-WxcIo9g",
+        "run": 0
+      },
+      {
+        "id": "LpYIWYmVSYOY4a7UKo7tGg",
+        "run": 0
+      },
+      {
+        "id": "ByuY0oIXRQqCt6EUELVREw",
+        "run": 0
+      }
+    ]
+  },
+  "state": "working"
+}
