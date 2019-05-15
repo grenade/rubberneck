@@ -229,6 +229,8 @@ func main() {
       _, err = w.Remove(path)
       if err != nil {
         fmt.Println("git remove error:", err)
+      } else {
+        fmt.Println(path, "staged for removal")
       }
     }
     //buf := bytes.NewBuffer(nil)
