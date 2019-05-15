@@ -1,0 +1,32 @@
+{
+  "machine": {
+    "id": "874118665463012177",
+    "name": "vm-khhrthzehmcfqoe3z",
+    "type": "n1-highcpu-64",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "us-west1-c",
+    "region": "us-west1",
+    "spawned": "2019-05-14T22:38:07.198-07:00"
+  },
+  "worker": {
+    "id": "874118665463012177",
+    "provisioner": "gce",
+    "type": "gecko-1-b-linux",
+    "group": "us-west1-c",
+    "implementation": "docker-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "2019-05-15T05:39:20.035Z",
+    "tasks": [
+      {
+        "id": "GNr4CBhyQuSAUQg7JqUBZg",
+        "run": 0
+      },
+      {
+        "id": "btXEaahYTaS6EO7BciAiKg",
+        "run": 0
+      }
+    ]
+  },
+  "state": "working"
+}
