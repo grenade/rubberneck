@@ -3,11 +3,13 @@ import WorkerTypeCounts from './components/workerTypeCounts';
 
 import './App.css';
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faDesktop, faRecycle, faWrench, faPowerOff, faClock, faServer, faTasks } from '@fortawesome/free-solid-svg-icons'
+import { faDesktop, faRecycle, faWrench, faPowerOff, faClock, faServer, faTasks, faClipboardCheck, faHammer } from '@fortawesome/free-solid-svg-icons'
 import { faAndroid, faApple, faLinux, faWindows } from '@fortawesome/free-brands-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 
 library.add(
+  faHammer,
+  faClipboardCheck,
   faTasks,
   faServer,
   faClock,
