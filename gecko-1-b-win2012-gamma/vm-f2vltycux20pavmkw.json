@@ -1,0 +1,23 @@
+{
+  "machine": {
+    "id": "2558877878615150649",
+    "name": "vm-f2vltycux20pavmkw",
+    "type": "n1-highcpu-32",
+    "imageId": "",
+    "cloud": "gcp",
+    "zone": "us-central1-a",
+    "region": "us-central1",
+    "spawned": "2019-05-14T23:16:55.968-07:00"
+  },
+  "worker": {
+    "id": "vm-f2vltycux20pavmkw",
+    "provisioner": "releng-hardware",
+    "type": "gecko-1-b-win2012-gamma",
+    "group": "us-central1",
+    "implementation": "generic-worker",
+    "expires": "0001-01-01T00:00:00Z",
+    "firstClaim": "0001-01-01T00:00:00Z",
+    "tasks": null
+  },
+  "state": "pending"
+}
