@@ -27,9 +27,19 @@ command:
   - systemctl is-active nginx.service || sudo systemctl restart nginx.service
 file:
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/hawalius/etc/nginx/conf.d/sites-enabled.conf
+    target: /etc/nginx/conf.d/sites-enabled.conf
+    sha256: 5a765b66f89ea4f00cfba554650d6da44dc6e3c1146f7310a98112d41a23d1aa
+    command:
+      pre:
+        - sudo mkdir -p /etc/nginx/conf.d
+        - sudo systemctl stop nginx.service
+      post:
+        - sudo systemctl start nginx.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/hawalius/etc/nginx/sites-available/gogrilla.thgttg.com.conf
     target: /etc/nginx/sites-available/gogrilla.thgttg.com.conf
-    sha256: 870b5feb111d63d0488af4ff9de4f6851fc795ece76306fdab4b8f7c24b8f0da
+    sha256: f289ec24604c3937b4674d7b84cd6e36a6f5e3d13838d287e696f8476d72a434
     command:
       pre:
         - test -d /etc/nginx/sites-available || sudo mkdir -p /etc/nginx/sites-available
