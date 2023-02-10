@@ -1,0 +1,39 @@
+---
+hostname: hawalius
+domain: thgttg.com
+os:
+  name: fedora
+package:
+  - certbot
+  - nginx
+user:
+  -
+    username: root
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - systemctl is-active nginx.service || sudo systemctl restart nginx.service
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/hawalius/etc/nginx/sites-available/gogrilla.thgttg.com.conf
+    target: /etc/nginx/sites-available/gogrilla.thgttg.com.conf
+    sha256: 870b5feb111d63d0488af4ff9de4f6851fc795ece76306fdab4b8f7c24b8f0da
+    command:
+      pre:
+        - test -d /etc/nginx/sites-available || sudo mkdir -p /etc/nginx/sites-available
+        - test -d /etc/nginx/sites-enabled || sudo mkdir -p /etc/nginx/sites-enabled
+      post:
+        - sudo ln -frs /etc/nginx/sites-available/gogrilla.thgttg.com.conf /etc/nginx/sites-enabled/gogrilla.thgttg.com.conf
+        - sudo systemctl restart nginx.service
