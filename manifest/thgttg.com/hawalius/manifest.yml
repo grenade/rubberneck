@@ -6,6 +6,8 @@ os:
   name: fedora
 package:
   - certbot
+  - python3-cloudflare
+  - python3-certbot-dns-cloudflare
   - nginx
 user:
   -
@@ -26,6 +28,8 @@ command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - systemctl is-active nginx.service || sudo systemctl restart nginx.service
+  - 'test -s /etc/letsencrypt/renewal/gogrilla.thgttg.com.conf || sudo certbot certonly --noninteractive --cert-name gogrilla.thgttg.com --expand --allow-subset-of-names -m ops@thgttg.com --agree-tos --no-eff-email --dns-cloudflare --dns-cloudflare-credentials /root/.cloudflare --dns-cloudflare-propagation-seconds 30 -d gogrilla.thgttg.com -d cockpit.gogrilla.thgttg.com'
+  - sudo certbot certonly --dns-cloudflare --dns-cloudflare-credentials /root/.cloudflare -d example.com
 file:
   -
     source: 'https://gist.githubusercontent.com/grenade/ad1a4772c47a0977204edee78691fde1/raw/options-ssl-nginx.conf'
