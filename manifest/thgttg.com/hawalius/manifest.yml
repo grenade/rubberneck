@@ -28,6 +28,24 @@ command:
   - systemctl is-active nginx.service || sudo systemctl restart nginx.service
 file:
   -
+    source: 'https://gist.githubusercontent.com/grenade/ad1a4772c47a0977204edee78691fde1/raw/options-ssl-nginx.conf'
+    target: /etc/letsencrypt/options-ssl-nginx.conf
+    sha256: 17baec778c05571beb0cdeb0bc1c6da3596d44d1fe567e7fee0efef80a860d01
+    command:
+      pre:
+        - test -d /etc/letsencrypt || sudo mkdir -p /etc/letsencrypt
+      post:
+        - sudo chmod 644 /etc/letsencrypt/options-ssl-nginx.conf
+  -
+    source: 'https://gist.githubusercontent.com/grenade/ad1a4772c47a0977204edee78691fde1/raw/ssl-dhparams.pem'
+    target: /etc/letsencrypt/ssl-dhparams.pem
+    sha256: 9ba6429597aeed2d8617a7705b56e96d044f64b07971659382e426675105654b
+    command:
+      pre:
+        - test -d /etc/letsencrypt || sudo mkdir -p /etc/letsencrypt
+      post:
+        - sudo chmod 644 /etc/letsencrypt/ssl-dhparams.pem
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/hawalius/etc/nginx/conf.d/sites-enabled.conf
     target: /etc/nginx/conf.d/sites-enabled.conf
     sha256: 5a765b66f89ea4f00cfba554650d6da44dc6e3c1146f7310a98112d41a23d1aa
