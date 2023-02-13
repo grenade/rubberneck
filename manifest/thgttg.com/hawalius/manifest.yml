@@ -61,6 +61,17 @@ file:
       post:
         - sudo systemctl start nginx.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/hawalius/etc/nginx/sites-available/hawalius.thgttg.com.conf
+    target: /etc/nginx/sites-available/hawalius.thgttg.com.conf
+    sha256: 7dd5d1b5996a2c2002188b0a1fac3c82e94ddbdca59972eb0a7d3347817fbb9d
+    command:
+      pre:
+        - test -d /etc/nginx/sites-available || sudo mkdir -p /etc/nginx/sites-available
+        - test -d /etc/nginx/sites-enabled || sudo mkdir -p /etc/nginx/sites-enabled
+      post:
+        - sudo ln -frs /etc/nginx/sites-available/hawalius.thgttg.com.conf /etc/nginx/sites-enabled/hawalius.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/hawalius/etc/nginx/sites-available/gogrilla.thgttg.com.conf
     target: /etc/nginx/sites-available/gogrilla.thgttg.com.conf
     sha256: f289ec24604c3937b4674d7b84cd6e36a6f5e3d13838d287e696f8476d72a434
