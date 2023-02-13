@@ -1,0 +1,34 @@
+---
+hostname: bob
+domain: thgttg.com
+action: sync
+os:
+  name: fedora
+package:
+  - curl
+  - git
+user:
+  -
+    username: root
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.5.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.5.0/node_exporter-1.5.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.5.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.5.0.linux-amd64/node_exporter )
+  - test -x /usr/local/go/bin/go || ( curl -sLo /tmp/go1.20.linux-amd64.tar.gz https://go.dev/dl/go1.20.linux-amd64.tar.gz && sudo tar -C /usr/local -xzf /tmp/go1.20.linux-amd64.tar.gz )
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/profile.d/go.sh
+    target: /etc/profile.d/go.sh
+    sha256: 39bcdae7581b1f8a5ffb98f23e808db8beff666cd4098ac00b2e7deeba4895af
