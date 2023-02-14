@@ -32,3 +32,41 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/profile.d/go.sh
     target: /etc/profile.d/go.sh
     sha256: 39bcdae7581b1f8a5ffb98f23e808db8beff666cd4098ac00b2e7deeba4895af
+  -
+    source: 'https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/bob/etc/systemd/system/pocket-testnet.service'
+    target: /etc/systemd/system/pocket-testnet.service
+    sha256: b9fa6d089b5ceec024d423aa04b33172455fc5e332a9f310c6be3c976ec216c8
+    command:
+      pre:
+        - systemctl is-active --quiet pocket-testnet.service && sudo systemctl stop pocket-testnet.service
+      post:
+        - getent passwd pocket &> /dev/null || sudo useradd --system --create-home --home-dir /var/lib/pocket --user-group pocket
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet pocket-testnet.service || ( test -x /usr/local/bin/pocket && test -e /var/lib/pocket/config/genesis.json && sudo systemctl enable pocket-testnet.service )
+        - systemctl is-active --quiet pocket-testnet.service || ( test -x /usr/local/bin/pocket && test -e /var/lib/pocket/config/genesis.json && sudo systemctl start pocket-testnet.service )
+  -
+    source: https://raw.githubusercontent.com/pokt-network/pocket-network-genesis/master/mainnet/genesis.json
+    target: /var/lib/pocket/config/pocket-mainnet-genesis.json
+    sha256: 83e411fe6298d83963f2ebf5af3ef65b49dd029a6eb1a04db31a08b244f3d414
+  -
+    source: https://raw.githubusercontent.com/pokt-network/pocket-network-genesis/master/testnet/genesis.json
+    target: /var/lib/pocket/config/pocket-testnet-genesis.json
+    sha256: 9b5a4cf7c99966a3dec630bccfd2532a79b122784514a849010beded89e4c877
+    command:
+      pre:
+        - test -d /var/lib/pocket/config || sudo -H -u pocket mkdir -p /var/lib/pocket/config
+      post:
+        - sudo ln -sfr /var/lib/pocket/config/pocket-testnet-genesis.json /var/lib/pocket/config/genesis.json
+        - systemctl is-enabled --quiet pocket-testnet.service || ( test -x /usr/local/bin/pocket && test -e /var/lib/pocket/config/genesis.json && sudo systemctl enable pocket-testnet.service )
+        - systemctl is-active --quiet pocket-testnet.service || ( test -x /usr/local/bin/pocket && test -e /var/lib/pocket/config/genesis.json && sudo systemctl start pocket-testnet.service )
+  -
+    source: https://manta-ops.s3.amazonaws.com/pokt/RC-0.9.2/fedora/37/pocket
+    target: /usr/local/bin/pocket
+    sha256: 2b08a8232d1dac8a455cb3d68c2991ed480314d611dd42533af31786391b4f70
+    command:
+      pre:
+        - systemctl is-active --quiet pocket-testnet.service && sudo systemctl stop pocket-testnet.service
+      post:
+        - sudo chmod +x /usr/local/bin/pocket
+        - systemctl is-enabled --quiet pocket-testnet.service || ( test -x /usr/local/bin/pocket && test -e /var/lib/pocket/config/genesis.json && sudo systemctl enable pocket-testnet.service )
+        - systemctl is-active --quiet pocket-testnet.service || ( test -x /usr/local/bin/pocket && test -e /var/lib/pocket/config/genesis.json && sudo systemctl start pocket-testnet.service )
