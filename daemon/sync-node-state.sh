@@ -65,12 +65,13 @@ for intent in ${intents[@]}; do
       fqdn=${hostname}.${domain}
       echo "[${intent}/${fqdn}] manifest fetch suceeded"
       action=$(yq -r .action ${manifest_path})
-      ssh_proxy=$(yq -r .os.name ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
       if [ "${os}" = "fedora" ]; then
         package_manager=dnf
+        package_verifier='dnf list installed'
       else
-        package_manager=apt
+        package_manager=apt-get
+        package_verifier='dpkg-query -W'
       fi
 
       user_list_as_base64=$(yq -r  '(.user//empty)|.[]|@base64' ${manifest_path})
@@ -122,7 +123,7 @@ for intent in ${intents[@]}; do
       package_list=$(yq -r '(.package//empty)|.[]' ${manifest_path})
       package_index=0
       for package in ${package_list[@]}; do
-        if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} dpkg-query -W ${package} &> /dev/null; then
+        if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} ${package_verifier} ${package} &> /dev/null; then
           echo "[${fqdn}:package ${package_index}] install detected, package: ${package}"
         elif [ "${action}" = "sync" ]; then
           if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} sudo ${package_manager} install -y ${package}; then
