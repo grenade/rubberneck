@@ -1,5 +1,5 @@
 ---
-hostname: hooli
+hostname: colin
 domain: thgttg.com
 action: sync
 os:
@@ -24,3 +24,4 @@ user:
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.5.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.5.0/node_exporter-1.5.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.5.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.5.0.linux-amd64/node_exporter )

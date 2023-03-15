@@ -41,46 +41,34 @@ curl -sL \
 echo "[init] repo: ${rubberneck_github_org}/${rubberneck_github_repo}"
 echo "[init] commit: ${rubberneck_github_latest_sha} ${rubberneck_github_latest_date}"
 
-if [ -z "${chain_list}" ]; then
-  domain_list=( $(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json) )
-else
-  curl -sL \
-    -o ${tmp}/blockchains.json \
-    https://5eklk8knsd.execute-api.eu-central-1.amazonaws.com/prod/blockchains
-  domain_list=()
-  for chain in ${chain_list[@]}; do
-    if [[ ${chain} == *"/"* ]]; then
-      chain_domain_list=$(jq --arg name ${chain##*/} --arg relay ${chain%%/*} -r '.blockchains[] | select(.name == $name and .relay == $relay) | .domains[]' ${tmp}/blockchains.json)
-    else
-      chain_domain_list=$(jq --arg name ${chain} -r '.blockchains[] | select(.name == $name) | .domains[]' ${tmp}/blockchains.json)
-    fi
-    domain_list+=( "${chain_domain_list[@]}" )
-  done
-fi
+intents=( $(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json) )
 
-for domain in ${domain_list[@]}; do
-  echo "[sync] domain: ${domain}"
+for intent in ${intents[@]}; do
+  echo "[sync] intent: ${intent}"
   curl -sL \
-    -o ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${domain}.json \
+    -o ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json \
     -H "Accept: application/vnd.github+json" \
     -H "Authorization: Bearer ${rubberneck_github_token}" \
-    https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest/${domain}
-  host_list=$(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${domain}.json)
+    https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest/${intent}
+  host_list=$(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json)
   for hostname in ${host_list[@]}; do
-    fqdn=${hostname}.${domain}
+    manifest_path=${tmp}/${intent}-${hostname}-manifest.yml
     if curl -sL \
-      -o ${tmp}/${fqdn}-manifest.yml \
-      https://raw.githubusercontent.com/${rubberneck_github_org}/${rubberneck_github_repo}/${rubberneck_github_latest_sha}/manifest/${domain}/${hostname}/manifest.yml; then
-      echo "[${fqdn}] manifest fetch suceeded"
-      action=$(yq -r .action ${tmp}/${fqdn}-manifest.yml)
-      os=$(yq -r .os.name ${tmp}/${fqdn}-manifest.yml)
+      -o ${manifest_path} \
+      https://raw.githubusercontent.com/${rubberneck_github_org}/${rubberneck_github_repo}/${rubberneck_github_latest_sha}/manifest/${intent}/${hostname}/manifest.yml; then
+      domain=$(yq -r .domain ${manifest_path})
+      fqdn=${hostname}.${domain}
+      echo "[${intent}/${fqdn}] manifest fetch suceeded"
+      action=$(yq -r .action ${manifest_path})
+      ssh_proxy=$(yq -r .os.name ${manifest_path})
+      os=$(yq -r .os.name ${manifest_path})
       if [ "${os}" = "fedora" ]; then
         package_manager=dnf
       else
         package_manager=apt
       fi
 
-      user_list_as_base64=$(yq -r  '(.user//empty)|.[]|@base64' ${tmp}/${fqdn}-manifest.yml)
+      user_list_as_base64=$(yq -r  '(.user//empty)|.[]|@base64' ${manifest_path})
       for user_as_base64 in ${user_list_as_base64[@]}; do
         username=$(_decode_property ${user_as_base64} .username)
         mkdir -p ${tmp}/${fqdn}/${username}
@@ -126,7 +114,7 @@ for domain in ${domain_list[@]}; do
         fi
       done
 
-      package_list=$(yq -r '(.package//empty)|.[]' ${tmp}/${fqdn}-manifest.yml)
+      package_list=$(yq -r '(.package//empty)|.[]' ${manifest_path})
       package_index=0
       for package in ${package_list[@]}; do
         if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} dpkg-query -W ${package} &> /dev/null; then
@@ -144,7 +132,7 @@ for domain in ${domain_list[@]}; do
       done
 
 
-      command_list_as_base64=$(yq -r '(.command//empty)|.[]|@base64' ${tmp}/${fqdn}-manifest.yml)
+      command_list_as_base64=$(yq -r '(.command//empty)|.[]|@base64' ${manifest_path})
       command_index=0
       for command_as_base64 in ${command_list_as_base64[@]}; do
         command=$(echo ${command_as_base64} | base64 --decode)
@@ -158,7 +146,7 @@ for domain in ${domain_list[@]}; do
         command_index=$((command_index+1))
       done
 
-      file_list_as_base64=$(yq -r  '.file//empty' ${tmp}/${fqdn}-manifest.yml | jq -r '.[] | @base64')
+      file_list_as_base64=$(yq -r  '.file//empty' ${manifest_path} | jq -r '.[] | @base64')
       file_index=0
       for file_as_base64 in ${file_list_as_base64[@]}; do
         file_source=$(_decode_property ${file_as_base64} .source)
@@ -219,7 +207,7 @@ for domain in ${domain_list[@]}; do
         file_index=$((file_index+1))
       done
     else
-      echo "[${fqdn}] manifest fetch failed"
+      echo "[${intent}/${hostname}] manifest fetch failed"
     fi
   done
 done

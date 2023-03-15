@@ -27,6 +27,7 @@ user:
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.5.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.5.0/node_exporter-1.5.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.5.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.5.0.linux-amd64/node_exporter )
   - systemctl is-active nginx.service || sudo systemctl restart nginx.service
   - 'test -s /etc/letsencrypt/renewal/hawalius.thgttg.com.conf || sudo certbot certonly --noninteractive --cert-name hawalius.thgttg.com --expand --allow-subset-of-names -m ops@thgttg.com --agree-tos --no-eff-email --dns-cloudflare --dns-cloudflare-credentials /root/.cloudflare --dns-cloudflare-propagation-seconds 30 -d hawalius.thgttg.com -d cockpit.hawalius.thgttg.com'
   - 'test -s /etc/letsencrypt/renewal/gogrilla.thgttg.com.conf || sudo certbot certonly --noninteractive --cert-name gogrilla.thgttg.com --expand --allow-subset-of-names -m ops@thgttg.com --agree-tos --no-eff-email --dns-cloudflare --dns-cloudflare-credentials /root/.cloudflare --dns-cloudflare-propagation-seconds 30 -d gogrilla.thgttg.com -d cockpit.gogrilla.thgttg.com'
