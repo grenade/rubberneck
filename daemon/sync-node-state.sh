@@ -30,7 +30,12 @@ rubberneck_github_latest_date=$(jq -r .[0].commit.committer.date ${tmp}/${rubber
 #  https://api.github.com/orgs/${rubberneck_github_org}/members
 
 ops_username=grenade
-ops_private_key=${HOME}/.ssh/id_ed25519
+if [ "$(hostname -s)" = "kavula" ]; then
+  ops_private_key=${HOME}/.ssh/id_${ops_username}
+else
+  ops_private_key=${HOME}/.ssh/id_ed25519
+fi
+
 
 curl -sL \
   -o ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json \
