@@ -39,7 +39,7 @@ file:
         - sudo chmod +x /usr/local/bin/manta
         - test -f /etc/systemd/system/manta.service && sudo systemctl start manta.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/bob/etc/systemd/system/manta.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/mountain-paradise/bob/etc/systemd/system/manta.service
     target: /etc/systemd/system/manta.service
     sha256: 5bbcb71c3cf2087013f300f5ee4bc09b2c5c93c0cf65d52a8b7a8d2fa4a2e23e
     command:
