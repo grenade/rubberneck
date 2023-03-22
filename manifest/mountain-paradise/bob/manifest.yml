@@ -42,7 +42,7 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/mountain-paradise/bob/etc/systemd/system/manta.service
     target: /etc/systemd/system/manta.service
-    sha256: 5bbcb71c3cf2087013f300f5ee4bc09b2c5c93c0cf65d52a8b7a8d2fa4a2e23e
+    sha256: 8a148658449ddb45af49eda41bafbad6e3f40f24ad4a02c241e32594889139c1
     command:
       pre:
         - test -f /etc/systemd/system/manta.service && systemctl is-active --quiet manta.service && sudo systemctl stop manta.service
