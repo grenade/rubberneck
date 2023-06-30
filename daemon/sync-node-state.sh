@@ -66,13 +66,6 @@ for intent in ${intents[@]}; do
       echo "[${intent}/${fqdn}] manifest fetch suceeded"
       action=$(yq -r .action ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
-      if [ "${os}" = "fedora" ]; then
-        package_manager=dnf
-        package_verifier='dnf list installed'
-      else
-        package_manager=apt-get
-        package_verifier='dpkg-query -W'
-      fi
 
       user_list_as_base64=$(yq -r  '(.user//empty)|.[]|@base64' ${manifest_path})
       for user_as_base64 in ${user_list_as_base64[@]}; do
@@ -117,6 +110,44 @@ for intent in ${intents[@]}; do
           fi
         else
           echo "[${fqdn}:${remote_path}authorized_keys] sync skipped"
+        fi
+      done
+
+      if [ "${os}" = "fedora" ]; then
+        package_manager=dnf
+        package_verifier='dnf list installed'
+        repo_list_path=/etc/yum.repos.d
+        repo_list_ext=repo
+      else
+        package_manager=apt-get
+        package_verifier='dpkg-query -W'
+        repo_key_path=/etc/apt/trusted.gpg.d
+        repo_list_path=/etc/apt/sources.list.d
+        repo_list_ext=list
+      fi
+
+      repository_list_as_base64=$(yq -r  '.repository//empty' ${manifest_path} | jq -r '.[] | @base64')
+      repository_index=0
+      for repository_as_base64 in ${repository_list_as_base64[@]}; do
+        repository_name=$(_decode_property ${repository_as_base64} .name)
+        repository_list=$(_decode_property ${repository_as_base64} .list)
+        # fedora key urls should be in the .repo file. ie: `cat /etc/yum.repos.d/*.repo | grep gpgkey`
+        if [ "${os}" != "fedora" ]; then
+          repository_key_url=$(_decode_property ${repository_as_base64} .key.url)
+          repository_key_sha_expected=$(_decode_property ${repository_as_base64} .key.sha)
+          repository_key_sha_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sha256sum ${repo_key_path}/${repository_name}.asc 2> /dev/null | cut -d ' ' -f 1")
+          if [ "${repository_key_sha_expected}" = "${repository_key_sha_observed}" ]; then
+            echo "[${fqdn}:repository ${repository_index}] repository key validation succeeded. target: ${repo_key_path}/${repository_name}.asc, source: ${repository_key_url}, sha256 expected: ${repository_key_sha_expected}, observed: ${repository_key_sha_observed}"
+          elif ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} sudo curl -sLo ${repo_key_path}/${repository_name}.asc ${repository_key_url}; then
+            echo "[${fqdn}:repository ${repository_index}] repository key download succeeded (${repo_key_path}/${repository_name}.asc, ${repository_key_url})"
+          else
+            echo "[${fqdn}:repository ${repository_index}] repository key download failed (${repo_key_path}/${repository_name}.asc, ${repository_key_url})"
+          fi
+        fi
+        if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "echo '${repository_list}' | sudo dd of=${repo_list_path}/${repository_name}.${repo_list_ext}"; then
+          echo "[${fqdn}:repository ${repository_index}] repository list creation succeeded (${repo_list_path}/${repository_name}.${repo_list_ext})"
+        else
+          echo "[${fqdn}:repository ${repository_index}] repository list creation failed (${repo_list_path}/${repository_name}.${repo_list_ext})"
         fi
       done
 
