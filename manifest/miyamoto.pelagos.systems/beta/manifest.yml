@@ -1,0 +1,130 @@
+---
+hostname: beta
+domain: miyamoto.pelagos.systems
+note: mysql replica server
+action: sync
+os:
+  name: ubuntu
+package:
+  - certbot
+  - git
+  - mysql-client
+  - mysql-server
+  - nginx
+user:
+  -
+    username: root
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+command:
+  - sudo passwd -l root
+  - systemctl is-active mysql.service || sudo systemctl restart mysql.service
+  - systemctl is-active nginx.service || sudo systemctl restart nginx.service
+  - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - systemctl is-active prometheus-mysql-exporter.service || sudo systemctl restart prometheus-mysql-exporter.service
+  - systemctl is-active prometheus-nginx-exporter.service || sudo systemctl restart prometheus-nginx-exporter.service
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.6.1.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.6.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.6.1.linux-amd64/node_exporter )
+  - test -x /usr/local/bin/prometheus-nginx-exporter || ( curl -sLo /tmp/prometheus-nginx-exporter_0.11.0_linux_amd64.tar.gz https://github.com/nginxinc/prometheus-nginx-exporter/releases/download/v0.11.0/prometheus-nginx-exporter_0.11.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/prometheus-nginx-exporter_0.11.0_linux_amd64.tar.gz -C /usr/local/bin prometheus-nginx-exporter )
+  - test -x /usr/local/bin/mysqld_exporter || ( curl -sLo /tmp/mysqld_exporter-0.15.0.linux-amd64.tar.gz https://github.com/prometheus/mysqld_exporter/releases/download/v0.15.0/mysqld_exporter-0.15.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/mysqld_exporter-0.15.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 mysqld_exporter-0.15.0.linux-amd64/mysqld_exporter )
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/promtail.service
+    target: /etc/systemd/system/promtail.service
+    command:
+      pre:
+        - ( systemctl is-active --quiet promtail.service && sudo systemctl stop promtail.service ) || true
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet promtail.service || sudo systemctl enable promtail.service
+        - systemctl is-active --quiet promtail.service || sudo systemctl start promtail.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/promtail/promtail.yml
+    target: /etc/promtail/promtail.yml
+    command:
+      pre:
+        - sudo mkdir -p /etc/promtail
+        - ( systemctl is-active --quiet promtail.service && sudo systemctl stop promtail.service ) || true
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-active --quiet promtail.service || sudo systemctl start promtail.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable --now prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-mysql-exporter.service
+    target: /etc/systemd/system/prometheus-mysql-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-mysql-exporter.service && sudo systemctl stop prometheus-mysql-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable --now prometheus-mysql-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-nginx-exporter.service
+    target: /etc/systemd/system/prometheus-nginx-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-nginx-exporter.service && sudo systemctl stop prometheus-nginx-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable --now prometheus-nginx-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/nginx/sites-available/certbot.conf
+    target: /etc/nginx/sites-available/certbot.conf
+    command:
+      pre:
+        - test -d /etc/nginx/sites-available || sudo mkdir -p /etc/nginx/sites-available
+        - test -d /etc/nginx/sites-enabled || sudo mkdir -p /etc/nginx/sites-enabled
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/certbot.conf /etc/nginx/sites-enabled/certbot.conf
+        - test -e /etc/nginx/sites-enabled/default && sudo rm /etc/nginx/sites-enabled/default
+        - sudo systemctl reload nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/bind.cnf
+    target: /etc/mysql/conf.d/bind.cnf
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/gtid.cnf
+    target: /etc/mysql/conf.d/gtid.cnf
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/tls.cnf
+    target: /etc/mysql/conf.d/tls.cnf
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/miyamoto.pelagos.systems/beta/etc/mysql/conf.d/id.cnf
+    target: /etc/mysql/conf.d/id.cnf
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service

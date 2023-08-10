@@ -1,0 +1,25 @@
+server:
+  disable: true
+clients:
+  -
+    url: https://log.p0xeidon.systems/loki/api/v1/push
+positions:
+  filename: /tmp/positions.yml
+scrape_configs:
+  -
+    job_name: journal
+    journal:
+      max_age: 12h
+      json: false
+      labels:
+        job: journal
+    relabel_configs:
+      -
+        action: keep
+        source_labels:
+          - __journal__systemd_unit
+        regex: (auditd|certbot|cron|dbus|fwupd-refresh|fwupd|motd-news|nginx|packagekit|ssh|ufw|unattended-upgrades|mongod|mysql|postgresql.*).service
+      -
+        source_labels:
+          - __journal__systemd_unit
+        target_label: unit
