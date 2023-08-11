@@ -131,7 +131,7 @@ file:
       post:
         - sudo systemctl start mysql.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/config/miyamoto.pelagos.systems/alpha/etc/nginx/sites-available/alpha.miyamoto.pelagos.systems.conf
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/miyamoto.pelagos.systems/alpha/etc/nginx/sites-available/alpha.miyamoto.pelagos.systems.conf
     target: /etc/nginx/sites-available/alpha.miyamoto.pelagos.systems.conf
     command:
       pre:
