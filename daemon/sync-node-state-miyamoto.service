@@ -1,0 +1,17 @@
+[Unit]
+Description=sync node state miyamoto
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=HOME=/root
+Environment=intent_list=miyamoto.pelagos.systems
+ExecStartPre=curl -sLo /usr/local/bin/sync-node-state-grenade.sh https://raw.githubusercontent.com/grenade/rubberneck/main/daemon/sync-node-state.sh
+ExecStartPre=chmod +x /usr/local/bin/sync-node-state-grenade.sh
+ExecStart=/usr/local/bin/sync-node-state-grenade.sh
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
