@@ -42,6 +42,7 @@ if [ -d ${cert_path} ] && [ -e ${cert_path}/privkey.pem ] && [ -e ${cert_path}/f
             chmod 600 /etc/ssl/key.pem
             if systemctl is-active --quiet mysql.service; then
                 systemctl restart mysql.service
+                mysql --login-path=root@localhost --execute='ALTER INSTANCE RELOAD TLS'
             fi
         fi
     fi
