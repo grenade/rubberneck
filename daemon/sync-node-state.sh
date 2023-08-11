@@ -37,7 +37,12 @@ curl -sL \
 echo "[init] repo: ${rubberneck_github_org}/${rubberneck_github_repo}"
 echo "[init] commit: ${rubberneck_github_latest_sha} ${rubberneck_github_latest_date}"
 
-intents=( $(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json) )
+if [ -z "${intent_list}" ]; then
+  intents=( $(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json) )
+else
+  intents=()
+  intents+=( "${intent_list[@]}" )
+fi
 
 for intent in ${intents[@]}; do
   echo "[sync] intent: ${intent}"
