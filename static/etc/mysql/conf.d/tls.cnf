@@ -1,5 +1,6 @@
 [mysqld]
+require_secure_transport=ON
 ssl_ca=/etc/ssl/chain.pem
 ssl_cert=/etc/ssl/cert.pem
 ssl_key=/etc/ssl/key.pem
-require_secure_transport=ON
+tls_version=TLSv1.3

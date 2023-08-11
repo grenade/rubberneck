@@ -12,10 +12,12 @@ rubberneck_app=$(basename "${0}")
 rubberneck_github_org=grenade
 rubberneck_github_repo=rubberneck
 rubberneck_github_token=$(yq -r .github.token ${HOME}/.rubberneck.yml)
-curl -sL \
-  -o ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${rubberneck_github_token}" \
+curl \
+  --silent \
+  --location \
+  --output ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json \
+  --header "Accept: application/vnd.github+json" \
+  --header "Authorization: Bearer ${rubberneck_github_token}" \
   https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/commits
 rubberneck_github_latest_sha=$(jq -r .[0].sha ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
 rubberneck_github_latest_date=$(jq -r .[0].commit.committer.date ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
@@ -27,11 +29,12 @@ else
   ops_private_key=${HOME}/.ssh/id_ed25519
 fi
 
-
-curl -sL \
-  -o ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json \
-  -H "Accept: application/vnd.github+json" \
-  -H "Authorization: Bearer ${rubberneck_github_token}" \
+curl \
+  --silent \
+  --location \
+  --output ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json \
+  --header "Accept: application/vnd.github+json" \
+  --header "Authorization: Bearer ${rubberneck_github_token}" \
   https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest
 
 echo "[init] repo: ${rubberneck_github_org}/${rubberneck_github_repo}"
@@ -46,23 +49,27 @@ fi
 
 for intent in ${intents[@]}; do
   echo "[sync] intent: ${intent}"
-  curl -sL \
-    -o ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${rubberneck_github_token}" \
+  curl \
+    --silent \
+    --location \
+    --output ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json \
+    --header "Accept: application/vnd.github+json" \
+    --header "Authorization: Bearer ${rubberneck_github_token}" \
     https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest/${intent}
   host_list=$(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json)
   for hostname in ${host_list[@]}; do
     manifest_path=${tmp}/${intent}-${hostname}-manifest.yml
-    if curl -sL \
-      -o ${manifest_path} \
+    if curl \
+      --silent \
+      --location \
+      --output ${manifest_path} \
       https://raw.githubusercontent.com/${rubberneck_github_org}/${rubberneck_github_repo}/${rubberneck_github_latest_sha}/manifest/${intent}/${hostname}/manifest.yml; then
       domain=$(yq -r .domain ${manifest_path})
       fqdn=${hostname}.${domain}
       echo "[${intent}/${fqdn}] manifest fetch suceeded"
       action=$(yq -r .action ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
-      
+
       if ! ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
         ssh_exit_code=$?
         echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
@@ -207,7 +214,9 @@ for intent in ${intents[@]}; do
           file_source_repo=$(echo ${file_source} | cut -d '/' -f 5)
           file_source_rev=$(echo ${file_source} | cut -d '/' -f 6)
           file_source_path=$(echo ${file_source} | cut -d '/' -f 7-)
-          file_shagit_expected=$(curl -sL \
+          file_shagit_expected=$(curl \
+            --silent \
+            --location \
             --header 'X-GitHub-Api-Version: 2022-11-28' \
             --header 'Accept: application/vnd.github.object' \
             --header "Authorization: Bearer ${rubberneck_github_token}" \
