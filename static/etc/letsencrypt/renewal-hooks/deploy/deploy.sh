@@ -34,15 +34,25 @@ if [ -d ${cert_path} ] && [ -e ${cert_path}/privkey.pem ] && [ -e ${cert_path}/f
 
     # create mysql owned certs if mysql service enabled
     if systemctl list-unit-files mysql.service | grep 'mysql.service enabled' &> /dev/null; then
-        if openssl x509 -in ${cert_path}/chain.pem > /etc/ssl/chain.pem && cp ${cert_path}/cert.pem /etc/ssl/cert.pem && cp ${cert_path}/privkey.pem /etc/ssl/key.pem; then
-            echo "/etc/ssl/chain.pem created"
-            echo "/etc/ssl/cert.pem created"
-            echo "/etc/ssl/key.pem created"
-            chown mysql:mysql /etc/ssl/key.pem
-            chmod 600 /etc/ssl/key.pem
+        if csplit \
+            --prefix /tmp/cert \
+            --elide-empty-files \
+            /etc/letsencrypt/live/$(hostname -f)/fullchain.pem \
+            '/-----BEGIN CERTIFICATE-----/' \
+            '{*}' \
+            && mv /tmp/cert01 /var/lib/mysql/lets-encrypt-ca.pem \
+            && chown mysql:mysql /var/lib/mysql/lets-encrypt-ca.pem \
+            && mv /tmp/cert00 /var/lib/mysql/lets-encrypt-cert.pem \
+            && chown mysql:mysql /var/lib/mysql/lets-encrypt-cert.pem \
+            && cp ${cert_path}/privkey.pem /var/lib/mysql/lets-encrypt-key.pem \
+            && chmod 600 /var/lib/mysql/lets-encrypt-key.pem \
+            && chown mysql:mysql /var/lib/mysql/lets-encrypt-key.pem; then
+            echo "/var/lib/mysql/lets-encrypt-ca.pem created"
+            echo "/var/lib/mysql/lets-encrypt-cert.pem created"
+            echo "/var/lib/mysql/lets-encrypt-key created"
             if systemctl is-active --quiet mysql.service; then
                 systemctl restart mysql.service
-                mysql --login-path=root@localhost --execute='ALTER INSTANCE RELOAD TLS'
+                mysql --login-path=root@localhost --execute='ALTER INSTANCE RELOAD TLS;'
             fi
         fi
     fi

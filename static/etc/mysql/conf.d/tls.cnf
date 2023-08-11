@@ -1,9 +1,9 @@
 [mysqld]
 require_secure_transport=ON
 ssl=ON
-ssl_ca=/etc/ssl/chain.pem
-ssl_cert=/etc/ssl/cert.pem
-ssl_key=/etc/ssl/key.pem
+ssl_ca=/var/lib/mysql/lets-encrypt-ca.pem
+ssl_cert=/var/lib/mysql/lets-encrypt-cert.pem
+ssl_key=/var/lib/mysql/lets-encrypt-key.pem
 ssl_cipher=TLS_AES_128_GCM_SHA256:TLS_AES_256_GCM_SHA384:TLS_CHACHA20_POLY1305_SHA256
 tls_ciphersuites
 tls_version=TLSv1.3
