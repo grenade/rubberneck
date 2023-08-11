@@ -37,7 +37,7 @@ command:
   - systemctl is-active prometheus-nginx-exporter.service || sudo systemctl restart prometheus-nginx-exporter.service
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.6.1.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.6.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.6.1.linux-amd64/node_exporter )
-  - test -x /usr/local/bin/prometheus-nginx-exporter || ( curl -sLo /tmp/prometheus-nginx-exporter_0.11.0_linux_amd64.tar.gz https://github.com/nginxinc/prometheus-nginx-exporter/releases/download/v0.11.0/prometheus-nginx-exporter_0.11.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/prometheus-nginx-exporter_0.11.0_linux_amd64.tar.gz -C /usr/local/bin prometheus-nginx-exporter )
+  - test -x /usr/local/bin/nginx-prometheus-exporter || ( curl -sLo /tmp/nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz https://github.com/nginxinc/nginx-prometheus-exporter/releases/download/v0.11.0/nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/nginx-prometheus-exporter_0.11.0_linux_amd64.tar.gz -C /usr/local/bin nginx-prometheus-exporter )
   - test -x /usr/local/bin/mysqld_exporter || ( curl -sLo /tmp/mysqld_exporter-0.15.0.linux-amd64.tar.gz https://github.com/prometheus/mysqld_exporter/releases/download/v0.15.0/mysqld_exporter-0.15.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/mysqld_exporter-0.15.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 mysqld_exporter-0.15.0.linux-amd64/mysqld_exporter )
 file:
   -
@@ -97,6 +97,16 @@ file:
       post:
         - sudo ln -sfr /etc/nginx/sites-available/certbot.conf /etc/nginx/sites-enabled/certbot.conf
         - test -e /etc/nginx/sites-enabled/default && sudo rm /etc/nginx/sites-enabled/default
+        - sudo systemctl reload nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/nginx/sites-available/status.conf
+    target: /etc/nginx/sites-available/status.conf
+    command:
+      pre:
+        - test -d /etc/nginx/sites-available || sudo mkdir -p /etc/nginx/sites-available
+        - test -d /etc/nginx/sites-enabled || sudo mkdir -p /etc/nginx/sites-enabled
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/status.conf /etc/nginx/sites-enabled/status.conf
         - sudo systemctl reload nginx.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/bind.cnf
