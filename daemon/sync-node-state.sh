@@ -58,6 +58,7 @@ for intent in ${intents[@]}; do
       echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
       continue
     else
+      ssh_exit_code=$?
       echo "[${ops_username}@${fqdn}] initial connection succeeded with exit code: ${ssh_exit_code}"
     fi
     manifest_path=${tmp}/${intent}-${hostname}-manifest.yml
