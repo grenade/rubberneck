@@ -53,6 +53,10 @@ for intent in ${intents[@]}; do
     https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest/${intent}
   host_list=$(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json)
   for hostname in ${host_list[@]}; do
+    if ! ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
+      echo "[${fqdn}] connection failed (${ops_username}@${fqdn})"
+      continue
+    fi
     manifest_path=${tmp}/${intent}-${hostname}-manifest.yml
     if curl -sL \
       -o ${manifest_path} \
