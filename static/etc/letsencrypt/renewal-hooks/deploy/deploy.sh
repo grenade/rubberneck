@@ -34,7 +34,7 @@ if [ -d ${cert_path} ] && [ -e ${cert_path}/privkey.pem ] && [ -e ${cert_path}/f
 
     # create mysql owned certs if mysql service enabled
     if systemctl list-unit-files mysql.service | grep 'mysql.service enabled' &> /dev/null; then
-        if cp ${cert_path}/chain.pem /etc/ssl/chain.pem && cp ${cert_path}/cert.pem /etc/ssl/cert.pem && cp ${cert_path}/privkey.pem /etc/ssl/key.pem; then
+        if openssl x509 -in ${cert_path}/chain.pem > /etc/ssl/chain.pem && cp ${cert_path}/cert.pem /etc/ssl/cert.pem && cp ${cert_path}/privkey.pem /etc/ssl/key.pem; then
             echo "/etc/ssl/chain.pem created"
             echo "/etc/ssl/cert.pem created"
             echo "/etc/ssl/key.pem created"
