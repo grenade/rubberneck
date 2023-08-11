@@ -109,6 +109,14 @@ file:
         - sudo ln -sfr /etc/nginx/sites-available/status.conf /etc/nginx/sites-enabled/status.conf
         - sudo systemctl reload nginx.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/letsencrypt/renewal-hooks/deploy/deploy.sh
+    target: /etc/letsencrypt/renewal-hooks/deploy/deploy.sh
+    command:
+      post:
+        - sudo chmod +x /etc/letsencrypt/renewal-hooks/deploy/deploy.sh
+        - sudo /etc/letsencrypt/renewal-hooks/deploy/deploy.sh
+        - sudo systemctl restart mysql.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/bind.cnf
     target: /etc/mysql/conf.d/bind.cnf
     command:
