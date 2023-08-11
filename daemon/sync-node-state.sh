@@ -53,14 +53,6 @@ for intent in ${intents[@]}; do
     https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest/${intent}
   host_list=$(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json)
   for hostname in ${host_list[@]}; do
-    if ! ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
-      ssh_exit_code=$?
-      echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
-      continue
-    else
-      ssh_exit_code=$?
-      echo "[${ops_username}@${fqdn}] initial connection succeeded with exit code: ${ssh_exit_code}"
-    fi
     manifest_path=${tmp}/${intent}-${hostname}-manifest.yml
     if curl -sL \
       -o ${manifest_path} \
@@ -70,6 +62,15 @@ for intent in ${intents[@]}; do
       echo "[${intent}/${fqdn}] manifest fetch suceeded"
       action=$(yq -r .action ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
+      
+      if ! ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
+        ssh_exit_code=$?
+        echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
+        continue
+      else
+        ssh_exit_code=$?
+        echo "[${ops_username}@${fqdn}] initial connection succeeded with exit code: ${ssh_exit_code}"
+      fi
 
       user_list_as_base64=$(yq -r  '(.user//empty)|.[]|@base64' ${manifest_path})
       for user_as_base64 in ${user_list_as_base64[@]}; do
