@@ -54,8 +54,11 @@ for intent in ${intents[@]}; do
   host_list=$(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json)
   for hostname in ${host_list[@]}; do
     if ! ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
-      echo "[${fqdn}] connection failed (${ops_username}@${fqdn})"
+      ssh_exit_code=$?
+      echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
       continue
+    else
+      echo "[${ops_username}@${fqdn}] initial connection succeeded with exit code: ${ssh_exit_code}"
     fi
     manifest_path=${tmp}/${intent}-${hostname}-manifest.yml
     if curl -sL \
