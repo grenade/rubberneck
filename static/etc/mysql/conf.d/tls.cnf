@@ -5,6 +5,3 @@ ssl_cert=/var/lib/mysql/lets-encrypt-cert.pem
 ssl_key=/var/lib/mysql/lets-encrypt-key.pem
 ssl_cipher=TLS_AES_256_GCM_SHA384
 tls_version=TLSv1.3
-
-[client]
-ssl_mode=VERIFY_IDENTITY
