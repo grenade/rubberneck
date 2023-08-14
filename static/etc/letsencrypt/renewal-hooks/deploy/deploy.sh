@@ -38,7 +38,7 @@ if [ -d ${cert_path} ] && [ -e ${cert_path}/privkey.pem ] && [ -e ${cert_path}/f
             --silent \
             --location \
             --output /etc/ssl/dst-root-x3.pem \
-            --url https://gist.githubusercontent.com/grenade/6c1d4fb5d3756042803dc4c569624c46/raw/dst-root-x3.pem \
+            --url https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/letsencrypt/dst-root-x3.pem \
             && csplit \
                 --prefix /tmp/cert \
                 --elide-empty-files \
