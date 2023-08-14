@@ -117,6 +117,14 @@ file:
         - sudo /etc/letsencrypt/renewal-hooks/deploy/deploy.sh
         - sudo systemctl restart mysql.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/mysql.conf.d/mysqld.cnf
+    target: /etc/mysql/mysql.conf.d/mysqld.cnf
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/bind.cnf
     target: /etc/mysql/conf.d/bind.cnf
     command:
