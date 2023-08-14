@@ -45,7 +45,7 @@ if [ -d ${cert_path} ] && [ -e ${cert_path}/privkey.pem ] && [ -e ${cert_path}/f
                 /etc/letsencrypt/live/$(hostname -f)/fullchain.pem \
                 '/-----BEGIN CERTIFICATE-----/' \
                 '{*}' \
-            && cat /etc/ssl/dst-root-x3.pem /tmp/cert02 /tmp/cert01 /var/lib/mysql/lets-encrypt-ca.pem \
+            && cat /etc/ssl/dst-root-x3.pem /tmp/cert02 /tmp/cert01 > /var/lib/mysql/lets-encrypt-ca.pem \
             && chown mysql:mysql /var/lib/mysql/lets-encrypt-ca.pem \
             && mv /tmp/cert00 /var/lib/mysql/lets-encrypt-cert.pem \
             && chown mysql:mysql /var/lib/mysql/lets-encrypt-cert.pem \
