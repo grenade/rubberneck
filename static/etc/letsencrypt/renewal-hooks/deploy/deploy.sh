@@ -34,13 +34,18 @@ if [ -d ${cert_path} ] && [ -e ${cert_path}/privkey.pem ] && [ -e ${cert_path}/f
 
     # create mysql owned certs if mysql service enabled
     if systemctl list-unit-files mysql.service | grep 'mysql.service enabled' &> /dev/null; then
-        if csplit \
-            --prefix /tmp/cert \
-            --elide-empty-files \
-            /etc/letsencrypt/live/$(hostname -f)/fullchain.pem \
-            '/-----BEGIN CERTIFICATE-----/' \
-            '{*}' \
-            && mv /tmp/cert01 /var/lib/mysql/lets-encrypt-ca.pem \
+        if curl \
+            --silent \
+            --location \
+            --output /etc/ssl/dst-root-x3.pem \
+            --url https://gist.githubusercontent.com/grenade/6c1d4fb5d3756042803dc4c569624c46/raw/dst-root-x3.pem \
+            && csplit \
+                --prefix /tmp/cert \
+                --elide-empty-files \
+                /etc/letsencrypt/live/$(hostname -f)/fullchain.pem \
+                '/-----BEGIN CERTIFICATE-----/' \
+                '{*}' \
+            && cat /etc/ssl/dst-root-x3.pem /tmp/cert02 /tmp/cert01 /var/lib/mysql/lets-encrypt-ca.pem \
             && chown mysql:mysql /var/lib/mysql/lets-encrypt-ca.pem \
             && mv /tmp/cert00 /var/lib/mysql/lets-encrypt-cert.pem \
             && chown mysql:mysql /var/lib/mysql/lets-encrypt-cert.pem \
