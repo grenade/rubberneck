@@ -3,7 +3,5 @@ require_secure_transport=ON
 ssl_ca=/var/lib/mysql/lets-encrypt-ca.pem
 ssl_cert=/var/lib/mysql/lets-encrypt-cert.pem
 ssl_key=/var/lib/mysql/lets-encrypt-key.pem
-
-group_replication_ssl_mode=REQUIRED
 tls_version=
 tls_ciphersuites=
