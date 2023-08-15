@@ -1,3 +1,8 @@
 
-CREATE USER 'beta'@'%.miyamoto.pelagos.systems' REQUIRE SUBJECT 'CN=beta.miyamoto.pelagos.systems';
-GRANT REPLICATION SLAVE ON *.* TO 'beta'@'%.miyamoto.pelagos.systems';
+CREATE USER 'beta'@'%'
+  REQUIRE
+    SUBJECT '/CN=beta.miyamoto.pelagos.systems'
+  AND
+    ISSUER '/C=US/O=Let\'s Encrypt/CN=R3';
+
+GRANT REPLICATION SLAVE ON *.* TO 'beta'@'%';
