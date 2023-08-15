@@ -141,6 +141,14 @@ file:
       post:
         - sudo systemctl start mysql.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/log.cnf
+    target: /etc/mysql/conf.d/log.cnf
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/mysql/conf.d/tls.cnf
     target: /etc/mysql/conf.d/tls.cnf
     command:
