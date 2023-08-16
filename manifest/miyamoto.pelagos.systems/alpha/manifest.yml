@@ -165,6 +165,22 @@ file:
       post:
         - sudo systemctl start mysql.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/var/lib/mysql/pelagos-ca.pem
+    target: /var/lib/mysql/pelagos-ca.pem
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/miyamoto.pelagos.systems/alpha/var/lib/mysql/pelagos-cert.pem
+    target: /var/lib/mysql/pelagos-cert.pem
+    command:
+      pre:
+        - sudo systemctl stop mysql.service
+      post:
+        - sudo systemctl start mysql.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/miyamoto.pelagos.systems/alpha/etc/nginx/sites-available/alpha.miyamoto.pelagos.systems.conf
     target: /etc/nginx/sites-available/alpha.miyamoto.pelagos.systems.conf
     command:
