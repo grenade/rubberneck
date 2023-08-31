@@ -1,0 +1,79 @@
+---
+hostname: eddie
+domain: thgttg.com
+note: an ethereum full node
+action: sync
+os:
+  name: fedora
+package:
+  - dnf-automatic
+  - git
+user:
+  -
+    username: root
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - test -d /data/ethereum || sudo useradd --system --create-home --home-dir /data/ethereum --user-group eddie
+  - test -f /etc/systemd/system/geth.service && systemctl is-active geth.service || sudo systemctl restart geth.service
+  - test -f /etc/systemd/system/prysm.service && systemctl is-active prysm.service || sudo systemctl restart prysm.service
+  - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.6.1.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.6.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.6.1.linux-amd64/node_exporter )
+  - test -x /usr/local/bin/geth || ( curl -sLo /tmp/geth-linux-amd64-1.12.2-bed84606.tar.gz https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.12.2-bed84606.tar.gz && sudo tar xvfz /tmp/geth-linux-amd64-1.12.2-bed84606.tar.gz -C /usr/local/bin --strip-components=1 geth-linux-amd64-1.12.2-bed84606/geth )
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable --now prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/eddie/etc/systemd/system/geth.service
+    target: /etc/systemd/system/geth.service
+    command:
+      pre:
+        - ( systemctl is-active --quiet geth.service && sudo systemctl stop geth.service ) || true
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet geth.service || sudo systemctl enable geth.service
+        - systemctl is-active --quiet geth.service || sudo systemctl start geth.service
+  -
+    source: https://raw.githubusercontent.com/prysmaticlabs/prysm/master/prysm.sh
+    target: /data/ethereum/consensus/prysm.sh
+    command:
+      pre:
+        - ( systemctl is-active --quiet prysm.service && sudo systemctl stop prysm.service ) || true
+      post:
+        - sudo chmod +x /data/ethereum/consensus/prysm.sh
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet prysm.service || sudo systemctl enable prysm.service
+        - systemctl is-active --quiet prysm.service || sudo systemctl start prysm.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/eddie/etc/systemd/system/prysm.service
+    target: /etc/systemd/system/prysm.service
+    command:
+      pre:
+        - ( systemctl is-active --quiet prysm.service && sudo systemctl stop prysm.service ) || true
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet prysm.service || sudo systemctl enable prysm.service
+        - systemctl is-active --quiet prysm.service || sudo systemctl start prysm.service

@@ -1,0 +1,37 @@
+[Unit]
+Description=geth
+After=network.target
+StartLimitIntervalSec=0
+ConditionPathExists=!/data/ethereum/consensus/prysm.sh
+ConditionPathExists=!/usr/local/bin/geth
+ConditionPathExists=!/usr/share/geth/jwt.hex
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=eddie
+Group=eddie
+ExecStart=/usr/local/bin/geth \
+  --datadir=/data/ethereum \
+  --authrpc.jwtsecret=/usr/share/geth/jwt.hex \
+  --metrics \
+  --metrics.addr 0.0.0.0 \
+  --txlookuplimit 0 \
+  --gpo.ignoreprice 1 \
+  --verbosity=3 \
+  --txpool.nolocals \
+  --http \
+  --http.api=eth,net,web3 \
+  --http.addr=0.0.0.0 \
+  --http.port 8545 \
+  --http.corsdomain \"*\" \
+  --http.vhosts \"*\" \
+  --ws \
+  --ws.api=eth,net,web3 \
+  --ws.addr=0.0.0.0 \
+  --ws.port 8546 \
+  --ws.origins \"*\"
+
+[Install]
+WantedBy=multi-user.target

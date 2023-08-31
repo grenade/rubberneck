@@ -1,0 +1,24 @@
+[Unit]
+Description=prysm
+After=network.target
+StartLimitIntervalSec=0
+ConditionPathExists=!/data/ethereum/consensus/prysm.sh
+ConditionPathExists=!/usr/local/bin/geth
+ConditionPathExists=!/usr/share/geth/jwt.hex
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=eddie
+Group=eddie
+ExecStart=/data/ethereum/consensus/prysm.sh beacon-chain \
+  --checkpoint-sync-url=https://sync-mainnet.beaconcha.in/ \
+  --genesis-beacon-api-url=https://sync-mainnet.beaconcha.in/ \
+  --enable-debug-rpc-endpoints \
+  --execution-endpoint=http://127.0.0.1:8551 \
+  --jwt-secret=/usr/share/geth/jwt.hex \
+  --datadir=/data/ethereum
+
+[Install]
+WantedBy=multi-user.target
