@@ -2,8 +2,9 @@
 Description=prysm
 After=network.target
 StartLimitIntervalSec=0
-ConditionPathExists=!/data/ethereum/consensus/prysm.sh
-ConditionPathExists=!/usr/local/bin/geth
+ConditionPathExists=/data/ethereum/consensus/prysm.sh
+ConditionPathExists=/usr/local/bin/geth
+ConditionPathExists=/data/ethereum/jwt.hex
 
 [Service]
 Type=simple
