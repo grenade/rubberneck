@@ -65,6 +65,7 @@ file:
       pre:
         - ( systemctl is-active --quiet prysm.service && sudo systemctl stop prysm.service ) || true
         - sudo -u eddie test -d /data/ethereum/consensus || sudo -u eddie mkdir /data/ethereum/consensus
+        - sudo chcon -R -t bin_t /data/ethereum/consensus/
       post:
         - sudo chown eddie:eddie /data/ethereum/consensus/prysm.sh
         - sudo chmod +x /data/ethereum/consensus/prysm.sh
