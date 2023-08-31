@@ -64,7 +64,9 @@ file:
     command:
       pre:
         - ( systemctl is-active --quiet prysm.service && sudo systemctl stop prysm.service ) || true
+        - sudo -u eddie test -d /data/ethereum/consensus || sudo -u eddie mkdir /data/ethereum/consensus
       post:
+        - sudo chown eddie:eddie /data/ethereum/consensus/prysm.sh
         - sudo chmod +x /data/ethereum/consensus/prysm.sh
         - sudo systemctl daemon-reload
         - systemctl is-enabled --quiet prysm.service || sudo systemctl enable prysm.service
