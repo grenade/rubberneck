@@ -31,6 +31,8 @@ command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -d /data/ethereum || sudo useradd --system --create-home --home-dir /data/ethereum --user-group eddie
+  - test -f /data/ethereum/jwt.hex || openssl rand -hex 32 | tr -d "\n" | sudo -u eddie tee /data/ethereum/jwt.hex
+  - sudo chmod 600 /data/ethereum/jwt.hex
   - test -f /etc/systemd/system/geth.service && systemctl is-active geth.service || sudo systemctl restart geth.service
   - test -f /etc/systemd/system/prysm.service && systemctl is-active prysm.service || sudo systemctl restart prysm.service
   - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service

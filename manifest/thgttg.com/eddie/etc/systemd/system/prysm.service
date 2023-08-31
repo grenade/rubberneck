@@ -4,7 +4,7 @@ After=network.target
 StartLimitIntervalSec=0
 ConditionPathExists=!/data/ethereum/consensus/prysm.sh
 ConditionPathExists=!/usr/local/bin/geth
-ConditionPathExists=!/usr/share/geth/jwt.hex
+ConditionPathExists=!/data/ethereum/jwt.hex
 
 [Service]
 Type=simple
@@ -17,7 +17,7 @@ ExecStart=/data/ethereum/consensus/prysm.sh beacon-chain \
   --genesis-beacon-api-url=https://sync-mainnet.beaconcha.in/ \
   --enable-debug-rpc-endpoints \
   --execution-endpoint=http://127.0.0.1:8551 \
-  --jwt-secret=/usr/share/geth/jwt.hex \
+  --jwt-secret=/data/ethereum/jwt.hex \
   --datadir=/data/ethereum
 
 [Install]

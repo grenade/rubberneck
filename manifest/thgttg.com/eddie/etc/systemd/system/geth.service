@@ -4,7 +4,7 @@ After=network.target
 StartLimitIntervalSec=0
 ConditionPathExists=!/data/ethereum/consensus/prysm.sh
 ConditionPathExists=!/usr/local/bin/geth
-ConditionPathExists=!/usr/share/geth/jwt.hex
+ConditionPathExists=!/data/ethereum/jwt.hex
 
 [Service]
 Type=simple
@@ -14,7 +14,7 @@ User=eddie
 Group=eddie
 ExecStart=/usr/local/bin/geth \
   --datadir=/data/ethereum \
-  --authrpc.jwtsecret=/usr/share/geth/jwt.hex \
+  --authrpc.jwtsecret=/data/ethereum/jwt.hex \
   --metrics \
   --metrics.addr 0.0.0.0 \
   --txlookuplimit 0 \
