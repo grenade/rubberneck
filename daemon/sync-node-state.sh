@@ -8,6 +8,9 @@ _decode_property() {
   echo ${1} | base64 --decode | jq -r ${2}
 }
 
+apt_os=( debian ubuntu )
+dnf_os=( centos fedora )
+
 rubberneck_app=$(basename "${0}")
 rubberneck_github_org=grenade
 rubberneck_github_repo=rubberneck
@@ -125,17 +128,20 @@ for intent in ${intents[@]}; do
         fi
       done
 
-      if [ "${os}" = "fedora" ]; then
+      if [[ ${dnf_os[@]} =~ ${os} ]]; then
         package_manager=dnf
         package_verifier='dnf list installed'
         repo_list_path=/etc/yum.repos.d
         repo_list_ext=repo
-      else
+      elif [[ ${apt_os[@]} =~ ${os} ]]; then
         package_manager=apt-get
         package_verifier='dpkg-query -W'
         repo_key_path=/etc/apt/trusted.gpg.d
         repo_list_path=/etc/apt/sources.list.d
         repo_list_ext=list
+      else
+        echo "[${fqdn}] unsupported os for package installation. no package manager configured."
+        continue
       fi
 
       repository_list_as_base64=$(yq -r  '.repository//empty' ${manifest_path} | jq -r '.[] | @base64')
@@ -143,8 +149,8 @@ for intent in ${intents[@]}; do
       for repository_as_base64 in ${repository_list_as_base64[@]}; do
         repository_name=$(_decode_property ${repository_as_base64} .name)
         repository_list=$(_decode_property ${repository_as_base64} .list)
-        # fedora key urls should be in the .repo file. ie: `cat /etc/yum.repos.d/*.repo | grep gpgkey`
-        if [ "${os}" != "fedora" ]; then
+        # dnf key urls should be in the .repo file. ie: `cat /etc/yum.repos.d/*.repo | grep gpgkey`
+        if [[ ${dnf_os[@]} =~ ${os} ]]; then
           repository_key_url=$(_decode_property ${repository_as_base64} .key.url)
           repository_key_sha_expected=$(_decode_property ${repository_as_base64} .key.sha)
           repository_key_sha_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sha256sum ${repo_key_path}/${repository_name}.asc 2> /dev/null | cut -d ' ' -f 1")
