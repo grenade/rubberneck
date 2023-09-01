@@ -1,0 +1,25 @@
+[Unit]
+Description=prometheus
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/etc/prometheus/consoles
+ConditionPathExists=/etc/prometheus/console_libraries
+ConditionPathExists=/etc/prometheus/prometheus.yml
+ConditionPathExists=/usr/local/bin/prometheus
+ConditionPathExists=/var/lib/prometheus
+
+[Service]
+User=prometheus
+Group=prometheus
+Type=simple
+ExecStart=/usr/local/bin/prometheus \
+    --config.file /etc/prometheus/prometheus.yml \
+    --storage.tsdb.path /var/lib/prometheus/ \
+    --web.console.templates=/etc/prometheus/consoles \
+    --web.console.libraries=/etc/prometheus/console_libraries \
+    --web.external-url=https://prometheus.marvin.thgttg.com \
+    --web.listen-address=0.0.0.0:9070
+ExecReload=/bin/kill -HUP $MAINPID
+
+[Install]
+WantedBy=multi-user.target

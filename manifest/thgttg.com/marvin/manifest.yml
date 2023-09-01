@@ -1,0 +1,68 @@
+---
+hostname: eddie
+domain: thgttg.com
+note: a metrics server
+action: sync
+os:
+  name: centos
+package:
+  - dnf-automatic
+  - git
+  - nginx
+user:
+  -
+    username: root
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - test -d /var/lib/prometheus || sudo useradd --system --create-home --home-dir /var/lib/prometheus --user-group prometheus
+  - test -f /etc/systemd/system/prometheus.service && systemctl is-active prometheus.service || sudo systemctl restart prometheus.service
+  - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.6.1.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.6.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.6.1.linux-amd64/node_exporter )
+  - test -x /usr/local/bin/prometheus || ( curl -sLo /tmp/prometheus-2.47.0-rc.0.linux-amd64.tar.gz https://github.com/prometheus/prometheus/releases/download/v2.47.0-rc.0/prometheus-2.47.0-rc.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/prometheus-2.47.0-rc.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 prometheus-2.47.0-rc.0.linux-amd64/{prometheus,promtool} && sudo tar xvfz /tmp/prometheus-2.47.0-rc.0.linux-amd64.tar.gz -C /etc/prometheus --strip-components=1 prometheus-2.47.0-rc.0.linux-amd64/{console_libraries,consoles} )
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable --now prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/eddie/etc/prometheus/prometheus.yml
+    target: /etc/prometheus/prometheus.yml
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus.service && sudo systemctl stop prometheus.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet prometheus.service || sudo systemctl enable prometheus.service
+        - systemctl is-active --quiet prometheus.service || sudo systemctl start prometheus.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/eddie/etc/systemd/system/prometheus.service
+    target: /etc/systemd/system/prometheus.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus.service && sudo systemctl stop prometheus.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet prometheus.service || sudo systemctl enable prometheus.service
+        - systemctl is-active --quiet prometheus.service || sudo systemctl start prometheus.service
