@@ -5,11 +5,27 @@ note: a metrics server
 action: sync
 os:
   name: centos
+repository:
+  -
+    name: grafana
+    key:
+      url: https://rpm.grafana.com/gpg.key
+    list: |
+      [grafana]
+      name=grafana
+      baseurl=https://rpm.grafana.com
+      repo_gpgcheck=1
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://rpm.grafana.com/gpg.key
+      sslverify=1
+      sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 package:
   - epel-release
   - certbot
   - dnf-automatic
   - git
+  - grafana
   - nginx
   - tar
 user:
