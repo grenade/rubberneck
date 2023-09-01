@@ -53,6 +53,8 @@ command:
   - test -d /var/lib/prometheus || sudo useradd --system --create-home --home-dir /var/lib/prometheus --user-group prometheus
   - sudo chown -R prometheus:prometheus /var/lib/prometheus
   - test -d /etc/prometheus || sudo mkdir /etc/prometheus
+  - test -f /usr/lib/systemd/system/grafana-server.service && systemctl is-active grafana-server.service || sudo systemctl restart grafana-server.service
+  - test -f /usr/lib/systemd/system/grafana-server.service && systemctl is-enabled grafana-server.service || sudo systemctl enable grafana-server.service
   - test -f /etc/systemd/system/prometheus.service && systemctl is-active prometheus.service || sudo systemctl restart prometheus.service
   - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.6.1.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.6.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.6.1.linux-amd64/node_exporter )
