@@ -6,6 +6,7 @@ action: sync
 os:
   name: centos
 package:
+  - certbot
   - dnf-automatic
   - git
   - nginx
@@ -33,6 +34,7 @@ command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -d /var/lib/prometheus || sudo useradd --system --create-home --home-dir /var/lib/prometheus --user-group prometheus
+  - sudo chown -R prometheus:prometheus /var/lib/prometheus
   - test -d /etc/prometheus || sudo mkdir /etc/prometheus
   - test -f /etc/systemd/system/prometheus.service && systemctl is-active prometheus.service || sudo systemctl restart prometheus.service
   - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
@@ -68,3 +70,41 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled --quiet prometheus.service || sudo systemctl enable prometheus.service
         - systemctl is-active --quiet prometheus.service || sudo systemctl start prometheus.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/nginx/default.d/sites-enabled.conf
+    target: /etc/nginx/default.d/sites-enabled.conf
+    command:
+      pre:
+        - sudo mkdir -p /etc/nginx/sites-available
+        - sudo mkdir -p /etc/nginx/sites-enabled
+        - systemctl is-active --quiet nginx.service && sudo systemctl stop nginx.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
+        - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/nginx/sites-available/certbot.conf
+    target: /etc/nginx/sites-available/certbot.conf
+    command:
+      pre:
+        - sudo mkdir -p /etc/nginx/sites-available
+        - sudo mkdir -p /etc/nginx/sites-enabled
+        - systemctl is-active --quiet nginx.service && sudo systemctl stop nginx.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
+        - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
+        - '(test -s /etc/letsencrypt/renewal/$(hostname -f).conf && grep webroot_path /etc/letsencrypt/renewal/$(hostname -f).conf) || sudo certbot certonly --noninteractive --cert-name $(hostname -f) --expand --allow-subset-of-names --key-type ecdsa -m ops@thgttg.com --agree-tos --no-eff-email --preferred-challenges http --webroot --webroot-path /var/www/html -d $(hostname -f)'
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/nginx/sites-available/marvin.thgttg.com.conf
+    target: /etc/nginx/sites-available/marvin.thgttg.com.conf
+    command:
+      pre:
+        - sudo mkdir -p /etc/nginx/sites-available
+        - sudo mkdir -p /etc/nginx/sites-enabled
+        - systemctl is-active --quiet nginx.service && sudo systemctl stop nginx.service
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/marvin.thgttg.com.conf /etc/nginx/sites-enabled/marvin.thgttg.com.conf
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
+        - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
