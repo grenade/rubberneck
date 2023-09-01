@@ -27,6 +27,43 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID2DBQEMzpox7HwbD4Sxgh7H17kODtIOPGU1PicsQz2L
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+firewall:
+  -
+    note: prysm
+    port: 3500
+    protocol:
+      - tcp
+  -
+    note: geth metrics
+    port: 6060
+    protocol:
+      - tcp
+  -
+    note: geth rpc
+    port: 8545
+    protocol:
+      - tcp
+  -
+    note: node metrics
+    port: 9100
+    protocol:
+      - tcp
+  -
+    note: geth p2p
+    port: 12000
+    protocol:
+      - udp
+  -
+    note: geth p2p
+    port: 13000
+    protocol:
+      - tcp
+  -
+    note: geth p2p
+    port: 30303
+    protocol:
+      - tcp
+      - udp
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
