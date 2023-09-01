@@ -73,7 +73,7 @@ for intent in ${intents[@]}; do
       action=$(yq -r .action ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
 
-      if ! ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
+      if ! ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
         ssh_exit_code=$?
         echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
         continue
@@ -117,7 +117,7 @@ for intent in ${intents[@]}; do
           sort -u ${tmp}/${fqdn}/${username}/authorized_keys_raw > ${tmp}/${fqdn}/${username}/authorized_keys
           if [ -s ${tmp}/${fqdn}/${username}/authorized_keys ]; then
             chmod o-w ${tmp}/${fqdn}/${username}/authorized_keys
-            if rsync -e "ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key}" -og --chown=${username}:${username} --rsync-path='sudo rsync' -a ${tmp}/${fqdn}/${username}/authorized_keys ${ops_username}@${fqdn}:${remote_path}; then
+            if rsync -e "ssh -o ConnectTimeout=1 -i ${ops_private_key}" -og --chown=${username}:${username} --rsync-path='sudo rsync' -a ${tmp}/${fqdn}/${username}/authorized_keys ${ops_username}@${fqdn}:${remote_path}; then
               echo "[${fqdn}:${remote_path}authorized_keys] sync suceeded"
             else
               echo "[${fqdn}:${remote_path}authorized_keys] sync failed"
