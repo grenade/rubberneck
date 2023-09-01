@@ -47,7 +47,7 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl enable --now prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/eddie/etc/prometheus/prometheus.yml
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/prometheus/prometheus.yml
     target: /etc/prometheus/prometheus.yml
     command:
       pre:
@@ -57,7 +57,7 @@ file:
         - systemctl is-enabled --quiet prometheus.service || sudo systemctl enable prometheus.service
         - systemctl is-active --quiet prometheus.service || sudo systemctl start prometheus.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/eddie/etc/systemd/system/prometheus.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/systemd/system/prometheus.service
     target: /etc/systemd/system/prometheus.service
     command:
       pre:
