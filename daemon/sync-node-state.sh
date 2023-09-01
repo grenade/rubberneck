@@ -211,7 +211,7 @@ for intent in ${intents[@]}; do
         if [ ${#file_sha256_expected} -eq 64 ]; then
           # checksum provided.
           # manifest contains a sha256 checksum for file. require a matching sha256 checksum observation.
-          file_sha256_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sha256sum ${file_target} 2> /dev/null | cut -d ' ' -f 1")
+          file_sha256_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sudo sha256sum ${file_target} 2> /dev/null | cut -d ' ' -f 1")
         elif [[ ${file_source} == "https://raw.githubusercontent.com/"* ]]; then
           # eg: https://raw.githubusercontent.com/Manta-Network/rubberneck/main/config/calamari.seabird.systems/c2/etc/systemd/system/calamari.service
           # no checksum provided. checksum is discoverable from github repository.
@@ -228,7 +228,7 @@ for intent in ${intents[@]}; do
             --header "Authorization: Bearer ${rubberneck_github_token}" \
             --url "https://api.github.com/repos/${file_source_owner}/${file_source_repo}/contents/${file_source_path}?ref=${file_source_rev}" \
             | jq -r '.sha')
-          file_shagit_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "git hash-object ${file_target} 2> /dev/null")
+          file_shagit_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sudo git hash-object ${file_target} 2> /dev/null")
         fi
 
         if [ ${#file_sha256_expected} -eq 64 ] && [ ${#file_sha256_observed} -eq 64 ] && [ "${file_sha256_expected}" = "${file_sha256_observed}" ]; then
