@@ -6,6 +6,7 @@ action: sync
 os:
   name: centos
 package:
+  - epel-release
   - certbot
   - dnf-automatic
   - git
