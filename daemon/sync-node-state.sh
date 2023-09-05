@@ -24,6 +24,14 @@ if curl \
   https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/commits; then
   rubberneck_github_latest_sha=$(jq -r .[0].sha ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
   rubberneck_github_latest_date=$(jq -r .[0].commit.committer.date ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
+  if [ "${#rubberneck_github_latest_sha}" = "40" ]; then
+    echo "[init] repo: ${rubberneck_github_org}/${rubberneck_github_repo}"
+    echo "[init] commit: ${rubberneck_github_latest_sha} ${rubberneck_github_latest_date}"
+  else
+    echo "[init] error: failed to obtain latest git sha"
+    jq -c . ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json
+    exit 1
+  fi
 else
   echo "[init] error: failed to obtain commit list"
   exit 1
@@ -43,9 +51,6 @@ curl \
   --header "Accept: application/vnd.github+json" \
   --header "Authorization: Bearer ${rubberneck_github_token}" \
   https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest
-
-echo "[init] repo: ${rubberneck_github_org}/${rubberneck_github_repo}"
-echo "[init] commit: ${rubberneck_github_latest_sha} ${rubberneck_github_latest_date}"
 
 if [ -z "${intent_list}" ]; then
   intents=( $(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest.json) )
