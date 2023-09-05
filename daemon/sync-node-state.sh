@@ -15,15 +15,19 @@ rubberneck_app=$(basename "${0}")
 rubberneck_github_org=grenade
 rubberneck_github_repo=rubberneck
 rubberneck_github_token=$(yq -r .github.token ${HOME}/.rubberneck.yml)
-curl \
+if curl \
   --silent \
   --location \
   --output ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json \
   --header "Accept: application/vnd.github+json" \
   --header "Authorization: Bearer ${rubberneck_github_token}" \
-  https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/commits
-rubberneck_github_latest_sha=$(jq -r .[0].sha ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
-rubberneck_github_latest_date=$(jq -r .[0].commit.committer.date ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
+  https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/commits; then
+  rubberneck_github_latest_sha=$(jq -r .[0].sha ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
+  rubberneck_github_latest_date=$(jq -r .[0].commit.committer.date ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-commits.json)
+else
+  echo "[init] error: failed to obtain commit list"
+  exit 1
+fi
 
 ops_username=grenade
 if [ "$(hostname -s)" = "kavula" ]; then
