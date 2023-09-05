@@ -17,6 +17,14 @@ scrape_configs:
         targets:
           - eddie.thgttg.com
   -
+    job_name: thgttg.com - gpu
+    scheme: https
+    metrics_path: /metrics/gpu
+    static_configs:
+      -
+        targets:
+          - eddie.thgttg.com
+  -
     job_name: thgttg.com - geth
     scheme: https
     metrics_path: /metrics/geth

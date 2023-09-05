@@ -1,0 +1,13 @@
+[Unit]
+Description=prometheus gpu exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/nvidia_gpu_exporter --query-field-names=AUTO --web.listen-address=:9835
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
