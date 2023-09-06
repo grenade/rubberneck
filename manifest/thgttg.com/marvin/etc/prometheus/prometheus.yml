@@ -17,14 +17,6 @@ scrape_configs:
         targets:
           - eddie.thgttg.com
   -
-    job_name: thgttg.com - gpu
-    scheme: https
-    metrics_path: /metrics/gpu
-    static_configs:
-      -
-        targets:
-          - eddie.thgttg.com
-  -
     job_name: thgttg.com - geth
     scheme: https
     metrics_path: /metrics/geth
@@ -36,6 +28,14 @@ scrape_configs:
     job_name: nebra.systems - node
     scheme: https
     metrics_path: /metrics/node
+    static_configs:
+      -
+        targets:
+          - badass.nebra.systems
+  -
+    job_name: nebra.systems - gpu
+    scheme: https
+    metrics_path: /metrics/gpu
     static_configs:
       -
         targets:
