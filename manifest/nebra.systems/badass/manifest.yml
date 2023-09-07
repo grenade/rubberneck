@@ -38,6 +38,7 @@ user:
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - test -f /etc/systemd/system/prometheus-gpu-exporter.service && systemctl is-active prometheus-gpu-exporter.service || sudo systemctl restart prometheus-gpu-exporter.service
   - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.6.1.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.6.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.6.1.linux-amd64/node_exporter )
   - test -x /usr/local/bin/nvidia_gpu_exporter || ( curl -sLo /tmp/nvidia_gpu_exporter_1.2.0_linux_x86_64.tar.gz https://github.com/utkuozdemir/nvidia_gpu_exporter/releases/download/v1.2.0/nvidia_gpu_exporter_1.2.0_linux_x86_64.tar.gz && sudo tar xvfz /tmp/nvidia_gpu_exporter_1.2.0_linux_x86_64.tar.gz -C /usr/local/bin nvidia_gpu_exporter )
