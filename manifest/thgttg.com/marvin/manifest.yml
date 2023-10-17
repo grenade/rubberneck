@@ -31,7 +31,8 @@ repository:
       baseurl=https://packages.gitlab.com/gitlab/gitlab-ce/el/9/$basearch
       repo_gpgcheck=1
       gpgcheck=1
-      gpgkey=https://packages.gitlab.com/gpg.key
+      gpgkey=https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey
+          https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey/gitlab-gitlab-ce-3D645A26AB9FBD22.pub.gpg
       enabled=1
       sslverify=1
       sslcacert=/etc/pki/tls/certs/ca-bundle.crt
