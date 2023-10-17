@@ -20,11 +20,28 @@ repository:
       gpgkey=https://rpm.grafana.com/gpg.key
       sslverify=1
       sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+  -
+    name: gitlab-ce
+    source: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/config_file.repo?os=centos&dist=9
+    key:
+      url: https://packages.gitlab.com/gpg.key
+    list: |
+      [gitlab-ce]
+      name=gitlab-ce
+      baseurl=https://packages.gitlab.com/gitlab/gitlab-ce/el/9/$basearch
+      repo_gpgcheck=1
+      gpgcheck=1
+      gpgkey=https://packages.gitlab.com/gpg.key
+      enabled=1
+      sslverify=1
+      sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+      metadata_expire=300
 package:
   - epel-release
   - certbot
   - dnf-automatic
   - git
+  - gitlab-ce
   - grafana
   - nginx
   - tar
