@@ -156,3 +156,13 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled --quiet grafana-server.service || sudo systemctl enable grafana-server.service
         - systemctl is-active --quiet grafana-server.service || sudo systemctl start grafana-server.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/gitlab/gitlab.default.rb
+    target: /etc/gitlab/gitlab.default.rb
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/gitlab/gitlab.rb
+    target: /etc/gitlab/gitlab.rb
+    command:
+      post:
+        - sudo gitlab-ctl reconfigure
+        - sudo gitlab-ctl restart
