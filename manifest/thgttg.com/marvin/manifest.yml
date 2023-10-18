@@ -1,5 +1,5 @@
 ---
-hostname: eddie
+hostname: marvin
 domain: thgttg.com
 note: a metrics server
 action: sync
@@ -132,6 +132,7 @@ file:
         - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
         - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
         - '(test -s /etc/letsencrypt/renewal/$(hostname -f).conf && grep webroot_path /etc/letsencrypt/renewal/$(hostname -f).conf) || sudo certbot certonly --noninteractive --cert-name $(hostname -f) --expand --allow-subset-of-names --key-type ecdsa -m ops@thgttg.com --agree-tos --no-eff-email --preferred-challenges http --webroot --webroot-path /var/www/html -d $(hostname -f)'
+        - '(test -s /etc/letsencrypt/renewal/gitlab.thgttg.com.conf && grep webroot_path /etc/letsencrypt/renewal/gitlab.thgttg.com.conf) || sudo certbot certonly --noninteractive --cert-name gitlab.thgttg.com --expand --allow-subset-of-names --key-type ecdsa -m ops@thgttg.com --agree-tos --no-eff-email --preferred-challenges http --webroot --webroot-path /var/www/html -d gitlab.thgttg.com -d registry.thgttg.com -d mattermost.thgttg.com'
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/nginx/sites-available/marvin.thgttg.com.conf
     target: /etc/nginx/sites-available/marvin.thgttg.com.conf
@@ -156,6 +157,19 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled --quiet grafana-server.service || sudo systemctl enable grafana-server.service
         - systemctl is-active --quiet grafana-server.service || sudo systemctl start grafana-server.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/nginx/sites-available/gitlab.thgttg.com.conf
+    target: /etc/nginx/sites-available/gitlab.thgttg.com.conf
+    command:
+      pre:
+        - sudo mkdir -p /etc/nginx/sites-available
+        - sudo mkdir -p /etc/nginx/sites-enabled
+        - systemctl is-active --quiet nginx.service && sudo systemctl stop nginx.service
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/gitlab.thgttg.com.conf /etc/nginx/sites-enabled/gitlab.thgttg.com.conf
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
+        - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/gitlab/gitlab.default.rb
     target: /etc/gitlab/gitlab.default.rb
