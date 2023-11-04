@@ -86,7 +86,7 @@ command:
   #- test -x /usr/local/bin/geth || ( curl -sLo /tmp/geth-linux-amd64-1.12.2-bed84606.tar.gz https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.12.2-bed84606.tar.gz && sudo tar xvfz /tmp/geth-linux-amd64-1.12.2-bed84606.tar.gz -C /usr/local/bin --strip-components=1 geth-linux-amd64-1.12.2-bed84606/geth )
 
   # create celestia user and data directory
-  - test -d /data/celestia || sudo useradd --system --create-home --home-dir /data/celestia --user-group celestia
+  #- test -d /data/celestia || sudo useradd --system --create-home --home-dir /data/celestia --user-group celestia
 
   # prometheus exporters
   - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
