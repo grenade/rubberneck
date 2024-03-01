@@ -66,7 +66,7 @@ file:
         - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
         - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/thgttg.com/golgafrinchans/etc/systemd/system/lava.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/golgafrinchans/etc/systemd/system/lava.service
     target: /etc/systemd/system/lava.service
     command:
       pre:
