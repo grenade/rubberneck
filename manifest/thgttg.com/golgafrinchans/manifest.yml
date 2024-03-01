@@ -53,7 +53,7 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl enable --now prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/thgttg.com/golgafrinchans/var/lib/lava/.local/bin/update-binary-lava.sh
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/golgafrinchans/var/lib/lava/.local/bin/update-binary-lava.sh
     target: /var/lib/lava/.local/bin/update-binary-lava.sh
     command:
       pre:
