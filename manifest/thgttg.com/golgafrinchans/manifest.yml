@@ -68,6 +68,7 @@ file:
   -
     source: https://github.com/lavanet/lava-config/raw/main/testnet-2/genesis_json/genesis.json
     target: /var/lib/lava/.lava/config/genesis.json
+    sha256: f7a0c7d2587d2bf640570309137c905eac834f0aba99f90b4c10f45ef8334583
     command:
       pre:
         - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
@@ -80,6 +81,7 @@ file:
   -
     source: https://github.com/lavanet/lava-config/raw/main/testnet-2/default_lavad_config_files/app.toml
     target: /var/lib/lava/.lava/config/app.toml
+    sha256: b2640d3d35d719e3ce45e2710a85f3255a66424fa8a8aedec7ea7f6e9f51e8ae
     command:
       pre:
         - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
@@ -92,6 +94,7 @@ file:
   -
     source: https://github.com/lavanet/lava-config/raw/main/testnet-2/default_lavad_config_files/client.toml
     target: /var/lib/lava/.lava/config/client.toml
+    sha256: 6b06c3fb0f9c587da1877fbb19b525a533674c37b6fba160d1d85cc82092f442
     command:
       pre:
         - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
@@ -104,6 +107,7 @@ file:
   -
     source: https://github.com/lavanet/lava-config/raw/main/testnet-2/default_lavad_config_files/config.toml
     target: /var/lib/lava/.lava/config/config.toml
+    sha256: 1ccb914024ee7fd1799cdedd180a258b28e2c5ccc2436f5a5a1596cee9edded3
     command:
       pre:
         - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
