@@ -1,0 +1,77 @@
+---
+hostname: golgafrinchans
+domain: thgttg.com
+note: staking validators
+action: sync
+os:
+  name: fedora
+package:
+  - dnf-automatic
+  - git
+user:
+  -
+    username: root
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+firewall:
+  -
+    note: node metrics
+    port: 9100
+    protocol:
+      - tcp
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+
+  # create lava user and lava data directory
+  - id lava || sudo useradd --system --create-home --home-dir /var/lib/lava --user-group lava
+  - test -d /var/lib/lava/.lava || ( mkdir -p /var/lib/lava/.lava && chown -R lava:lava /var/lib/lava )
+
+  # prometheus exporters
+  - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.7.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.7.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.7.0.linux-amd64/node_exporter )
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable --now prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/thgttg.com/golgafrinchans/var/lib/lava/.local/bin/update-binary-lava.sh
+    target: /var/lib/lava/.local/bin/update-binary-lava.sh
+    command:
+      pre:
+        - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
+        - sudo test -d /var/lib/lava/.local/bin || ( sudo mkdir -p /var/lib/lava/.local/bin && sudo chown -R lava:lava /var/lib/lava )
+      post:
+        - sudo chown lava:lava /var/lib/lava/.local/bin/update-binary-lava.sh
+        - sudo chmod +x /var/lib/lava/.local/bin/update-binary-lava.sh
+        - sudo systemctl daemon-reload
+        - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
+        - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/thgttg.com/golgafrinchans/etc/systemd/system/lava.service
+    target: /etc/systemd/system/lava.service
+    command:
+      pre:
+        - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
+        - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
