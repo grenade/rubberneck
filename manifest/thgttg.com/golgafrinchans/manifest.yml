@@ -37,7 +37,7 @@ command:
 
   # create lava user and lava data directory
   - id lava || sudo useradd --system --create-home --home-dir /var/lib/lava --user-group lava
-  - test -d /var/lib/lava/.lava || ( mkdir -p /var/lib/lava/.lava && chown -R lava:lava /var/lib/lava )
+  - sudo test -d /var/lib/lava/.lava || ( sudo mkdir -p /var/lib/lava/.lava && sudo chown -R lava:lava /var/lib/lava )
 
   # prometheus exporters
   - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
