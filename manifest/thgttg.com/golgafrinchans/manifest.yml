@@ -58,10 +58,22 @@ file:
     command:
       pre:
         - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
-        - sudo test -d /var/lib/lava/.local/bin || ( sudo mkdir -p /var/lib/lava/.local/bin && sudo chown -R lava:lava /var/lib/lava )
+        - sudo test -d /var/lib/lava/.local/bin || ( sudo mkdir -p /var/lib/lava/.local/bin && sudo chown -R lava:lava /var/lib/lava && sudo semanage fcontext -a -t bin_t '/var/lib/lava/.local/bin.*' && sudo chcon -Rv -u system_u -t bin_t '/var/lib/lava/.local/bin' && sudo restorecon -R -v /var/lib/lava/.local/bin )
       post:
         - sudo chown lava:lava /var/lib/lava/.local/bin/update-binary-lava.sh
         - sudo chmod +x /var/lib/lava/.local/bin/update-binary-lava.sh
+        - sudo systemctl daemon-reload
+        - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
+        - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
+  -
+    source: https://github.com/lavanet/lava-config/raw/main/testnet-2/genesis_json/genesis.json
+    target: /var/lib/lava/.lava/config/genesis.json
+    command:
+      pre:
+        - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
+        - sudo test -d /var/lib/lava/.lava/config || ( sudo mkdir -p /var/lib/lava/.lava/config && sudo chown -R lava:lava /var/lib/lava )
+      post:
+        - sudo chown lava:lava /var/lib/lava/.lava/config/genesis.json
         - sudo systemctl daemon-reload
         - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
         - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
