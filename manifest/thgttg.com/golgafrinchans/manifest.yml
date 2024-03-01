@@ -78,6 +78,42 @@ file:
         - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
         - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
   -
+    source: https://github.com/lavanet/lava-config/raw/main/testnet-2/default_lavad_config_files/app.toml
+    target: /var/lib/lava/.lava/config/app.toml
+    command:
+      pre:
+        - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
+        - sudo test -d /var/lib/lava/.lava/config || ( sudo mkdir -p /var/lib/lava/.lava/config && sudo chown -R lava:lava /var/lib/lava )
+      post:
+        - sudo chown lava:lava /var/lib/lava/.lava/config/app.toml
+        - sudo systemctl daemon-reload
+        - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
+        - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
+  -
+    source: https://github.com/lavanet/lava-config/raw/main/testnet-2/default_lavad_config_files/client.toml
+    target: /var/lib/lava/.lava/config/client.toml
+    command:
+      pre:
+        - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
+        - sudo test -d /var/lib/lava/.lava/config || ( sudo mkdir -p /var/lib/lava/.lava/config && sudo chown -R lava:lava /var/lib/lava )
+      post:
+        - sudo chown lava:lava /var/lib/lava/.lava/config/client.toml
+        - sudo systemctl daemon-reload
+        - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
+        - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
+  -
+    source: https://github.com/lavanet/lava-config/raw/main/testnet-2/default_lavad_config_files/config.toml
+    target: /var/lib/lava/.lava/config/config.toml
+    command:
+      pre:
+        - systemctl is-active --quiet lava.service && sudo systemctl stop lava.service
+        - sudo test -d /var/lib/lava/.lava/config || ( sudo mkdir -p /var/lib/lava/.lava/config && sudo chown -R lava:lava /var/lib/lava )
+      post:
+        - sudo chown lava:lava /var/lib/lava/.lava/config/config.toml
+        - sudo systemctl daemon-reload
+        - sudo systemctl is-enabled --quiet lava.service || sudo systemctl enable lava.service
+        - sudo systemctl is-active --quiet lava.service || sudo systemctl start lava.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/golgafrinchans/etc/systemd/system/lava.service
     target: /etc/systemd/system/lava.service
     command:

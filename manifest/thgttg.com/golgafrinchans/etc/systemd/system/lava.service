@@ -1,6 +1,7 @@
 [Unit]
 Description=lavad
 After=network-online.target
+ConditionPathExists=/var/lib/lava/.lava/config/genesis.json
 ConditionPathExists=/var/lib/lava/.local/bin/update-binary-lava.sh
 
 [Service]
