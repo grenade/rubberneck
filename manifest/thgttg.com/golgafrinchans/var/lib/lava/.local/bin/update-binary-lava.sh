@@ -32,7 +32,9 @@ fi
 for toml in {app,client,config}.toml; do
   path=${config_path}/${toml}
   url=${config_url}/${toml}
-  if curl \
+  if [ -f ${path} ]; then
+    echo "${path} observed, download skipped (${url})"
+  elif curl \
     --silent \
     --location \
     --output ${path} \
