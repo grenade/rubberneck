@@ -6,16 +6,29 @@ repo=lavanet/lava
 #  --location \
 #  --url https://api.github.com/repos/${repo}/tags \
 #  | jq -r '.[0].name')
-latest_tag=v0.22.0
+
+# requires: sudo usermod -a -G systemd-journal lava
+latest_upgrade_panic=$(journalctl \
+  --unit lava.service \
+  --grep UPGRADE \
+  --lines 1 \
+  --no-pager)
+if [[ ${latest_upgrade_panic} =~ (panic: UPGRADE [\"](.*)[\"] NEEDED) ]]; then
+  required_tag=${BASH_REMATCH[2]}
+else
+  required_tag=v0.21.1.2
+fi
+echo ${required_tag}
+
 binary_path=/var/lib/lava/.local/bin/lavad
-binary_url=https://github.com/${repo}/releases/download/${latest_tag}/lavad-${latest_tag}-linux-amd64
+binary_url=https://github.com/${repo}/releases/download/${required_tag}/lavad-${required_tag}-linux-amd64
 config_path=/var/lib/lava/.lava/config
 config_url=https://github.com/lavanet/lava-config/raw/main/testnet-2/default_lavad_config_files
 
 [ -d $(dirname ${binary_path}) ] || mkdir -p $(dirname ${binary_path})
 
 observed_version=$([ -x ${binary_path} ] && ${binary_path} version || echo "")
-if [ "${observed_version}" = "${latest_tag:1}" ]; then
+if [ "${observed_version}" = "${required_tag:1}" ]; then
   echo "${binary_path} version ${observed_version} matches latest version at ${binary_url}"
 elif curl \
   --silent \
@@ -23,9 +36,9 @@ elif curl \
   --output ${binary_path} \
   --url ${binary_url} \
   && chmod +x ${binary_path}; then
-  echo "${binary_path} version ${latest_tag:1} downloaded from ${binary_url}"
+  echo "${binary_path} version ${required_tag:1} downloaded from ${binary_url}"
 else
-  echo "failed to download ${binary_path} version ${latest_tag:1} from ${binary_url}"
+  echo "failed to download ${binary_path} version ${required_tag:1} from ${binary_url}"
   exit 1
 fi
 
