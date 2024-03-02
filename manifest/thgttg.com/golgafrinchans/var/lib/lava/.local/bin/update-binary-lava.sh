@@ -15,10 +15,11 @@ latest_upgrade_panic=$(journalctl \
   --no-pager)
 if [[ ${latest_upgrade_panic} =~ (panic: UPGRADE [\"](.*)[\"] NEEDED) ]]; then
   required_tag=${BASH_REMATCH[2]}
+  echo "determined required version from system journal: ${required_tag}"
 else
   required_tag=v0.21.1.2
+  echo "using default required version: ${required_tag}"
 fi
-echo ${required_tag}
 
 binary_path=/var/lib/lava/.local/bin/lavad
 binary_url=https://github.com/${repo}/releases/download/${required_tag}/lavad-${required_tag}-linux-amd64
