@@ -6,7 +6,7 @@ repo=lavanet/lava
 #  --location \
 #  --url https://api.github.com/repos/${repo}/tags \
 #  | jq -r '.[0].name')
-latest_tag=v0.21.1.2
+latest_tag=v0.22.0
 binary_path=/var/lib/lava/.local/bin/lavad
 binary_url=https://github.com/${repo}/releases/download/${latest_tag}/lavad-${latest_tag}-linux-amd64
 config_path=/var/lib/lava/.lava/config
