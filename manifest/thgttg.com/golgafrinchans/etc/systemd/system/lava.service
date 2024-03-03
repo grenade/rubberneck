@@ -39,7 +39,7 @@ ExecStart=/var/lib/lava/.local/bin/lavad start \
     --transport socket \
     --with-tendermint \
     --log_format plain \
-    --log_level debug
+    --log_level info
 Restart=always
 RestartSec=180
 LimitNOFILE=65536
