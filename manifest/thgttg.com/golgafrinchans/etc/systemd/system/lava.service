@@ -8,10 +8,11 @@ ConditionPathExists=/var/lib/lava/.local/bin/update-binary-lava.sh
 User=lava
 Group=lava
 ExecStartPre=/var/lib/lava/.local/bin/update-binary-lava.sh
+ExecStopPost=/var/lib/lava/.local/bin/lava-service-crash-handler.sh
 ExecStart=/var/lib/lava/.local/bin/lavad start \
     --abci socket \
     --address tcp://0.0.0.0:26658 \
-    --api.address tcp://127.0.0.1:1317 \
+    --api.address tcp://0.0.0.0:1317 \
     --api.enable \
     --api.max-open-connections 1000 \
     --api.rpc-max-body-bytes 1000000 \
