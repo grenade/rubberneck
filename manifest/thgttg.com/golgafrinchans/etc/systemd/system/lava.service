@@ -33,7 +33,7 @@ ExecStart=/var/lib/lava/.local/bin/lavad start \
     --p2p.laddr tcp://0.0.0.0:26656 \
     --p2p.persistent_peers 3693ea5a8a9c0590440a7d6c9a98a022ce3b2455@lava-testnet-peer.itrocket.net:20656,97668e8113f878373e095be7475e3cb069b02072@142.132.214.131:60656,40046fe63bdaa9efde27707b0d3de0bf84fedf80@86.111.48.158:26656,13a9209a4d08803a3becac57de8eb02dd51f8f41@65.109.23.114:19956,93b9b060b2ca055faa5f76b6b435a621303217c0@43.134.211.5:26656,0e0e01f932a124c45f7f8600e38dba445b5f5dc4@65.108.226.183:19956,6ba3b6ec03839afffa64c83e18ff80a681f4968d@65.108.194.40:21756,51789af428293359348020d298143946c9a0492e@5.161.132.110:26656,7ee8434b107b32f764f42bcc82b6fbfc25011d8f@65.108.75.107:28656,0a528da95ca8025ef4043b6e73f1e789f4102940@176.103.222.22:26656,7902b049bae54b62ca6a70f5f4c60411cf13ae52@lava-testnet.peers.l0vd.com:20656 \
     --p2p.pex \
-    --p2p.seeds 3a445bfdbe2d0c8ee82461633aa3af31bc2b4dc0@testnet2-seed-node.lavanet.xyz:26656,e593c7a9ca61f5616119d6beb5bd8ef5dd28d62d@testnet2-seed-node2.lavanet.xyz:26656 \
+    --p2p.seeds 3a445bfdbe2d0c8ee82461633aa3af31bc2b4dc0@testnet2-seed-node.lavanet.xyz:26656,e593c7a9ca61f5616119d6beb5bd8ef5dd28d62d@testnet2-seed-node2.lavanet.xyz:26656,lava-testnet-seed.itrocket.net \
     --pruning default \
     --rpc.laddr tcp://127.0.0.1:26657 \
     --transport socket \
