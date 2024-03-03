@@ -36,7 +36,7 @@ command:
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
 
   # create lava user and lava data directory
-  - id lava || sudo useradd --system --create-home --home-dir /var/lib/lava --user-group lava
+  - id lava || sudo useradd --system --create-home --home-dir /var/lib/lava --user-group --groups systemd-journal lava
   - sudo test -d /var/lib/lava/.lava || ( sudo mkdir -p /var/lib/lava/.lava && sudo chown -R lava:lava /var/lib/lava )
 
   # prometheus exporters
