@@ -7,7 +7,10 @@ repo=lavanet/lava
 #  --url https://api.github.com/repos/${repo}/tags \
 #  | jq -r '.[0].name')
 
-# requires: sudo usermod -a -G systemd-journal lava
+if ! [[ " $(id -Gn) " == *" systemd-journal "* ]]; then
+  echo "add user: ${USER}, to group: systemd-journal with: 'sudo usermod -a -G systemd-journal ${USER}'"
+  exit 1
+fi
 latest_upgrade_panic=$(journalctl \
   --unit lava.service \
   --grep UPGRADE \
@@ -17,7 +20,8 @@ if [[ ${latest_upgrade_panic} =~ (panic: UPGRADE [\"](.*)[\"] NEEDED) ]]; then
   required_tag=${BASH_REMATCH[2]}
   echo "determined required version from system journal: ${required_tag}"
 else
-  required_tag=v0.21.1.2
+  #required_tag=v0.21.1.2
+  required_tag=v0.22.0
   echo "using default required version: ${required_tag}"
 fi
 
