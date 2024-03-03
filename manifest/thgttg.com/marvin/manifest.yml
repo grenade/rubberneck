@@ -20,29 +20,11 @@ repository:
       gpgkey=https://rpm.grafana.com/gpg.key
       sslverify=1
       sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-  -
-    name: gitlab-ce
-    source: https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/config_file.repo?os=centos&dist=9
-    key:
-      url: https://packages.gitlab.com/gpg.key
-    list: |
-      [gitlab-ce]
-      name=gitlab-ce
-      baseurl=https://packages.gitlab.com/gitlab/gitlab-ce/el/9/$basearch
-      repo_gpgcheck=1
-      gpgcheck=1
-      gpgkey=https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey
-          https://packages.gitlab.com/gitlab/gitlab-ce/gpgkey/gitlab-gitlab-ce-3D645A26AB9FBD22.pub.gpg
-      enabled=1
-      sslverify=1
-      sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-      metadata_expire=300
 package:
   - epel-release
   - certbot
   - dnf-automatic
   - git
-  - gitlab-ce
   - grafana
   - jq
   - nginx
@@ -76,8 +58,8 @@ command:
   - ( test -f /usr/lib/systemd/system/grafana-server.service && systemctl is-enabled grafana-server.service ) || sudo systemctl enable grafana-server.service
   - test -f /etc/systemd/system/prometheus.service && systemctl is-active prometheus.service || sudo systemctl restart prometheus.service
   - test -f /etc/systemd/system/prometheus-node-exporter.service && systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
-  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.6.1.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.6.1/node_exporter-1.6.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.6.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.6.1.linux-amd64/node_exporter )
-  - test -x /usr/local/bin/prometheus || ( curl -sLo /tmp/prometheus-2.47.0-rc.0.linux-amd64.tar.gz https://github.com/prometheus/prometheus/releases/download/v2.47.0-rc.0/prometheus-2.47.0-rc.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/prometheus-2.47.0-rc.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 prometheus-2.47.0-rc.0.linux-amd64/prometheus prometheus-2.47.0-rc.0.linux-amd64/promtool && sudo tar xvfz /tmp/prometheus-2.47.0-rc.0.linux-amd64.tar.gz -C /etc/prometheus --strip-components=1 prometheus-2.47.0-rc.0.linux-amd64/console_libraries prometheus-2.47.0-rc.0.linux-amd64/consoles )
+  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.7.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.7.0/node_exporter-1.7.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.7.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.7.0.linux-amd64/node_exporter )
+  - test -x /usr/local/bin/prometheus || ( curl -sLo /tmp/prometheus-2.50.1.linux-amd64.tar.gz https://github.com/prometheus/prometheus/releases/download/v2.50.1/prometheus-2.50.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/prometheus-2.50.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 prometheus-2.50.1.linux-amd64/prometheus prometheus-2.50.1.linux-amd64/promtool && sudo tar xvfz /tmp/prometheus-2.50.1.linux-amd64.tar.gz -C /etc/prometheus --strip-components=1 prometheus-2.50.1.linux-amd64/console_libraries prometheus-2.50.1.linux-amd64/consoles )
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
@@ -133,7 +115,6 @@ file:
         - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
         - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
         - '(test -s /etc/letsencrypt/renewal/$(hostname -f).conf && grep webroot_path /etc/letsencrypt/renewal/$(hostname -f).conf) || sudo certbot certonly --noninteractive --cert-name $(hostname -f) --expand --allow-subset-of-names --key-type ecdsa -m ops@thgttg.com --agree-tos --no-eff-email --preferred-challenges http --webroot --webroot-path /var/www/html -d $(hostname -f)'
-        - '(test -s /etc/letsencrypt/renewal/gitlab.thgttg.com.conf && grep webroot_path /etc/letsencrypt/renewal/gitlab.thgttg.com.conf) || sudo certbot certonly --noninteractive --cert-name gitlab.thgttg.com --expand --allow-subset-of-names --key-type ecdsa -m ops@thgttg.com --agree-tos --no-eff-email --preferred-challenges http --webroot --webroot-path /var/www/html -d gitlab.thgttg.com -d registry.thgttg.com -d mattermost.thgttg.com'
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/nginx/sites-available/marvin.thgttg.com.conf
     target: /etc/nginx/sites-available/marvin.thgttg.com.conf
@@ -158,26 +139,3 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled --quiet grafana-server.service || sudo systemctl enable grafana-server.service
         - systemctl is-active --quiet grafana-server.service || sudo systemctl start grafana-server.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/nginx/sites-available/gitlab.thgttg.com.conf
-    target: /etc/nginx/sites-available/gitlab.thgttg.com.conf
-    command:
-      pre:
-        - sudo mkdir -p /etc/nginx/sites-available
-        - sudo mkdir -p /etc/nginx/sites-enabled
-        - systemctl is-active --quiet nginx.service && sudo systemctl stop nginx.service
-      post:
-        - sudo ln -sfr /etc/nginx/sites-available/gitlab.thgttg.com.conf /etc/nginx/sites-enabled/gitlab.thgttg.com.conf
-        - sudo systemctl daemon-reload
-        - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
-        - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/gitlab/gitlab.default.rb
-    target: /etc/gitlab/gitlab.default.rb
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/gitlab/gitlab.rb
-    target: /etc/gitlab/gitlab.rb
-    command:
-      post:
-        - sudo gitlab-ctl reconfigure
-        - sudo gitlab-ctl restart
