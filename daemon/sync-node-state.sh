@@ -83,12 +83,12 @@ for intent in ${intents[@]}; do
       action=$(yq -r .action ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
 
-      if ! ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} exit; then
-        ssh_exit_code=$?
+      ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} exit
+      ssh_exit_code=$?
+      if [ ${ssh_exit_code} -ne 0 ] ; then
         echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
         continue
       else
-        ssh_exit_code=$?
         echo "[${ops_username}@${fqdn}] initial connection succeeded with exit code: ${ssh_exit_code}"
       fi
 
