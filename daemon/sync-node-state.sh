@@ -77,12 +77,13 @@ for intent in ${intents[@]}; do
       --output ${manifest_path} \
       https://raw.githubusercontent.com/${rubberneck_github_org}/${rubberneck_github_repo}/${rubberneck_github_latest_sha}/manifest/${intent}/${hostname}/manifest.yml; then
       domain=$(yq -r .domain ${manifest_path})
+      ssh_port=$(yq -r '.ssh.port // 22' ${manifest_path})
       fqdn=${hostname}.${domain}
       echo "[${intent}/${fqdn}] manifest fetch suceeded"
       action=$(yq -r .action ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
 
-      if ! ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key} ${ops_username}@${fqdn} exit; then
+      if ! ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} exit; then
         ssh_exit_code=$?
         echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
         continue
@@ -126,7 +127,7 @@ for intent in ${intents[@]}; do
           sort -u ${tmp}/${fqdn}/${username}/authorized_keys_raw > ${tmp}/${fqdn}/${username}/authorized_keys
           if [ -s ${tmp}/${fqdn}/${username}/authorized_keys ]; then
             chmod o-w ${tmp}/${fqdn}/${username}/authorized_keys
-            if rsync -e "ssh -o ConnectTimeout=1 -i ${ops_private_key}" -og --chown=${username}:${username} --rsync-path='sudo rsync' -a ${tmp}/${fqdn}/${username}/authorized_keys ${ops_username}@${fqdn}:${remote_path}; then
+            if rsync -e "ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port}" -og --chown=${username}:${username} --rsync-path='sudo rsync' -a ${tmp}/${fqdn}/${username}/authorized_keys ${ops_username}@${fqdn}:${remote_path}; then
               echo "[${fqdn}:${remote_path}authorized_keys] sync suceeded"
             else
               echo "[${fqdn}:${remote_path}authorized_keys] sync failed"
@@ -162,16 +163,16 @@ for intent in ${intents[@]}; do
         if [[ ${dnf_os[@]} =~ ${os} ]]; then
           repository_key_url=$(_decode_property ${repository_as_base64} .key.url)
           repository_key_sha_expected=$(_decode_property ${repository_as_base64} .key.sha)
-          repository_key_sha_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sha256sum ${repo_key_path}/${repository_name}.asc 2> /dev/null | cut -d ' ' -f 1")
+          repository_key_sha_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sha256sum ${repo_key_path}/${repository_name}.asc 2> /dev/null | cut -d ' ' -f 1")
           if [ "${repository_key_sha_expected}" = "${repository_key_sha_observed}" ]; then
             echo "[${fqdn}:repository ${repository_index}] repository key validation succeeded. target: ${repo_key_path}/${repository_name}.asc, source: ${repository_key_url}, sha256 expected: ${repository_key_sha_expected}, observed: ${repository_key_sha_observed}"
-          elif ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} sudo curl -sLo ${repo_key_path}/${repository_name}.asc ${repository_key_url}; then
+          elif ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${repo_key_path}/${repository_name}.asc ${repository_key_url}; then
             echo "[${fqdn}:repository ${repository_index}] repository key download succeeded (${repo_key_path}/${repository_name}.asc, ${repository_key_url})"
           else
             echo "[${fqdn}:repository ${repository_index}] repository key download failed (${repo_key_path}/${repository_name}.asc, ${repository_key_url})"
           fi
         fi
-        if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "echo '${repository_list}' | sudo dd of=${repo_list_path}/${repository_name}.${repo_list_ext}"; then
+        if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "echo '${repository_list}' | sudo dd of=${repo_list_path}/${repository_name}.${repo_list_ext}"; then
           echo "[${fqdn}:repository ${repository_index}] repository list creation succeeded (${repo_list_path}/${repository_name}.${repo_list_ext})"
         else
           echo "[${fqdn}:repository ${repository_index}] repository list creation failed (${repo_list_path}/${repository_name}.${repo_list_ext})"
@@ -181,10 +182,10 @@ for intent in ${intents[@]}; do
       package_list=$(yq -r '(.package//empty)|.[]' ${manifest_path})
       package_index=0
       for package in ${package_list[@]}; do
-        if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} ${package_verifier} ${package} &> /dev/null; then
+        if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} ${package_verifier} ${package} &> /dev/null; then
           echo "[${fqdn}:package ${package_index}] install detected, package: ${package}"
         elif [ "${action}" = "sync" ]; then
-          if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} sudo ${package_manager} install -y ${package}; then
+          if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo ${package_manager} install -y ${package}; then
             echo "[${fqdn}:package ${package_index}] install succeeded, package: ${package}"
           else
             echo "[${fqdn}:package ${package_index}] install failed, package: ${package}"
@@ -201,7 +202,7 @@ for intent in ${intents[@]}; do
       for command_as_base64 in ${command_list_as_base64[@]}; do
         command=$(echo ${command_as_base64} | base64 --decode)
         if [ "${action}" = "sync" ]; then
-          ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "${command}" &> /dev/null
+          ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> /dev/null
           command_exit_code=$?
           echo "[${fqdn}:command ${command_index}] exit code: ${command_exit_code}, command: ${command}"
         else
@@ -220,7 +221,7 @@ for intent in ${intents[@]}; do
         if [ ${#file_sha256_expected} -eq 64 ]; then
           # checksum provided.
           # manifest contains a sha256 checksum for file. require a matching sha256 checksum observation.
-          file_sha256_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sudo sha256sum ${file_target} 2> /dev/null | cut -d ' ' -f 1")
+          file_sha256_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${file_target} 2> /dev/null | cut -d ' ' -f 1")
         elif [[ ${file_source} == "https://raw.githubusercontent.com/"* ]]; then
           # eg: https://raw.githubusercontent.com/Manta-Network/rubberneck/main/config/calamari.seabird.systems/c2/etc/systemd/system/calamari.service
           # no checksum provided. checksum is discoverable from github repository.
@@ -237,7 +238,7 @@ for intent in ${intents[@]}; do
             --header "Authorization: Bearer ${rubberneck_github_token}" \
             --url "https://api.github.com/repos/${file_source_owner}/${file_source_repo}/contents/${file_source_path}?ref=${file_source_rev}" \
             | jq -r '.sha')
-          file_shagit_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "sudo git hash-object ${file_target} 2> /dev/null")
+          file_shagit_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo git hash-object ${file_target} 2> /dev/null")
         fi
 
         if [ ${#file_sha256_expected} -eq 64 ] && [ ${#file_sha256_observed} -eq 64 ] && [ "${file_sha256_expected}" = "${file_sha256_observed}" ]; then
@@ -260,7 +261,7 @@ for intent in ${intents[@]}; do
             command=$(echo ${file_pre_command_as_base64} | base64 --decode)
             echo "[${fqdn}:file ${file_index}, pre command ${command_index}] ${command}"
             if [ "${action}" = "sync" ]; then
-              ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "${command}" &> /dev/null
+              ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> /dev/null
               command_exit_code=$?
               echo "[${fqdn}:file ${file_index}, pre command ${command_index}] exit code: ${command_exit_code}, command: ${command}"
             else
@@ -269,13 +270,13 @@ for intent in ${intents[@]}; do
             command_index=$((command_index+1))
           done
           if [ "${action}" = "sync" ]; then
-            if ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} sudo curl -sLo ${file_target} ${file_source}; then
+            if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${file_target} ${file_source}; then
               echo "[${fqdn}:file ${file_index}] download succeeded (${file_target}, ${file_source})"
               file_post_command_list_as_base64=$(_decode_property ${file_as_base64} '(.command.post//empty)|.[]|@base64')
               command_index=0
               for file_post_command_as_base64 in ${file_post_command_list_as_base64[@]}; do
                 command=$(echo ${file_post_command_as_base64} | base64 --decode)
-                ssh -o ConnectTimeout=1 -i ${ops_private_key} ${ops_username}@${fqdn} "${command}" &> /dev/null
+                ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> /dev/null
                 command_exit_code=$?
                 echo "[${fqdn}:file ${file_index}, post command ${command_index}] exit code: ${command_exit_code}, command: ${command}"
                 command_index=$((command_index+1))
