@@ -1,0 +1,17 @@
+[Unit]
+Description=sync node state dimitar-talev
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+Environment=HOME=/root
+Environment=intent_list=dimitar-talev
+ExecStartPre=curl -sLo /usr/local/bin/sync-node-state-dimitar-talev.sh https://raw.githubusercontent.com/grenade/rubberneck/main/daemon/sync-node-state.sh
+ExecStartPre=chmod +x /usr/local/bin/sync-node-state-dimitar-talev.sh
+ExecStart=/usr/local/bin/sync-node-state-dimitar-talev.sh
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
