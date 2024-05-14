@@ -85,7 +85,7 @@ for intent in ${intents[@]}; do
 
       ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} exit
       ssh_exit_code=$?
-      if [ ${ssh_exit_code} -ne 255 ] ; then
+      if [ "${ssh_exit_code}" -ne "255" ] ; then
         echo "[${ops_username}@${fqdn}] initial connection failed with exit code: ${ssh_exit_code}"
         continue
       else
