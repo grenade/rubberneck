@@ -9,7 +9,9 @@ os:
 package:
   - git
   - certbot
+  - cockpit-pcp
   - curl
+  - dnf-automatic
   - python3-certbot-dns-cloudflare
 user:
   -
@@ -34,3 +36,19 @@ file:
       post:
         - sudo systemctl daemon-reload
         - sudo systemctl enable --now prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/conf.d/sites-enabled.conf
+    target: /etc/nginx/conf.d/sites-enabled.conf
+    command:
+      pre:
+        - sudo mkdir -p /etc/nginx/sites-available
+        - sudo mkdir -p /etc/nginx/sites-enabled
+      post:
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/gnoyager1.v8r.io.conf
+    target: /etc/nginx/sites-available/gnoyager1.v8r.io.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/gnoyager1.v8r.io.conf /etc/nginx/sites-enabled/gnoyager1.v8r.io.conf
+        - sudo systemctl restart nginx.service
