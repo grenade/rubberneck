@@ -8,7 +8,9 @@ os:
   name: fedora
 package:
   - git
+  - cockpit-pcp
   - curl
+  - dnf-automatic
 user:
   -
     username: grenade
@@ -22,6 +24,7 @@ command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.8.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.8.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.8.0.linux-amd64/node_exporter )
+  - test -x /usr/local/bin/gnoland || ( curl -sLo /tmp/gnoland-v1.0.5-linux-amd64.tar.gz https://github.com/grenade/gno/releases/download/v1.0.5/gnoland-v1.0.5-linux-amd64.tar.gz && sudo tar xvfz /tmp/gnoland-v1.0.5-linux-amd64.tar.gz -C /usr/local/bin gnoland )
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
@@ -31,4 +34,16 @@ file:
         - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
       post:
         - sudo systemctl daemon-reload
-        - sudo systemctl enable --now prometheus-node-exporter.service
+        - sudo systemctl enable prometheus-node-exporter.service
+        - sudo systemctl start prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/gno/gnoyager1/etc/systemd/system/gnoland.service
+    target: /etc/systemd/system/gnoland.service
+    command:
+      pre:
+        - systemctl is-active --quiet gnoland.service && sudo systemctl stop gnoland.service
+        - id gnoland || sudo useradd --system --create-home --home-dir /var/lib/gnoland --user-group gnoland
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable gnoland.service
+        - sudo systemctl start gnoland.service
