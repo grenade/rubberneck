@@ -89,6 +89,20 @@ file:
         - sudo systemctl enable tx-indexer.service
         - sudo systemctl start tx-indexer.service
   -
+    source: https://raw.githubusercontent.com/gnolang/supernova/main/scripts/p/package.gno
+    target: /var/lib/supernova/scripts/p/package.gno
+    command:
+      pre:
+        - id supernova || sudo useradd --system --create-home --home-dir /var/lib/supernova --user-group supernova
+        - sudo -u supernova mkdir -p /var/lib/supernova/scripts/p
+  -
+    source: https://raw.githubusercontent.com/gnolang/supernova/main/scripts/r/realm.gno
+    target: /var/lib/supernova/scripts/r/realm.gno
+    command:
+      pre:
+        - id supernova || sudo useradd --system --create-home --home-dir /var/lib/supernova --user-group supernova
+        - sudo -u supernova mkdir -p /var/lib/supernova/scripts/r
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/gno/gnoyager1/etc/systemd/system/supernova-realm-call.service
     target: /etc/systemd/system/supernova-realm-call.service
     command:
