@@ -1,0 +1,26 @@
+[Unit]
+Description=supernova gnoland stress test realm call
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/var/lib/supernova/data
+ConditionPathExists=/usr/local/bin/supernova
+
+[Service]
+Type=simple
+User=supernova
+Group=supernova
+WorkingDirectory=/var/lib/supernova
+ExecStart=/usr/local/bin/supernova \
+    -batch 20 \
+    -chain-id dev \
+    -mnemonic "source bonus chronic canvas draft south burst lottery vacant surface solve popular case indicate oppose farm nothing bullet exhibit title speed wink action roast" \
+    -mode REALM_CALL \
+    -output /var/lib/supernova/data/realm-call.json \
+    -sub-accounts 10 \
+    -transactions 100 \
+    -url http://127.0.0.1:26657
+Restart=always
+RestartSec=300
+
+[Install]
+WantedBy=multi-user.target

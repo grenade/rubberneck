@@ -25,7 +25,8 @@ command:
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.8.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.8.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.8.0.linux-amd64/node_exporter )
   - test -x /usr/local/bin/gnoland || ( curl -sLo /tmp/gnoland-v1.0.5-linux-amd64.tar.gz https://github.com/grenade/gno/releases/download/v1.0.5/gnoland-v1.0.5-linux-amd64.tar.gz && sudo tar xvfz /tmp/gnoland-v1.0.5-linux-amd64.tar.gz -C /usr/local/bin gnoland )
-  - test -x /usr/local/bin/tx-indexer || ( curl -sLo /tmp/tx-indexer_0.3.0_linux_amd64 https://github.com/gnolang/tx-indexer/releases/download/v0.3.0/tx-indexer_0.3.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/tx-indexer_0.3.0_linux_amd64 -C /usr/local/bin tx-indexer )
+  - test -x /usr/local/bin/tx-indexer || ( curl -sLo /tmp/tx-indexer_0.3.0_linux_amd64.tar.gz https://github.com/gnolang/tx-indexer/releases/download/v0.3.0/tx-indexer_0.3.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/tx-indexer_0.3.0_linux_amd64.tar.gz -C /usr/local/bin tx-indexer )
+  - test -x /usr/local/bin/supernova || ( curl -sLo /tmp/supernova_1.2.0_linux_amd64.tar.gz https://github.com/gnolang/supernova/releases/download/v1.2.0/supernova_1.2.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/supernova_1.2.0_linux_amd64.tar.gz -C /usr/local/bin supernova )
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
@@ -87,3 +88,39 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl enable tx-indexer.service
         - sudo systemctl start tx-indexer.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/gno/gnoyager1/etc/systemd/system/supernova-realm-call.service
+    target: /etc/systemd/system/supernova-realm-call.service
+    command:
+      pre:
+        - systemctl is-active --quiet supernova-realm-call.service && sudo systemctl stop supernova-realm-call.service
+        - id supernova || sudo useradd --system --create-home --home-dir /var/lib/supernova --user-group supernova
+        - sudo -u supernova mkdir -p /var/lib/supernova/data
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable supernova-realm-call.service
+        - sudo systemctl start supernova-realm-call.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/gno/gnoyager1/etc/systemd/system/supernova-realm-deployment.service
+    target: /etc/systemd/system/supernova-realm-deployment.service
+    command:
+      pre:
+        - systemctl is-active --quiet supernova-realm-deployment.service && sudo systemctl stop supernova-realm-deployment.service
+        - id supernova || sudo useradd --system --create-home --home-dir /var/lib/supernova --user-group supernova
+        - sudo -u supernova mkdir -p /var/lib/supernova/data
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable supernova-realm-deployment.service
+        - sudo systemctl start supernova-realm-deployment.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/gno/gnoyager1/etc/systemd/system/supernova-package-deployment.service
+    target: /etc/systemd/system/supernova-package-deployment.service
+    command:
+      pre:
+        - systemctl is-active --quiet supernova-package-deployment.service && sudo systemctl stop supernova-package-deployment.service
+        - id supernova || sudo useradd --system --create-home --home-dir /var/lib/supernova --user-group supernova
+        - sudo -u supernova mkdir -p /var/lib/supernova/data
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable supernova-package-deployment.service
+        - sudo systemctl start supernova-package-deployment.service
