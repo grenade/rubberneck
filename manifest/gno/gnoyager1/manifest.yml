@@ -25,6 +25,7 @@ command:
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.8.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.8.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.8.0.linux-amd64/node_exporter )
   - test -x /usr/local/bin/gnoland || ( curl -sLo /tmp/gnoland-v1.0.5-linux-amd64.tar.gz https://github.com/grenade/gno/releases/download/v1.0.5/gnoland-v1.0.5-linux-amd64.tar.gz && sudo tar xvfz /tmp/gnoland-v1.0.5-linux-amd64.tar.gz -C /usr/local/bin gnoland )
+  - test -x /usr/local/bin/tx-indexer || ( curl -sLo /tmp/tx-indexer_0.3.0_linux_amd64 https://github.com/gnolang/tx-indexer/releases/download/v0.3.0/tx-indexer_0.3.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/tx-indexer_0.3.0_linux_amd64 -C /usr/local/bin gnoland )
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
@@ -68,6 +69,8 @@ file:
         - sudo -u gnoland mkdir -p /var/lib/gnoland/data
         - test -d /var/lib/gnoland/gno || sudo -u gnoland git clone https://github.com/gnolang/gno.git /var/lib/gnoland/gno
         - test -d /var/lib/gnoland/gno && sudo -u gnoland git --git-dir /var/lib/gnoland/gno/.git --work-tree /var/lib/gnoland/gno pull
+        - test -d /github || sudo mkdir /github
+        - test -L /github/workspace || sudo ln -sf /var/lib/gnoland/gno /github/workspace
       post:
         - sudo systemctl daemon-reload
         - sudo systemctl enable gnoland.service
