@@ -5,6 +5,7 @@ After=network-online.target
 ConditionPathExists=/var/lib/gnoland/data
 ConditionPathExists=/var/lib/gnoland/gno
 ConditionPathExists=/var/lib/gnoland/genesis/genesis_balances.txt
+ConditionPathExists=/var/lib/gnoland/genesis/genesis_txs.jsonl
 ConditionPathExists=/usr/local/bin/gnoland
 
 [Service]
@@ -16,7 +17,8 @@ ExecStart=/usr/local/bin/gnoland \
     start \
     -data-dir /var/lib/gnoland/data \
     -gnoroot-dir /var/lib/gnoland/gno \
-    -genesis-balances-file /var/lib/gnoland/genesis/genesis_balances.txt
+    -genesis-balances-file /var/lib/gnoland/genesis/genesis_balances.txt \
+    -genesis-txs-file /var/lib/gnoland/genesis/genesis_txs.jsonl
 Restart=always
 RestartSec=3
 
