@@ -75,3 +75,15 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl enable gnoland.service
         - sudo systemctl start gnoland.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/gno/gnoyager1/etc/systemd/system/tx-indexer.service
+    target: /etc/systemd/system/tx-indexer.service
+    command:
+      pre:
+        - systemctl is-active --quiet tx-indexer.service && sudo systemctl stop tx-indexer.service
+        - id tx-indexer || sudo useradd --system --create-home --home-dir /var/lib/tx-indexer --user-group tx-indexer
+        - sudo -u tx-indexer mkdir -p /var/lib/tx-indexer/data
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl enable tx-indexer.service
+        - sudo systemctl start tx-indexer.service

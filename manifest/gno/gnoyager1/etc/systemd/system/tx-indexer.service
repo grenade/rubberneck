@@ -1,0 +1,26 @@
+[Unit]
+Description=gnoland transaction indexer
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/var/lib/tx-indexer/data
+ConditionPathExists=/usr/local/bin/tx-indexer
+
+[Service]
+Type=simple
+User=tx-indexer
+Group=tx-indexer
+WorkingDirectory=/var/lib/tx-indexer
+ExecStart=/usr/local/bin/tx-indexer \
+    start \
+    -db-path /var/lib/tx-indexer/data \
+    -listen-address 0.0.0.0:8546 \
+    -remote http://127.0.0.1:26657 \
+    -log-level info \
+    -http-rate-limit 0 \
+    -max-chunk-size 100 \
+    -max-slots 100
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
