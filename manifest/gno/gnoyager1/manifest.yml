@@ -55,6 +55,8 @@ file:
         - systemctl is-active --quiet gnoland.service && sudo systemctl stop gnoland.service
         - id gnoland || sudo useradd --system --create-home --home-dir /var/lib/gnoland --user-group gnoland
         - sudo -u gnoland mkdir -p /var/lib/gnoland/data
+        - test -d /var/lib/gnoland/gno || sudo -u gnoland git clone https://github.com/gnolang/gno.git /var/lib/gnoland/gno
+        - test -d /var/lib/gnoland/gno && sudo -u gnoland git --git-dir /var/lib/gnoland/gno/.git --work-tree /var/lib/gnoland/gno pull
       post:
         - sudo systemctl daemon-reload
         - sudo systemctl enable gnoland.service

@@ -3,6 +3,7 @@ Description=gnoland blockchain node
 Wants=network-online.target
 After=network-online.target
 ConditionPathExists=/var/lib/gnoland/data
+ConditionPathExists=/var/lib/gnoland/gno
 ConditionPathExists=/var/lib/gnoland/genesis/genesis_balances.txt
 ConditionPathExists=/usr/local/bin/gnoland
 
@@ -14,6 +15,7 @@ WorkingDirectory=/var/lib/gnoland
 ExecStart=/usr/local/bin/gnoland \
     start \
     -data-dir /var/lib/gnoland/data \
+    -gnoroot-dir /var/lib/gnoland/gno \
     -genesis-balances-file /var/lib/gnoland/genesis/genesis_balances.txt
 Restart=always
 RestartSec=3
