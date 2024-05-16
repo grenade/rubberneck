@@ -15,8 +15,11 @@ Group=gnoland
 WorkingDirectory=/var/lib/gnoland
 ExecStart=/usr/local/bin/gnoland \
     start \
+    -chainid dev \
     -data-dir /var/lib/gnoland/data \
     -gnoroot-dir /var/lib/gnoland/gno \
+    -genesis-remote 0.0.0.0:26657 \
+    -genesis /var/lib/gnoland/genesis/genesis.json \
     -genesis-balances-file /var/lib/gnoland/genesis/genesis_balances.txt \
     -genesis-txs-file /var/lib/gnoland/genesis/genesis_txs.jsonl
 Restart=always

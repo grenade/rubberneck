@@ -38,6 +38,7 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl enable prometheus-node-exporter.service
         - sudo systemctl start prometheus-node-exporter.service
+        - sudo firewall-cmd --zone=FedoraServer --add-port=9100/tcp --permanent && sudo firewall-cmd --reload
   -
     source: https://raw.githubusercontent.com/gnolang/gno/7d44813eece8d8968408b4978ba86a536ea0d75d/gno.land/genesis/genesis_balances.txt
     target: /var/lib/gnoland/genesis/genesis_balances.txt
@@ -76,6 +77,7 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl enable gnoland.service
         - sudo systemctl start gnoland.service
+        - sudo firewall-cmd --zone=FedoraServer --add-port=26657/tcp --permanent && sudo firewall-cmd --reload
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/gno/gnoyager1/etc/systemd/system/tx-indexer.service
     target: /etc/systemd/system/tx-indexer.service
@@ -88,6 +90,7 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl enable tx-indexer.service
         - sudo systemctl start tx-indexer.service
+        - sudo firewall-cmd --zone=FedoraServer --add-port=8546/tcp --permanent && sudo firewall-cmd --reload
   -
     source: https://raw.githubusercontent.com/gnolang/supernova/main/scripts/p/package.gno
     target: /var/lib/supernova/scripts/p/package.gno
