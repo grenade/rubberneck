@@ -27,6 +27,8 @@ command:
   - test -x /usr/local/bin/gnoland || ( curl -sLo /tmp/gnoland-v1.0.5-linux-amd64.tar.gz https://github.com/grenade/gno/releases/download/v1.0.5/gnoland-v1.0.5-linux-amd64.tar.gz && sudo tar xvfz /tmp/gnoland-v1.0.5-linux-amd64.tar.gz -C /usr/local/bin gnoland )
   - test -x /usr/local/bin/tx-indexer || ( curl -sLo /tmp/tx-indexer_0.3.0_linux_amd64.tar.gz https://github.com/gnolang/tx-indexer/releases/download/v0.3.0/tx-indexer_0.3.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/tx-indexer_0.3.0_linux_amd64.tar.gz -C /usr/local/bin tx-indexer )
   - test -x /usr/local/bin/supernova || ( curl -sLo /tmp/supernova_1.2.0_linux_amd64.tar.gz https://github.com/gnolang/supernova/releases/download/v1.2.0/supernova_1.2.0_linux_amd64.tar.gz && sudo tar xvfz /tmp/supernova_1.2.0_linux_amd64.tar.gz -C /usr/local/bin supernova )
+  - systemctl is-active gnoland.service || sudo systemctl restart gnoland.service
+  - systemctl is-active tx-indexer.service || sudo systemctl restart tx-indexer.service
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
