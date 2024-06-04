@@ -99,3 +99,10 @@ file:
       post:
         - sudo ln -sfr /etc/nginx/sites-available/slartibartfast.thgttg.com.conf /etc/nginx/sites-enabled/slartibartfast.thgttg.com.conf
         - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/midgard.v8r.io.conf
+    target: /etc/nginx/sites-available/midgard.v8r.io.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/midgard.v8r.io.conf /etc/nginx/sites-enabled/midgard.v8r.io.conf
+        - sudo systemctl restart nginx.service
