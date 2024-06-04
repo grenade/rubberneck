@@ -52,3 +52,45 @@ file:
       post:
         - sudo ln -sfr /etc/nginx/sites-available/gnoyager1.v8r.io.conf /etc/nginx/sites-enabled/gnoyager1.v8r.io.conf
         - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/allitnils.thgttg.com.conf
+    target: /etc/nginx/sites-available/allitnils.thgttg.com.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/allitnils.thgttg.com.conf /etc/nginx/sites-enabled/allitnils.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/colin.thgttg.com.conf
+    target: /etc/nginx/sites-available/colin.thgttg.com.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/colin.thgttg.com.conf /etc/nginx/sites-enabled/colin.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/gramathea.thgttg.com.conf
+    target: /etc/nginx/sites-available/gramathea.thgttg.com.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/gramathea.thgttg.com.conf /etc/nginx/sites-enabled/gramathea.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/hawalius.thgttg.com.conf
+    target: /etc/nginx/sites-available/hawalius.thgttg.com.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/hawalius.thgttg.com.conf /etc/nginx/sites-enabled/hawalius.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/krikkit.thgttg.com.conf
+    target: /etc/nginx/sites-available/krikkit.thgttg.com.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/krikkit.thgttg.com.conf /etc/nginx/sites-enabled/krikkit.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/slartibartfast.thgttg.com.conf
+    target: /etc/nginx/sites-available/slartibartfast.thgttg.com.conf
+    command:
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/slartibartfast.thgttg.com.conf /etc/nginx/sites-enabled/slartibartfast.thgttg.com.conf
+        - sudo systemctl restart nginx.service
