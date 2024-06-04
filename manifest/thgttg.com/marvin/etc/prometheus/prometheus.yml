@@ -15,9 +15,18 @@ scrape_configs:
     static_configs:
       -
         targets:
-          #- celestia.thgttg.com
+          - gnoyager1.v8r.io
           - lava.v8r.io
+          - midgard.v8r.io
           - badass.nebra.systems
+          - allitnils.thgttg.com
+          - colin.thgttg.com
+          - gramathea.thgttg.com
+          - hawalius.thgttg.com
+          - krikkit.thgttg.com
+          - mitko.thgttg.com
+          - novgorodian.thgttg.com
+          - slartibartfast.thgttg.com
   -
     job_name: tendermint
     scheme: https
