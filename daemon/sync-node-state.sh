@@ -196,6 +196,26 @@ for intent in ${intents[@]}; do
         package_index=$((package_index+1))
       done
 
+      if [[ ${dnf_os[@]} =~ ${os} ]]; then
+        firewall_port_proto_list=$(yq -r '(.firewall.port//empty)|.[]' ${manifest_path})
+        firewall_port_proto_index=0
+        for firewall_port_proto in ${firewall_port_proto_list[@]}; do
+          if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --list-ports --permanent | grep ${firewall_port_proto}" &> /dev/null; then
+            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule detected: ${firewall_port_proto}"
+          elif [ "${action}" = "sync" ]; then
+            if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --zone=FedoraServer --add-port=${firewall_port_proto} --permanent && sudo firewall-cmd --reload"; then
+              echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule added: ${firewall_port_proto}"
+            else
+              echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule add failed: ${firewall_port_proto}"
+            fi
+          else
+            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule add skipped: ${firewall_port_proto}"
+          fi
+          firewall_port_proto_index=$((firewall_port_proto_index+1))
+        done
+      else
+        echo "[${fqdn}] unsupported os for firewall configuration."
+      fi
 
       command_list_as_base64=$(yq -r '(.command//empty)|.[]|@base64' ${manifest_path})
       command_index=0
