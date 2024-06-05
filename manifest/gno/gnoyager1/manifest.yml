@@ -3,7 +3,7 @@ hostname: gnoyager1
 domain: v8r.io
 action: sync
 ssh:
-  port: 2212
+  port: 52212
 os:
   name: fedora
 package:
@@ -38,8 +38,8 @@ file:
         - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
       post:
         - sudo systemctl daemon-reload
-        - sudo systemctl enable prometheus-node-exporter.service
-        - sudo systemctl start prometheus-node-exporter.service
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
         - sudo firewall-cmd --zone=FedoraServer --add-port=9100/tcp --permanent && sudo firewall-cmd --reload
   -
     source: https://raw.githubusercontent.com/gnolang/gno/7d44813eece8d8968408b4978ba86a536ea0d75d/gno.land/genesis/genesis_balances.txt

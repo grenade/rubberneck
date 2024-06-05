@@ -3,7 +3,7 @@ hostname: allitnils
 domain: thgttg.com
 action: sync
 ssh:
-  port: 2219
+  port: 52219
 os:
   name: fedora
 package:
@@ -37,5 +37,5 @@ file:
         - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
       post:
         - sudo systemctl daemon-reload
-        - sudo systemctl enable prometheus-node-exporter.service
-        - sudo systemctl start prometheus-node-exporter.service
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service

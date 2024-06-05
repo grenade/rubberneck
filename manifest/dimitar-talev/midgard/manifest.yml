@@ -3,7 +3,7 @@ hostname: midgard
 domain: v8r.io
 action: sync
 ssh:
-  port: 2216
+  port: 52216
 os:
   name: fedora
 package:
@@ -37,4 +37,5 @@ file:
         - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
       post:
         - sudo systemctl daemon-reload
-        - sudo systemctl enable --now prometheus-node-exporter.service
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
