@@ -79,17 +79,17 @@ for intent in ${intents[@]}; do
       domain=$(yq -r .domain ${manifest_path})
       ssh_port=$(yq -r '.ssh.port // 22' ${manifest_path})
       fqdn=${hostname}.${domain}
-      echo "[${intent}/${fqdn}] manifest fetch suceeded"
+      echo "[${fqdn}] manifest (${intent}/${hostname}) fetch suceeded"
       action=$(yq -r .action ${manifest_path})
       os=$(yq -r .os.name ${manifest_path})
 
       ssh -o ConnectTimeout=1 -o StrictHostKeyChecking=accept-new -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} exit
       ssh_exit_code=$?
       if test ${ssh_exit_code} -ne 0; then
-        echo "[${ops_username}@${fqdn}] initial connection for user ${ops_username}, using ${ops_private_key}, on port ${ssh_port} failed with exit code: ${ssh_exit_code}"
+        echo "[${fqdn}] initial connection for user ${ops_username}, using ${ops_private_key}, on port ${ssh_port} failed with exit code: ${ssh_exit_code}"
         continue
       else
-        echo "[${ops_username}@${fqdn}] initial connection succeeded with exit code: ${ssh_exit_code}"
+        echo "[${fqdn}] initial connection succeeded with exit code: ${ssh_exit_code}"
       fi
 
       user_list_as_base64=$(yq -r  '(.user//empty)|.[]|@base64' ${manifest_path})
