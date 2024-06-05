@@ -11,7 +11,8 @@ User=quilibrium
 Group=quilibrium
 WorkingDirectory=/var/lib/quilibrium/data
 ExecStart=/var/lib/quilibrium/.local/bin/quilibrium \
-    --signature-check=false
+    --signature-check=false \
+    --config /var/lib/quilibrium/.config
 Restart=always
 RestartSec=3
 
