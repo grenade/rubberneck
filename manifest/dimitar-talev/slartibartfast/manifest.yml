@@ -69,3 +69,10 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
         - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/sysctl.d/90-quilibrium.conf
+    target: /etc/sysctl.d/90-quilibrium.conf
+    command:
+      post:
+        - sudo sysctl -w net.core.rmem_max=4194304
+        - sudo sysctl -w net.core.wmem_max=4194304
