@@ -40,7 +40,7 @@ file:
         - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
         - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/allitnils/etc/systemd/system/quilibrium.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium.service
     target: /etc/systemd/system/quilibrium.service
     command:
       pre:
