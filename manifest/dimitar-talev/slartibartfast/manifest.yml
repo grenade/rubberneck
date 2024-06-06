@@ -38,3 +38,33 @@ file:
       post:
         - sudo systemctl daemon-reload
         - sudo systemctl enable --now prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium.service
+    target: /etc/systemd/system/quilibrium.service
+    command:
+      pre:
+        - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
+        - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
+        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/data
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
+        - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release/node/node-1.4.18-linux-amd64?ref_type=heads
+    target: /var/lib/quilibrium/.local/bin/quilibrium
+    sha256: b2b0bbb1ffa3e08713360398901e4906cd061d84394a7761cddeb09ed2bca093
+    command:
+      pre:
+        - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
+        - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
+        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.local/bin
+      post:
+        - sudo chown quilibrium:quilibrium /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo chmod +x /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo semanage fcontext -a -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
+        #- sudo restorecon -R -v /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
+        - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
