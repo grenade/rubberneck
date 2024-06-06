@@ -62,6 +62,9 @@ file:
       post:
         - sudo chown quilibrium:quilibrium /var/lib/quilibrium/.local/bin/quilibrium
         - sudo chmod +x /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo semanage fcontext -a -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
+        #- sudo restorecon -R -v /var/lib/quilibrium/.local/bin/quilibrium
         - sudo systemctl daemon-reload
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
         - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
