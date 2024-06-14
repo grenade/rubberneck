@@ -14,7 +14,8 @@ dnf_os=( centos fedora )
 rubberneck_app=$(basename "${0}")
 rubberneck_github_org=grenade
 rubberneck_github_repo=rubberneck
-rubberneck_github_token=$(yq -r .github.token ${HOME}/.rubberneck.yml)
+rubberneck_github_token=$(yq -r .github.token ${HOME}/.rubberneck.yml 2> /dev/null)
+# todo: inspect token, exit if invalid
 if curl \
   --silent \
   --location \
@@ -243,7 +244,11 @@ for intent in ${intents[@]}; do
           # manifest contains a sha256 checksum for file. require a matching sha256 checksum observation.
           file_sha256_observed=$(ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${file_target} 2> /dev/null | cut -d ' ' -f 1" 2> /tmp/observation-error.log)
           if grep -q "timed out" /tmp/observation-error.log &> /dev/null; then
-            echo "[${fqdn}:file ${file_index}] sha256 observation failed. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observation error: $(head -n 1 /tmp/observation-error.log)"
+            echo "[${fqdn}:file ${file_index}] sha256 observation failed due to connection timeout. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
+            rm -f /tmp/observation-error.log
+            continue
+          elif [ $(grep . /tmp/observation-error.log | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+            echo "[${fqdn}:file ${file_index}] sha256 observation failed. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
             rm -f /tmp/observation-error.log
             continue
           fi
