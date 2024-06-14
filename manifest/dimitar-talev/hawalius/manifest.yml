@@ -31,7 +31,7 @@ command:
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - |
     for core in {1..11}; do
-      systemctl is-active quilibrium@${core}.service && sudo systemctl stop quilibrium@${core}.service
+      systemctl is-active quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
     done
 file:
   -
@@ -45,13 +45,13 @@ file:
         - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
         - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/hawalius/etc/systemd/system/quilibrium@.service
-    target: /etc/systemd/system/quilibrium@.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/hawalius/etc/systemd/system/quilibrium-worker%40.service
+    target: /etc/systemd/system/quilibrium-worker@.service
     command:
       pre:
         - |
           for core in {1..11}; do
-            systemctl is-active --quiet quilibrium@${core}.service && sudo systemctl stop quilibrium@${core}.service
+            systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
           done
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.node
@@ -59,8 +59,8 @@ file:
         - sudo systemctl daemon-reload
         - |
           for core in {1..11}; do
-            systemctl is-enabled quilibrium@${core}.service || sudo systemctl enable quilibrium@${core}.service
-            systemctl is-active quilibrium@${core}.service || sudo systemctl start quilibrium@${core}.service
+            systemctl is-enabled quilibrium-worker@${core}.service || sudo systemctl enable quilibrium-worker@${core}.service
+            systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
           done
   -
     source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64?ref_type=heads
@@ -70,7 +70,7 @@ file:
       pre:
         - |
           for core in {1..11}; do
-            systemctl is-active --quiet quilibrium@${core}.service && sudo systemctl stop quilibrium@${core}.service
+            systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
           done
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.local/bin
@@ -83,8 +83,8 @@ file:
         - sudo systemctl daemon-reload
         - |
           for core in {1..11}; do
-            systemctl is-enabled quilibrium@${core}.service || sudo systemctl enable quilibrium@${core}.service
-            systemctl is-active quilibrium@${core}.service || sudo systemctl start quilibrium@${core}.service
+            systemctl is-enabled quilibrium-worker@${core}.service || sudo systemctl enable quilibrium-worker@${core}.service
+            systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
           done
   -
     source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst?ref_type=heads&inline=false
