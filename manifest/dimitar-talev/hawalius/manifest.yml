@@ -31,7 +31,7 @@ command:
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - |
     for core in {1..11}; do
-      systemctl is-active quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
+      systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
     done
 file:
   -
