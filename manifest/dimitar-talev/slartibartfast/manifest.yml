@@ -22,14 +22,27 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
 firewall:
   port:
-    - 8156/udp
     - 9100/tcp
+    - 40001/tcp
+    - 40002/tcp
+    - 40003/tcp
+    - 40004/tcp
+    - 40005/tcp
+    - 40006/tcp
+    - 40007/tcp
+    - 40008/tcp
+    - 40009/tcp
+    - 40010/tcp
+    - 40011/tcp
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.8.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.8.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.8.0.linux-amd64/node_exporter )
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
-  - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
+  - |
+    for core in $(seq 1 $(($(nproc --all) - 1))); do
+      systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
+    done
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
@@ -39,26 +52,36 @@ file:
         - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
       post:
         - sudo systemctl daemon-reload
-        - sudo systemctl enable --now prometheus-node-exporter.service
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium.service
-    target: /etc/systemd/system/quilibrium.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium-worker%40.service
+    target: /etc/systemd/system/quilibrium-worker@.service
     command:
       pre:
-        - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
+        - |
+          for core in $(seq 1 $(($(nproc --all) - 1))); do
+            systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
+          done
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
-        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/data
+        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.node
       post:
         - sudo systemctl daemon-reload
-        - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
-        - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
+        - |
+          for core in $(seq 1 $(($(nproc --all) - 1))); do
+            systemctl is-enabled quilibrium-worker@${core}.service || sudo systemctl enable quilibrium-worker@${core}.service
+            systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
+          done
   -
     source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64?ref_type=heads
     target: /var/lib/quilibrium/.local/bin/quilibrium
     sha256: 44429714f7576dfc3bae7c1bd4bd5e25a6157e2a93f8da95dd945cf8532dd7b3
     command:
       pre:
-        - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
+        - |
+          for core in $(seq 1 $(($(nproc --all) - 1))); do
+            systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
+          done
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.local/bin
       post:
@@ -68,8 +91,51 @@ file:
         - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         #- sudo restorecon -R -v /var/lib/quilibrium/.local/bin/quilibrium
         - sudo systemctl daemon-reload
-        - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
-        - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
+        - |
+          for core in $(seq 1 $(($(nproc --all) - 1))); do
+            systemctl is-enabled quilibrium-worker@${core}.service || sudo systemctl enable quilibrium-worker@${core}.service
+            systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
+          done
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst
+    sha256: c863eb3da4d5da596fe0f69402022f1acc92b5898c74f7f4138566cb797c67f4
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.1?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.1
+    sha256: 1913e585129851adfa90e5c48bb40915f284024fdb076c5fb25e5d4e03076f29
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.2?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.2
+    sha256: 4bc0407dc0cfba0a6ebfdb11ff26a112f817f3cc2fdfcb5a6d128b436a17030b
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.3?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.3
+    sha256: 40a96d5609e2e3cbaf064874e36114b0c4a7859c711cc6552b9688b5da763ecb
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.4?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.4
+    sha256: a06868ab6c54a384dc26cfdb8a65f09b6849b8a53bc3aa31510d630a308fb780
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.6?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.6
+    sha256: bf5a7a43c66b97a5b6c982b47700de234c4de0c3f8e9483df4dfad81c66b150d
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.8?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.8
+    sha256: 13414c91406e0a2d1b49966808d4f2f9b440aff3afc269ece8cb8b9eab231018
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.13?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.13
+    sha256: 29f7979b9376dcf5af20d25d34e13c9450d270155d686c5d2f12aa9aba2c30dd
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.15?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.15
+    sha256: 499ec3c5cd52538f04692ddd4c9c3849c3ea6e393c05a96da38a49b39dbf8b88
+  -
+    source: https://source.quilibrium.com/quilibrium/ceremonyclient/-/raw/release-cdn/node/node-1.4.19-linux-amd64.dgst.sig.16?ref_type=heads&inline=false
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.16
+    sha256: 958b8b27c40cac847df7c2f10a5abbd842924e5b8b28216ea66ceafb1e65a1fe
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/sysctl.d/90-quilibrium.conf
     target: /etc/sysctl.d/90-quilibrium.conf
