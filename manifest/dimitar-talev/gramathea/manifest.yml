@@ -30,7 +30,7 @@ command:
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.8.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.8.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.8.0.linux-amd64/node_exporter )
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - |
-    for core in {1..36}; do
+    for core in {1..24}; do
       systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
     done
   - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
@@ -69,7 +69,7 @@ file:
     command:
       pre:
         - |
-          for core in {1..36}; do
+          for core in {1..24}; do
             systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
           done
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
@@ -77,7 +77,7 @@ file:
       post:
         - sudo systemctl daemon-reload
         - |
-          for core in {1..36}; do
+          for core in {1..24}; do
             systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
           done
   -
@@ -87,7 +87,7 @@ file:
     command:
       pre:
         - |
-          for core in {1..36}; do
+          for core in {1..24}; do
             systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
           done
         - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
@@ -103,7 +103,7 @@ file:
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
         - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
         - |
-          for core in {1..36}; do
+          for core in {1..24}; do
             systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
           done
   -
