@@ -77,6 +77,8 @@ file:
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64
     target: /var/lib/quilibrium/.local/bin/quilibrium
     sha256: 81350ce119fd06a1d3007e1af3925603207090e603a1050cfc0bda0c61fde15e
+    chown: quilibrium:quilibrium
+    chmod: '+x'
     command:
       pre:
         - |
@@ -87,7 +89,6 @@ file:
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.local/bin
       post:
         - sudo chown quilibrium:quilibrium /var/lib/quilibrium/.local/bin/quilibrium
-        - sudo chmod +x /var/lib/quilibrium/.local/bin/quilibrium
         - sudo semanage fcontext -a -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         #- sudo restorecon -R -v /var/lib/quilibrium/.local/bin/quilibrium
