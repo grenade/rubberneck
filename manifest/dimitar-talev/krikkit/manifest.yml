@@ -11,6 +11,7 @@ package:
   - curl
   - dnf-automatic
   - git
+  - pip
 user:
   -
     username: grenade
@@ -42,12 +43,6 @@ command:
   - |
     for core in $(seq 1 $(($(nproc --all) - 1))); do
       systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
-    done
-  - |
-    for file in /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.{15,16}; do
-      if sudo test -f ${file}; then
-        sudo rm ${file};
-      fi
     done
 file:
   -
@@ -82,6 +77,8 @@ file:
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64
     target: /var/lib/quilibrium/.local/bin/quilibrium
     sha256: 81350ce119fd06a1d3007e1af3925603207090e603a1050cfc0bda0c61fde15e
+    chown: quilibrium:quilibrium
+    chmod: +x
     command:
       pre:
         - |
@@ -92,7 +89,6 @@ file:
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.local/bin
       post:
         - sudo chown quilibrium:quilibrium /var/lib/quilibrium/.local/bin/quilibrium
-        - sudo chmod +x /var/lib/quilibrium/.local/bin/quilibrium
         - sudo semanage fcontext -a -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         #- sudo restorecon -R -v /var/lib/quilibrium/.local/bin/quilibrium
@@ -106,42 +102,52 @@ file:
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst
     sha256: 18a97a7bfa96e72b9cc342d7dff8758d6f9c30bbfe0e8adbb99491449ff3aa1d
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.1
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.1
     sha256: 13cbb80b8bbd35c0b95717decbb6da48fd5920d8d0ba8c31af077829763962fb
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.2
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.2
     sha256: 16f508e4f1c7d3d38a17690e83cb62af97d50759d9ef31e33cfc05f160822159
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.3
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.3
     sha256: c05b41f264a23a9c48288fabbbdfc3efbf0a3974505699f4547548cdeebdfcb1
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.4
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.4
     sha256: daadcb4e8e0e78c305e83942a5028321cd9939875a5982bc5f15e6f0dfb7eaa3
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.5
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.5
     sha256: 316eac80a3390ddd3ed436039b59898690eee0b5f3b4148b9ae4ce9369dcda91
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.6
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.6
     sha256: 060bbc916d4e889419604023927afec45e61c5bc06bf11596d8e8b7662afb651
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.8
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.8
     sha256: 1ada0d4ffdb63237d58e83e6e7e42a11f573b3759981365b7b7c4ef86a783db8
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.9
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.9
     sha256: 8744d27a0712f8880802a1f12147fa1c812143352e2d2b1aa3d5beb99e62126e
+    chown: quilibrium:quilibrium
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst.sig.13
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.13
     sha256: 317950a95953e0d8551e59ee857ae073a6bb1933d9b4c8824fb7cbf92a042f76
+    chown: quilibrium:quilibrium
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/sysctl.d/90-quilibrium.conf
     target: /etc/sysctl.d/90-quilibrium.conf

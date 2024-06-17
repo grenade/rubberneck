@@ -237,6 +237,8 @@ for intent in ${intents[@]}; do
       for file_as_base64 in ${file_list_as_base64[@]}; do
         file_source=$(_decode_property ${file_as_base64} .source)
         file_target=$(_decode_property ${file_as_base64} .target)
+        file_chown=$(_decode_property ${file_as_base64} .chown)
+        file_chmod=$(_decode_property ${file_as_base64} .chmod)
         file_sha256_expected=$(_decode_property ${file_as_base64} .sha256)
 
         if [ ${#file_sha256_expected} -eq 64 ]; then
@@ -309,6 +311,20 @@ for intent in ${intents[@]}; do
           if [ "${action}" = "sync" ]; then
             if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${file_target} ${file_source}; then
               echo "[${fqdn}:file ${file_index}] download succeeded (${file_target}, ${file_source})"
+              if [ -n ${file_chown} ]; then
+                if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo chown ${file_chown} ${file_target}; then
+                  echo "[${fqdn}:file ${file_index}] chown succeeded: ${file_chown}, ${file_target}"
+                else
+                  echo "[${fqdn}:file ${file_index}] chown failed: ${file_chown}, ${file_target}"
+                fi
+              fi
+              if [ -n ${file_chmod} ]; then
+                if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo chmod ${file_chmod} ${file_target}; then
+                  echo "[${fqdn}:file ${file_index}] chmod succeeded: ${file_chmod}, ${file_target}"
+                else
+                  echo "[${fqdn}:file ${file_index}] chmod failed: ${file_chmod}, ${file_target}"
+                fi
+              fi
               file_post_command_list_as_base64=$(_decode_property ${file_as_base64} '(.command.post//empty)|.[]|@base64')
               command_index=0
               for file_post_command_as_base64 in ${file_post_command_list_as_base64[@]}; do
