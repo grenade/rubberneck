@@ -35,7 +35,7 @@ command:
   - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
   - |
     if sudo test -s /var/lib/quilibrium/.node/config.yml; then
-      if [ "$(sudo -H -u quilibrium yq '.engine.dataWorkerMultiaddrs | length' /var/lib/quilibrium/.node/config.yml)" != "24" ]; then
+      if [ "$(sudo -H -u quilibrium yq '.engine.dataWorkerMultiaddrs | length' /var/lib/quilibrium/.node/config.yml)" != "48" ]; then
         sudo -H -u quilibrium yq --in-place --yaml-output '.
           | .p2p.listenMultiaddr = "/ip4/0.0.0.0/udp/8336/quic-v1"
           | .listenGrpcMultiaddr = "/ip4/127.0.0.1/tcp/8337"
@@ -65,11 +65,35 @@ command:
               "/ip4/10.0.9.113/tcp/40021",
               "/ip4/10.0.9.113/tcp/40022",
               "/ip4/10.0.9.113/tcp/40023",
-              "/ip4/10.0.9.113/tcp/40024"
+              "/ip4/10.0.9.113/tcp/40024",
+              "/ip4/10.0.9.115/tcp/40001",
+              "/ip4/10.0.9.115/tcp/40002",
+              "/ip4/10.0.9.115/tcp/40003",
+              "/ip4/10.0.9.115/tcp/40004",
+              "/ip4/10.0.9.115/tcp/40005",
+              "/ip4/10.0.9.115/tcp/40006",
+              "/ip4/10.0.9.115/tcp/40007",
+              "/ip4/10.0.9.115/tcp/40008",
+              "/ip4/10.0.9.115/tcp/40009",
+              "/ip4/10.0.9.115/tcp/40010",
+              "/ip4/10.0.9.115/tcp/40011",
+              "/ip4/10.0.9.115/tcp/40012",
+              "/ip4/10.0.9.115/tcp/40013",
+              "/ip4/10.0.9.115/tcp/40014",
+              "/ip4/10.0.9.115/tcp/40015",
+              "/ip4/10.0.9.115/tcp/40016",
+              "/ip4/10.0.9.115/tcp/40017",
+              "/ip4/10.0.9.115/tcp/40018",
+              "/ip4/10.0.9.115/tcp/40019",
+              "/ip4/10.0.9.115/tcp/40020",
+              "/ip4/10.0.9.115/tcp/40021",
+              "/ip4/10.0.9.115/tcp/40022",
+              "/ip4/10.0.9.115/tcp/40023",
+              "/ip4/10.0.9.115/tcp/40024"
             ]' /var/lib/quilibrium/.node/config.yml
         sudo systemctl restart quilibrium.service
       else
-        echo "observed configuration of 24 data worker addresses in /var/lib/quilibrium/.node/config.yml"
+        echo "observed configuration of 48 data worker addresses in /var/lib/quilibrium/.node/config.yml"
       fi
     else
       echo "awaiting instantiation of /var/lib/quilibrium/.node/config.yml"
