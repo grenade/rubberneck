@@ -311,14 +311,14 @@ for intent in ${intents[@]}; do
           if [ "${action}" = "sync" ]; then
             if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${file_target} ${file_source}; then
               echo "[${fqdn}:file ${file_index}] download succeeded (${file_target}, ${file_source})"
-              if [ -n ${file_chown} ]; then
+              if [ -n ${file_chown} ] && [ ${file_chown} != null ]; then
                 if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo chown ${file_chown} ${file_target}; then
                   echo "[${fqdn}:file ${file_index}] chown succeeded: ${file_chown}, ${file_target}"
                 else
                   echo "[${fqdn}:file ${file_index}] chown failed: ${file_chown}, ${file_target}"
                 fi
               fi
-              if [ -n ${file_chmod} ]; then
+              if [ -n ${file_chmod} ] && [ ${file_chmod} != null ]; then
                 if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo chmod ${file_chmod} ${file_target}; then
                   echo "[${fqdn}:file ${file_index}] chmod succeeded: ${file_chmod}, ${file_target}"
                 else
