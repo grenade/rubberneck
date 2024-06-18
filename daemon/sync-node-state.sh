@@ -236,6 +236,7 @@ for intent in ${intents[@]}; do
       file_index=0
       for file_as_base64 in ${file_list_as_base64[@]}; do
         file_source=$(_decode_property ${file_as_base64} .source)
+        file_source_ext=${file_source##*.}
         file_target=$(_decode_property ${file_as_base64} .target)
         file_chown=$(_decode_property ${file_as_base64} .chown)
         file_chmod=$(_decode_property ${file_as_base64} .chmod)
@@ -309,7 +310,39 @@ for intent in ${intents[@]}; do
             command_index=$((command_index+1))
           done
           if [ "${action}" = "sync" ]; then
-            if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${file_target} ${file_source}; then
+            if [ "${file_source_ext}" = "gpg" ]; then
+              tmp_file_path=/tmp/$(uuidgen)
+              if curl -sL ${file_source} | gpg --quiet --decrypt > ${tmp_file_path}; then
+                echo "[${fqdn}:file ${file_index}] secret fetch (${file_source}) and decrypt (${file_target}) suceeded"
+                rsync_args=()
+                rsync_args+=( "--archive" )
+                rsync_args+=( "--rsync-path='sudo rsync'" )
+                rsync_args+=( "--rsh 'ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port}'" )
+                if [ -n ${file_chown} ] && [ ${file_chown} != null ]; then
+                  rsync_args+=( "--chown=${file_chown}" )
+                fi
+                if [ -n ${file_chmod} ] && [ ${file_chmod} != null ]; then
+                  rsync_args+=( "--chmod=${file_chmod}" )
+                fi
+                if rsync ${rsync_args[@]} ${tmp_file_path} ${ops_username}@${fqdn}:${file_target}; then
+                  echo "[${fqdn}:file ${file_index}] :${file_target}] secret sync suceeded"
+                  file_post_command_list_as_base64=$(_decode_property ${file_as_base64} '(.command.post//empty)|.[]|@base64')
+                  command_index=0
+                  for file_post_command_as_base64 in ${file_post_command_list_as_base64[@]}; do
+                    command=$(echo ${file_post_command_as_base64} | base64 --decode)
+                    ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> /dev/null
+                    command_exit_code=$?
+                    echo "[${fqdn}:file ${file_index}, post command ${command_index}] exit code: ${command_exit_code}, command: ${command}"
+                    command_index=$((command_index+1))
+                  done
+                else
+                  echo "[${fqdn}:file ${file_index}] secret sync (${file_target}) failed"
+                fi
+              else
+                echo "[${fqdn}:file ${file_index}] secret fetch (${file_source}) and decrypt (${file_target}) failed"
+              fi
+              wipe -s -f ${tmp_file_path}
+            elif ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${file_target} ${file_source}; then
               echo "[${fqdn}:file ${file_index}] download succeeded (${file_target}, ${file_source})"
               if [ -n ${file_chown} ] && [ ${file_chown} != null ]; then
                 if ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo chown ${file_chown} ${file_target}; then
@@ -340,6 +373,7 @@ for intent in ${intents[@]}; do
           fi
         fi
         unset file_source
+        unset file_source_ext
         unset file_target
         unset file_sha256_expected
         unset file_shagit_expected
