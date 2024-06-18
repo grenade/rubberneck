@@ -35,7 +35,7 @@ command:
   - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
   - |
     if sudo test -s /var/lib/quilibrium/.node/config.yml; then
-      if [ "$(sudo -H -u quilibrium yq '.engine.dataWorkerMultiaddrs | length' /var/lib/quilibrium/.node/config.yml)" != "2" ]; then
+      if [ "$(sudo -H -u quilibrium yq '.engine.dataWorkerMultiaddrs | length' /var/lib/quilibrium/.node/config.yml)" != "4" ]; then
         sudo -H -u quilibrium yq --in-place --yaml-output '.
           | .p2p.listenMultiaddr = "/ip4/0.0.0.0/udp/8336/quic-v1"
           | .listenGrpcMultiaddr = "/ip4/127.0.0.1/tcp/8337"
@@ -43,18 +43,20 @@ command:
           | .engine.statsMultiaddr = "/dns/stats.quilibrium.com/tcp/443"
           | .engine.dataWorkerMultiaddrs = [
               "/ip4/0.0.0.0/tcp/40001",
-              "/ip4/0.0.0.0/tcp/40002"
+              "/ip4/0.0.0.0/tcp/40002",
+              "/ip4/0.0.0.0/tcp/40003",
+              "/ip4/0.0.0.0/tcp/40004"
             ]' /var/lib/quilibrium/.node/config.yml
-        echo "created configuration of 2 data worker addresses in /var/lib/quilibrium/.node/config.yml"
+        echo "created configuration of 4 data worker addresses in /var/lib/quilibrium/.node/config.yml"
         sudo systemctl restart quilibrium.service
       else
-        echo "observed configuration of 2 data worker addresses in /var/lib/quilibrium/.node/config.yml"
+        echo "observed configuration of 4 data worker addresses in /var/lib/quilibrium/.node/config.yml"
       fi
     else
       echo "awaiting instantiation of /var/lib/quilibrium/.node/config.yml"
     fi
   - |
-    for core in {1..2}; do
+    for core in {1..4}; do
       systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
     done
 file:
@@ -89,7 +91,7 @@ file:
     command:
       pre:
         - |
-          for core in {1..2}; do
+          for core in {1..4}; do
             systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
           done
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
@@ -97,7 +99,7 @@ file:
       post:
         - sudo systemctl daemon-reload
         - |
-          for core in {1..2}; do
+          for core in {1..4}; do
             systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
           done
   -
