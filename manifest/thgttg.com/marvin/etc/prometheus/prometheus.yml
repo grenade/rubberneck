@@ -15,7 +15,6 @@ scrape_configs:
     static_configs:
       -
         targets:
-          - gnoyager1.v8r.io
           - lava.v8r.io
           - midgard.v8r.io
           - badass.nebra.systems
@@ -26,6 +25,7 @@ scrape_configs:
           - krikkit.thgttg.com
           - mitko.thgttg.com
           - novgorodian.thgttg.com
+          - quordlepleen.thgttg.com
           - slartibartfast.thgttg.com
   -
     job_name: tendermint
