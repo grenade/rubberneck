@@ -35,69 +35,28 @@ command:
   - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
   - |
     if sudo test -s /var/lib/quilibrium/.node/config.yml; then
-      if [ "$(sudo -H -u quilibrium yq '.engine.dataWorkerMultiaddrs | length' /var/lib/quilibrium/.node/config.yml)" != "48" ]; then
+      if [ "$(sudo -H -u quilibrium yq '.engine.dataWorkerMultiaddrs | length' /var/lib/quilibrium/.node/config.yml)" != "2" ]; then
         sudo -H -u quilibrium yq --in-place --yaml-output '.
           | .p2p.listenMultiaddr = "/ip4/0.0.0.0/udp/8336/quic-v1"
           | .listenGrpcMultiaddr = "/ip4/127.0.0.1/tcp/8337"
           | .listenRESTMultiaddr = "/ip4/127.0.0.1/tcp/8338"
           | .engine.statsMultiaddr = "/dns/stats.quilibrium.com/tcp/443"
           | .engine.dataWorkerMultiaddrs = [
-              "/ip4/10.0.9.113/tcp/40001",
-              "/ip4/10.0.9.113/tcp/40002",
-              "/ip4/10.0.9.113/tcp/40003",
-              "/ip4/10.0.9.113/tcp/40004",
-              "/ip4/10.0.9.113/tcp/40005",
-              "/ip4/10.0.9.113/tcp/40006",
-              "/ip4/10.0.9.113/tcp/40007",
-              "/ip4/10.0.9.113/tcp/40008",
-              "/ip4/10.0.9.113/tcp/40009",
-              "/ip4/10.0.9.113/tcp/40010",
-              "/ip4/10.0.9.113/tcp/40011",
-              "/ip4/10.0.9.113/tcp/40012",
-              "/ip4/10.0.9.113/tcp/40013",
-              "/ip4/10.0.9.113/tcp/40014",
-              "/ip4/10.0.9.113/tcp/40015",
-              "/ip4/10.0.9.113/tcp/40016",
-              "/ip4/10.0.9.113/tcp/40017",
-              "/ip4/10.0.9.113/tcp/40018",
-              "/ip4/10.0.9.113/tcp/40019",
-              "/ip4/10.0.9.113/tcp/40020",
-              "/ip4/10.0.9.113/tcp/40021",
-              "/ip4/10.0.9.113/tcp/40022",
-              "/ip4/10.0.9.113/tcp/40023",
-              "/ip4/10.0.9.113/tcp/40024",
-              "/ip4/10.0.9.115/tcp/40001",
-              "/ip4/10.0.9.115/tcp/40002",
-              "/ip4/10.0.9.115/tcp/40003",
-              "/ip4/10.0.9.115/tcp/40004",
-              "/ip4/10.0.9.115/tcp/40005",
-              "/ip4/10.0.9.115/tcp/40006",
-              "/ip4/10.0.9.115/tcp/40007",
-              "/ip4/10.0.9.115/tcp/40008",
-              "/ip4/10.0.9.115/tcp/40009",
-              "/ip4/10.0.9.115/tcp/40010",
-              "/ip4/10.0.9.115/tcp/40011",
-              "/ip4/10.0.9.115/tcp/40012",
-              "/ip4/10.0.9.115/tcp/40013",
-              "/ip4/10.0.9.115/tcp/40014",
-              "/ip4/10.0.9.115/tcp/40015",
-              "/ip4/10.0.9.115/tcp/40016",
-              "/ip4/10.0.9.115/tcp/40017",
-              "/ip4/10.0.9.115/tcp/40018",
-              "/ip4/10.0.9.115/tcp/40019",
-              "/ip4/10.0.9.115/tcp/40020",
-              "/ip4/10.0.9.115/tcp/40021",
-              "/ip4/10.0.9.115/tcp/40022",
-              "/ip4/10.0.9.115/tcp/40023",
-              "/ip4/10.0.9.115/tcp/40024"
+              "/ip4/0.0.0.0/tcp/40001",
+              "/ip4/0.0.0.0/tcp/40002"
             ]' /var/lib/quilibrium/.node/config.yml
+        echo "created configuration of 2 data worker addresses in /var/lib/quilibrium/.node/config.yml"
         sudo systemctl restart quilibrium.service
       else
-        echo "observed configuration of 48 data worker addresses in /var/lib/quilibrium/.node/config.yml"
+        echo "observed configuration of 2 data worker addresses in /var/lib/quilibrium/.node/config.yml"
       fi
     else
       echo "awaiting instantiation of /var/lib/quilibrium/.node/config.yml"
     fi
+  - |
+    for core in {1..2}; do
+      systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
+    done
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
@@ -124,6 +83,23 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
         - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium-worker%40.service
+    target: /etc/systemd/system/quilibrium-worker@.service
+    command:
+      pre:
+        - |
+          for core in {1..2}; do
+            systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
+          done
+        - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
+        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.node
+      post:
+        - sudo systemctl daemon-reload
+        - |
+          for core in {1..2}; do
+            systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
+          done
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64
     target: /var/lib/quilibrium/.local/bin/quilibrium
