@@ -317,7 +317,7 @@ for intent in ${intents[@]}; do
                 rsync_args=()
                 rsync_args+=( "--archive" )
                 rsync_args+=( "--rsync-path='sudo rsync'" )
-                rsync_args+=( "--rsh='ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port}'" )
+                rsync_args+=( "--rsh=\"ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port}\"" )
                 if [ -n ${file_chown} ] && [ ${file_chown} != null ]; then
                   rsync_args+=( "--chown=${file_chown}" )
                 fi
