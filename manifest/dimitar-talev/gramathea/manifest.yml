@@ -195,6 +195,7 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/gramathea/var/lib/quilibrium/.node/config.yml.gpg
     target: /var/lib/quilibrium/.node/config.yml
     sha256: 4d3a0ef1bc85c8bfcb462aa4d671d0b1dbdc8fcc5452ed3e57261308823ee796
+    chown: quilibrium:quilibrium
     command:
       pre:
         - sudo systemctl stop 'quilibrium-worker@*'.service

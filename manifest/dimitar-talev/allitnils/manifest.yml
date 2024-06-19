@@ -148,6 +148,7 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/allitnils/var/lib/quilibrium/.node/config.yml.gpg
     target: /var/lib/quilibrium/.node/config.yml
     sha256: acef0a139aa226284aa4171bb33107715a76ac56418ed9ad47e12bdfe65e44ec
+    chown: quilibrium:quilibrium
     command:
       pre:
         - sudo systemctl stop 'quilibrium-worker@*'.service
