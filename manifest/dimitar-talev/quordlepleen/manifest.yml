@@ -32,11 +32,9 @@ command:
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.8.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.8.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.8.0.linux-amd64/node_exporter )
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - for core in {25..204}; do systemctl list-units --type=service | grep quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service; done
+  - for core in {1..24}; do systemctl is-active quilibrium-worker@${core}.service || sudo systemctl restart quilibrium-worker@${core}.service; done
   - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
-  - |
-    for core in {1..15}; do
-      systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
-    done
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
@@ -56,30 +54,26 @@ file:
     target: /etc/systemd/system/quilibrium.service
     command:
       pre:
+        - sudo systemctl stop 'quilibrium-worker@*'.service
         - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.node
       post:
         - sudo systemctl daemon-reload
+        - for core in {1..24}; do sudo systemctl start quilibrium-worker@${core}.service; done
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
-        - systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
+        - sudo systemctl start quilibrium.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium-worker%40.service
     target: /etc/systemd/system/quilibrium-worker@.service
     command:
       pre:
-        - |
-          for core in {1..15}; do
-            systemctl is-active --quiet quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service
-          done
+        - sudo systemctl stop 'quilibrium-worker@*'.service
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.node
       post:
         - sudo systemctl daemon-reload
-        - |
-          for core in {1..15}; do
-            systemctl is-active quilibrium-worker@${core}.service || sudo systemctl start quilibrium-worker@${core}.service
-          done
+        - for core in {1..24}; do sudo systemctl start quilibrium-worker@${core}.service; done
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64
     target: /var/lib/quilibrium/.local/bin/quilibrium
@@ -88,6 +82,7 @@ file:
     chmod: '+x'
     command:
       pre:
+        - sudo systemctl stop 'quilibrium-worker@*'.service
         - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
         - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
         - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.local/bin
@@ -97,8 +92,9 @@ file:
         - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         #- sudo restorecon -R -v /var/lib/quilibrium/.local/bin/quilibrium
         - sudo systemctl daemon-reload
+        - for core in {1..24}; do sudo systemctl start quilibrium-worker@${core}.service; done
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
-          systemctl is-active quilibrium.service || sudo systemctl start quilibrium.service
+          sudo systemctl start quilibrium.service
   -
     source: https://releases.quilibrium.com/node-1.4.19.1-linux-amd64.dgst
     target: /var/lib/quilibrium/.local/bin/quilibrium.dgst
@@ -156,3 +152,12 @@ file:
       post:
         - sudo sysctl -w net.core.rmem_max=4194304
         - sudo sysctl -w net.core.wmem_max=4194304
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/quordlepleen/var/lib/quilibrium/.node/config.yml.gpg
+    target: /var/lib/quilibrium/.node/config.yml
+    sha256: f78c4ec26923b85871dfd3a0f94c72c8053aec7fda3551822b90ddf1400f22dd
+    command:
+      pre:
+        - sudo systemctl stop 'quilibrium-worker@*'.service
+      post:
+        - for core in {1..24}; do sudo systemctl start quilibrium-worker@${core}.service; done

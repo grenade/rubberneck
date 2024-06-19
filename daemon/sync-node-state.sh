@@ -310,7 +310,7 @@ for intent in ${intents[@]}; do
             command_index=$((command_index+1))
           done
           if [ "${action}" = "sync" ]; then
-            if [ "${file_source_ext}" = "gpg" ]; then
+            if [ "${file_source_ext}" = "gpg" ] && [ ${#file_sha256_expected} -eq 64 ]; then
               tmp_file_path=/tmp/$(uuidgen)
               if curl -sL ${file_source} | gpg --quiet --decrypt > ${tmp_file_path}; then
                 echo "[${fqdn}:file ${file_index}] secret fetch (${file_source}) and decrypt (${file_target}) suceeded"
