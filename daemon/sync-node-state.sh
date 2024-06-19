@@ -314,17 +314,16 @@ for intent in ${intents[@]}; do
               tmp_file_path=/tmp/$(uuidgen)
               if curl -sL ${file_source} | gpg --quiet --decrypt > ${tmp_file_path}; then
                 echo "[${fqdn}:file ${file_index}] secret fetch (${file_source}) and decrypt (${file_target}) suceeded"
-                rsync_args=()
-                rsync_args+=( "--archive" )
-                rsync_args+=( "--rsync-path='sudo rsync'" )
-                rsync_args+=( "--rsh=\"ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port}\"" )
+                rsync_args="--archive"
+                rsync_args="${rsync_args} --rsync-path='sudo rsync'"
+                rsync_args="${rsync_args} --rsh='ssh -o ConnectTimeout=1 -i ${ops_private_key} -p ${ssh_port}'"
                 if [ -n ${file_chown} ] && [ ${file_chown} != null ]; then
-                  rsync_args+=( "--chown=${file_chown}" )
+                  rsync_args="${rsync_args} --chown=${file_chown}"
                 fi
                 if [ -n ${file_chmod} ] && [ ${file_chmod} != null ]; then
-                  rsync_args+=( "--chmod=${file_chmod}" )
+                  rsync_args="${rsync_args} --chmod=${file_chmod}"
                 fi
-                if rsync $(echo ${rsync_args[@]}) ${tmp_file_path} ${ops_username}@${fqdn}:${file_target}; then
+                if rsync ${rsync_args} ${tmp_file_path} ${ops_username}@${fqdn}:${file_target}; then
                   echo "[${fqdn}:file ${file_index}] secret sync (${file_target}) suceeded"
                   file_post_command_list_as_base64=$(_decode_property ${file_as_base64} '(.command.post//empty)|.[]|@base64')
                   command_index=0
@@ -336,7 +335,7 @@ for intent in ${intents[@]}; do
                     command_index=$((command_index+1))
                   done
                 else
-                  echo "[${fqdn}:file ${file_index}] secret sync (${file_target}) failed. command: 'rsync $(echo ${rsync_args[@]}) ${tmp_file_path} ${ops_username}@${fqdn}:${file_target}'"
+                  echo "[${fqdn}:file ${file_index}] secret sync (${file_target}) failed. command: 'rsync ${rsync_args} ${tmp_file_path} ${ops_username}@${fqdn}:${file_target}'"
                 fi
               else
                 echo "[${fqdn}:file ${file_index}] secret fetch (${file_source}) and decrypt (${file_target}) failed"
