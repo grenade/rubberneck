@@ -4,6 +4,7 @@ domain: thgttg.com
 action: sync
 ssh:
   port: 52218
+  timeout: 30
 os:
   name: fedora
 package:
