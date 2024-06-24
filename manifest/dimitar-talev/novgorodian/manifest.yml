@@ -1,0 +1,96 @@
+---
+hostname: novgorodian
+domain: thgttg.com
+action: sync
+ssh:
+  port: 52218
+os:
+  name: fedora
+package:
+  - cockpit-pcp
+  - curl
+  - dnf-automatic
+  - git
+  - pip
+user:
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+firewall:
+  port:
+    - 9100/tcp
+    - 9615/tcp
+    - 9616/tcp
+    - 9944/tcp
+    - 9945/tcp
+    - 30333/tcp
+    - 30334/tcp
+    - 31333/tcp
+    - 31334/tcp
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - systemctl is-active calamari.service || sudo systemctl restart calamari.service
+extract:
+  -
+    source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
+    sha256: fbadb376afa7c883f87f70795700a8a200f7fd45412532cc1938a24d41078011
+    targets:
+      -
+        target: /usr/local/bin
+        strip: true
+        source: node_exporter-1.8.1.linux-amd64/node_exporter
+        checksum:
+          path: /usr/local/bin/node_exporter
+          sha256: 5f9fb023724051a76a9e455c25d83b8d5ba91b8f3d83da9666cd7f1c6d57e30e
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl start prometheus-node-exporter.service
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/novgorodian/usr/share/substrate/calamari.json
+    target: /usr/share/substrate/calamari.json
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/novgorodian/etc/systemd/system/calamari.service
+    target: /etc/systemd/system/calamari.service
+    command:
+      pre:
+        - systemctl is-active --quiet calamari.service && sudo systemctl stop calamari.service
+        - id substrate || sudo useradd --system --create-home --home-dir /var/lib/substrate --user-group substrate
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled calamari.service || sudo systemctl enable calamari.service
+        - sudo systemctl start calamari.service
+  -
+    source: https://github.com/Manta-Network/Manta/releases/download/v4.7.0/manta
+    target: /usr/local/bin/manta
+    chmod: '+x'
+    command:
+      pre:
+        - systemctl is-active --quiet calamari.service && sudo systemctl stop calamari.service
+        - id substrate || sudo useradd --system --create-home --home-dir /var/lib/substrate --user-group substrate
+      post:
+        - sudo semanage fcontext -a -t bin_t /usr/local/bin/manta
+        - sudo chcon -Rv -u system_u -t bin_t /usr/local/bin/manta
+        - sudo ln -sfr /usr/local/bin/manta /usr/local/bin/calamari
+        - sudo systemctl daemon-reload
+        - sudo systemctl start calamari.service
