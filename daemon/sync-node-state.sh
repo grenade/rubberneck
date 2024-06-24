@@ -202,7 +202,16 @@ for intent in ${intents[@]}; do
         firewall_port_proto_list=$(yq -r '(.firewall.port//empty)|.[]' ${manifest_path})
         firewall_port_proto_index=0
         for firewall_port_proto in ${firewall_port_proto_list[@]}; do
-          if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --list-ports --permanent | grep ${firewall_port_proto}" &> /dev/null; then
+          firewall_exception_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --list-ports --permanent 2> /dev/null | tr ' ' '\n' | grep ${firewall_port_proto}" 2> /tmp/observation-error.log)
+          if grep -q "timed out" /tmp/observation-error.log &> /dev/null; then
+            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] firewall exception observation failed due to connection timeout. port/protocol: ${firewall_port_proto}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
+            rm -f /tmp/observation-error.log
+            continue
+          elif [ $(grep . /tmp/observation-error.log | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] firewall exception observation failed. port/protocol: ${firewall_port_proto}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
+            rm -f /tmp/observation-error.log
+            continue
+          elif [ "${firewall_port_proto}" = "${firewall_exception_observed}" ]; then
             echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule detected: ${firewall_port_proto}"
           elif [ "${action}" = "sync" ]; then
             if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --zone=FedoraServer --add-port=${firewall_port_proto} --permanent && sudo firewall-cmd --reload"; then
@@ -213,6 +222,7 @@ for intent in ${intents[@]}; do
           else
             echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule add skipped: ${firewall_port_proto}"
           fi
+          rm -f /tmp/observation-error.log
           firewall_port_proto_index=$((firewall_port_proto_index+1))
         done
       else
