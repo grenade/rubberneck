@@ -299,7 +299,7 @@ for intent in ${intents[@]}; do
             else
               archive_extract_strip=0
             fi
-            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) --strip-components=${archive_extract_strip} ${archive_extract_source}"; then
+            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) --strip-components=${archive_extract_strip} ${archive_extract_source} > /dev/null"; then
               echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract succeeded. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
               # todo: handle chown/chmod
               # todo: handle post commands
