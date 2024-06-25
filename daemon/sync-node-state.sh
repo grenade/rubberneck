@@ -264,15 +264,50 @@ for intent in ${intents[@]}; do
         archive_source_ext=${archive_source##*.}
         archive_target=$(_decode_property ${archive_as_base64} .target)
         archive_sha256_expected=$(_decode_property ${archive_as_base64} .sha256)
-        echo "[${fqdn}:archive ${archive_index} (${archive_source_ext})] source: ${archive_source}, target: ${archive_target}"
         archive_extract_list_as_base64=$(_decode_property ${archive_as_base64} '(.extract//empty)|.[]|@base64')
         archive_extract_index=0
         for archive_extract_as_base64 in ${archive_extract_list_as_base64[@]}; do
           archive_extract_source=$(_decode_property ${archive_extract_as_base64} .source)
           archive_extract_target=$(_decode_property ${archive_extract_as_base64} .target)
-          archive_extract_source_ext=${archive_extract_source##*.}
           archive_extract_sha256_expected=$(_decode_property ${archive_extract_as_base64} .sha256)
-          echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index} (${archive_extract_source_ext})] source: ${archive_extract_source}, target: ${archive_extract_target}"
+          archive_extract_sha256_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${archive_extract_target} 2> /dev/null | cut -d ' ' -f 1" 2> ${observation_error_log})
+          if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+            echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] sha256 observation failed due to connection timeout. target: ${archive_extract_target}, source: ${archive_extract_source}, sha256 expected: ${archive_extract_sha256_expected}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
+            continue
+          elif [ $(grep . ${observation_error_log} | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+            echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] sha256 observation failed. target: ${archive_extract_target}, source: ${archive_extract_source}, sha256 expected: ${archive_extract_sha256_expected}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
+            continue
+          elif [ ${#archive_extract_sha256_expected} -eq 64 ] && [ ${#archive_extract_sha256_observed} -eq 64 ] && [ "${archive_extract_sha256_expected}" = "${archive_extract_sha256_observed}" ]; then
+            echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] sha256 validation succeeded. target: ${archive_extract_target}, source: ${archive_extract_source}, sha256 expected: ${archive_extract_sha256_expected}, observed: ${archive_extract_sha256_observed}"
+          elif [ ${#archive_extract_sha256_expected} -eq 64 ]; then
+            echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] sha256 validation failed. target: ${archive_extract_target}, source: ${archive_extract_source}, sha256 expected: ${archive_extract_sha256_expected}, observed: ${archive_extract_sha256_observed}"
+            archive_sha256_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${archive_target} 2> /dev/null | cut -d ' ' -f 1" 2> ${observation_error_log})
+            if [ "${archive_sha256_expected}" = "${archive_sha256_observed}" ]; then
+              echo "[${fqdn}:archive ${archive_index}] sha256 validation succeeded. target: ${archive_target}, source: ${archive_source}, sha256 expected: ${archive_sha256_expected}, observed: ${archive_sha256_observed}"
+            elif ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} curl -sLo ${archive_target} ${archive_source}; then
+              echo "[${fqdn}:archive ${archive_index}] download succeeded (${archive_target}, ${archive_source})"
+            else
+              echo "[${fqdn}:archive ${archive_index}] download failed (${archive_target}, ${archive_source})"
+              rm -f ${observation_error_log}
+              continue
+            fi
+            # todo: handle pre commands
+            if [[ ${archive_extract_source} == */* ]]; then
+              archive_extract_strip=1
+            else
+              archive_extract_strip=0
+            fi
+            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) --strip-components=${archive_extract_strip} ${archive_extract_source}"; then
+              echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract succeeded. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
+              # todo: handle chown/chmod
+              # todo: handle post commands
+            else
+              echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract failed. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
+            fi
+          fi
+          rm -f ${observation_error_log}
           archive_extract_index=$((archive_extract_index+1))
         done
         archive_index=$((archive_index+1))
@@ -336,7 +371,7 @@ for intent in ${intents[@]}; do
           echo "[${fqdn}:file ${file_index}] git sha validation succeeded. target: ${file_target}, source: ${file_source}, git sha expected: ${file_shagit_expected}, observed: ${file_shagit_observed}"
         else
           if [ ${#file_sha256_expected} -eq 64 ]; then
-            echo "[${fqdn}:file ${file_index}] sha256  validation failed. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observed: ${file_sha256_observed}"
+            echo "[${fqdn}:file ${file_index}] sha256 validation failed. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observed: ${file_sha256_observed}"
           elif [ ${#file_shagit_expected} -eq 40 ]; then
             echo "[${fqdn}:file ${file_index}] git sha validation failed. target: ${file_target}, source: ${file_source}, git sha expected: ${file_shagit_expected}, observed: ${file_shagit_observed}"
           else
