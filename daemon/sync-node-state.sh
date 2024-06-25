@@ -293,7 +293,20 @@ for intent in ${intents[@]}; do
               rm -f ${observation_error_log}
               continue
             fi
-            # todo: handle pre commands
+            archive_extract_pre_command_list_as_base64=$(_decode_property ${archive_extract_as_base64} '(.command.pre//empty)|.[]|@base64')
+            archive_extract_pre_command_index=0
+            for archive_extract_pre_command_as_base64 in ${archive_extract_pre_command_list_as_base64[@]}; do
+              command=$(echo ${archive_extract_pre_command_as_base64} | base64 --decode)
+              echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}, pre command ${archive_extract_pre_command_index}] ${command}"
+              if [ "${action}" = "sync" ]; then
+                ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> /dev/null
+                command_exit_code=$?
+                echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}, pre command ${archive_extract_pre_command_index}] exit code: ${command_exit_code}, command: ${command}"
+              else
+                echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}, pre command ${archive_extract_pre_command_index}] skipped"
+              fi
+              archive_extract_pre_command_index=$((archive_extract_pre_command_index+1))
+            done
             if [[ ${archive_extract_source} == */* ]]; then
               archive_extract_strip=1
             else
@@ -302,7 +315,20 @@ for intent in ${intents[@]}; do
             if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) --strip-components=${archive_extract_strip} ${archive_extract_source} > /dev/null"; then
               echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract succeeded. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
               # todo: handle chown/chmod
-              # todo: handle post commands
+              archive_extract_post_command_list_as_base64=$(_decode_property ${archive_extract_as_base64} '(.command.post//empty)|.[]|@base64')
+              archive_extract_post_command_index=0
+              for archive_extract_post_command_as_base64 in ${archive_extract_post_command_list_as_base64[@]}; do
+                command=$(echo ${archive_extract_post_command_as_base64} | base64 --decode)
+                echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}, post command ${archive_extract_post_command_index}] ${command}"
+                if [ "${action}" = "sync" ]; then
+                  ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> /dev/null
+                  command_exit_code=$?
+                  echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}, post command ${archive_extract_post_command_index}] exit code: ${command_exit_code}, command: ${command}"
+                else
+                  echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}, post command ${archive_extract_post_command_index}] skipped"
+                fi
+                archive_extract_post_command_index=$((archive_extract_post_command_index+1))
+              done
             else
               echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract failed. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
             fi

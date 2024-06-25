@@ -101,12 +101,12 @@ archive:
         source: node_exporter-1.8.1.linux-amd64/node_exporter
         target: /usr/local/bin/node_exporter
         sha256: 5f9fb023724051a76a9e455c25d83b8d5ba91b8f3d83da9666cd7f1c6d57e30e
-    command:
-      pre:
-        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
-      post:
-        - sudo systemctl daemon-reload
-        - sudo systemctl start prometheus-node-exporter.service
+        command:
+          pre:
+            - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start prometheus-node-exporter.service
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
