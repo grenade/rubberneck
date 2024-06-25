@@ -271,8 +271,8 @@ file:
         - sudo ln -sfr /etc/nginx/sites-available/golgafrinchans.thgttg.com.conf /etc/nginx/sites-enabled/golgafrinchans.thgttg.com.conf
         - sudo systemctl restart nginx.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/novgorodian.thgttg.com.conf
-    target: /etc/nginx/sites-available/novgorodian.thgttg.com.conf
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/gallumbits.thgttg.com.conf
+    target: /etc/nginx/sites-available/gallumbits.thgttg.com.conf
     command:
       pre:
         - >
@@ -281,15 +281,15 @@ file:
             --agree-tos
             --no-eff-email
             --noninteractive
-            --cert-name novgorodian.thgttg.com
+            --cert-name gallumbits.thgttg.com
             --expand
             --allow-subset-of-names
             --key-type ecdsa
             --dns-cloudflare
             --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
             --dns-cloudflare-propagation-seconds 60
-            -d novgorodian.thgttg.com
-            -d cockpit.novgorodian.thgttg.com
+            -d gallumbits.thgttg.com
+            -d cockpit.gallumbits.thgttg.com
       post:
-        - sudo ln -sfr /etc/nginx/sites-available/novgorodian.thgttg.com.conf /etc/nginx/sites-enabled/novgorodian.thgttg.com.conf
+        - sudo ln -sfr /etc/nginx/sites-available/gallumbits.thgttg.com.conf /etc/nginx/sites-enabled/gallumbits.thgttg.com.conf
         - sudo systemctl restart nginx.service
