@@ -71,6 +71,7 @@ for intent in ${intents[@]}; do
     https://api.github.com/repos/${rubberneck_github_org}/${rubberneck_github_repo}/contents/manifest/${intent}
   host_list=$(jq -r '.[] | select(.type == "dir") | .name' ${tmp}/${rubberneck_github_org}-${rubberneck_github_repo}-contents-manifest-${intent}.json)
   for hostname in ${host_list[@]}; do
+    mkdir -p ${tmp}/${fqdn}
     manifest_path=${tmp}/${intent}-${hostname}-manifest.yml
     if curl \
       --silent \
@@ -199,17 +200,18 @@ for intent in ${intents[@]}; do
       done
 
       if [[ ${dnf_os[@]} =~ ${os} ]]; then
+        observation_error_log=${tmp}/${fqdn}/firewall-exception-observation-error.log
         firewall_port_proto_list=$(yq -r '(.firewall.port//empty)|.[]' ${manifest_path})
         firewall_port_proto_index=0
         for firewall_port_proto in ${firewall_port_proto_list[@]}; do
-          firewall_exception_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --list-ports --permanent 2> /dev/null | tr ' ' '\n' | grep ${firewall_port_proto}" 2> /tmp/observation-error.log)
-          if grep -q "timed out" /tmp/observation-error.log &> /dev/null; then
-            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] firewall exception observation failed due to connection timeout. port/protocol: ${firewall_port_proto}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
-            rm -f /tmp/observation-error.log
+          firewall_exception_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --list-ports --permanent 2> /dev/null | tr ' ' '\n' | grep ${firewall_port_proto}" 2> ${observation_error_log})
+          if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] firewall exception observation failed due to connection timeout. port/protocol: ${firewall_port_proto}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
             continue
-          elif [ $(grep . /tmp/observation-error.log | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
-            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] firewall exception observation failed. port/protocol: ${firewall_port_proto}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
-            rm -f /tmp/observation-error.log
+          elif [ $(grep . ${observation_error_log} | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] firewall exception observation failed. port/protocol: ${firewall_port_proto}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
             continue
           elif [ "${firewall_port_proto}" = "${firewall_exception_observed}" ]; then
             echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule detected: ${firewall_port_proto}"
@@ -222,7 +224,7 @@ for intent in ${intents[@]}; do
           else
             echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule add skipped: ${firewall_port_proto}"
           fi
-          rm -f /tmp/observation-error.log
+          rm -f ${observation_error_log}
           firewall_port_proto_index=$((firewall_port_proto_index+1))
         done
       else
@@ -245,6 +247,8 @@ for intent in ${intents[@]}; do
 
       file_list_as_base64=$(yq -r  '.file//empty' ${manifest_path} | jq -r '.[] | @base64')
       file_index=0
+
+      observation_error_log=${tmp}/${fqdn}/file-checksum-observation-error.log
       for file_as_base64 in ${file_list_as_base64[@]}; do
         file_source=$(_decode_property ${file_as_base64} .source)
         file_source_ext=${file_source##*.}
@@ -256,17 +260,17 @@ for intent in ${intents[@]}; do
         if [ ${#file_sha256_expected} -eq 64 ]; then
           # checksum provided.
           # manifest contains a sha256 checksum for file. require a matching sha256 checksum observation.
-          file_sha256_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${file_target} 2> /dev/null | cut -d ' ' -f 1" 2> /tmp/observation-error.log)
-          if grep -q "timed out" /tmp/observation-error.log &> /dev/null; then
-            echo "[${fqdn}:file ${file_index}] sha256 observation failed due to connection timeout. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
-            rm -f /tmp/observation-error.log
+          file_sha256_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${file_target} 2> /dev/null | cut -d ' ' -f 1" 2> ${observation_error_log})
+          if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+            echo "[${fqdn}:file ${file_index}] sha256 observation failed due to connection timeout. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
             continue
-          elif [ $(grep . /tmp/observation-error.log | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
-            echo "[${fqdn}:file ${file_index}] sha256 observation failed. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observation error: $(cat /tmp/observation-error.log | tr '\n' ' ')"
-            rm -f /tmp/observation-error.log
+          elif [ $(grep . ${observation_error_log} | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+            echo "[${fqdn}:file ${file_index}] sha256 observation failed. target: ${file_target}, source: ${file_source}, sha256 expected: ${file_sha256_expected}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
             continue
           fi
-          rm -f /tmp/observation-error.log
+          rm -f ${observation_error_log}
         elif [[ ${file_source} == "https://raw.githubusercontent.com/"* ]]; then
           # eg: https://raw.githubusercontent.com/Manta-Network/rubberneck/main/config/calamari.seabird.systems/c2/etc/systemd/system/calamari.service
           # no checksum provided. checksum is discoverable from github repository.
@@ -283,13 +287,13 @@ for intent in ${intents[@]}; do
             --header "Authorization: Bearer ${rubberneck_github_token}" \
             --url "https://api.github.com/repos/${file_source_owner}/${file_source_repo}/contents/${file_source_path}?ref=${file_source_rev}" \
             | jq -r '.sha')
-          file_shagit_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo git hash-object ${file_target} 2> /dev/null" 2> /tmp/observation-error.log)
-          if grep -q "timed out" /tmp/observation-error.log &> /dev/null; then
-            echo "[${fqdn}:file ${file_index}] git sha observation failed. target: ${file_target}, source: ${file_source}, git sha expected: ${file_shagit_expected}, observation error: $(head -n 1 /tmp/observation-error.log)"
-            rm -f /tmp/observation-error.log
+          file_shagit_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo git hash-object ${file_target} 2> /dev/null" 2> ${observation_error_log})
+          if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+            echo "[${fqdn}:file ${file_index}] git sha observation failed. target: ${file_target}, source: ${file_source}, git sha expected: ${file_shagit_expected}, observation error: $(head -n 1 ${observation_error_log})"
+            rm -f ${observation_error_log}
             continue
           fi
-          rm -f /tmp/observation-error.log
+          rm -f ${observation_error_log}
         fi
 
         if [ ${#file_sha256_expected} -eq 64 ] && [ ${#file_sha256_observed} -eq 64 ] && [ "${file_sha256_expected}" = "${file_sha256_observed}" ]; then
@@ -397,3 +401,4 @@ for intent in ${intents[@]}; do
     fi
   done
 done
+rm -rf ${tmp}
