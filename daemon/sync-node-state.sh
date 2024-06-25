@@ -184,18 +184,29 @@ for intent in ${intents[@]}; do
 
       package_list=$(yq -r '(.package//empty)|.[]' ${manifest_path})
       package_index=0
+      observation_error_log=${tmp}/${fqdn}/package-install-observation-error.log
       for package in ${package_list[@]}; do
-        if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} ${package_verifier} ${package} &> /dev/null; then
-          echo "[${fqdn}:package ${package_index}] install detected, package: ${package}"
+        package_install_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${package_verifier} ${package} 2> /dev/null | grep ${package} | cut -d '.' -f 1" 2> ${observation_error_log})
+        if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+          echo "[${fqdn}:package ${package_index}] package install observation failed due to connection timeout. package: ${package}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+          rm -f ${observation_error_log}
+          continue
+        elif [ $(grep . ${observation_error_log} | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+          echo "[${fqdn}:package ${package_index}] package install observation failed. package: ${package}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+          rm -f ${observation_error_log}
+          continue
+        elif [ "${package_install_observed}" = "${package}" ]; then
+          echo "[${fqdn}:package ${package_index}] package install detected, package: ${package}"
         elif [ "${action}" = "sync" ]; then
           if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo ${package_manager} install -y ${package}; then
-            echo "[${fqdn}:package ${package_index}] install succeeded, package: ${package}"
+            echo "[${fqdn}:package ${package_index}] package install succeeded, package: ${package}"
           else
-            echo "[${fqdn}:package ${package_index}] install failed, package: ${package}"
+            echo "[${fqdn}:package ${package_index}] package install failed, package: ${package}"
           fi
         else
-          echo "[${fqdn}:package ${package_index}] install skipped, package: ${package}"
+          echo "[${fqdn}:package ${package_index}] package install skipped, package: ${package}"
         fi
+        rm -f ${observation_error_log}
         package_index=$((package_index+1))
       done
 
@@ -245,9 +256,30 @@ for intent in ${intents[@]}; do
         command_index=$((command_index+1))
       done
 
+      archive_list_as_base64=$(yq -r  '.archive//empty' ${manifest_path} | jq -r '.[] | @base64')
+      archive_index=0
+      observation_error_log=${tmp}/${fqdn}/archive-checksum-observation-error.log
+      for archive_as_base64 in ${archive_list_as_base64[@]}; do
+        archive_source=$(_decode_property ${archive_as_base64} .source)
+        archive_source_ext=${archive_source##*.}
+        archive_target=$(_decode_property ${archive_as_base64} .target)
+        archive_sha256_expected=$(_decode_property ${archive_as_base64} .sha256)
+        echo "[${fqdn}:archive ${archive_index} (${archive_source_ext})] source: ${archive_source}, target: ${archive_target}"
+        archive_extract_list_as_base64=$(_decode_property ${archive_as_base64} '(.extract//empty)|.[]|@base64')
+        archive_extract_index=0
+        for archive_extract_as_base64 in ${archive_extract_list_as_base64[@]}; do
+          archive_extract_source=$(_decode_property ${archive_extract_as_base64} .source)
+          archive_extract_target=$(_decode_property ${archive_extract_as_base64} .target)
+          archive_extract_source_ext=${archive_extract_source##*.}
+          archive_extract_sha256_expected=$(_decode_property ${archive_extract_as_base64} .sha256)
+          echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index} (${archive_extract_source_ext})] source: ${archive_extract_source}, target: ${archive_extract_target}"
+          archive_extract_index=$((archive_extract_index+1))
+        done
+        archive_index=$((archive_index+1))
+      done
+
       file_list_as_base64=$(yq -r  '.file//empty' ${manifest_path} | jq -r '.[] | @base64')
       file_index=0
-
       observation_error_log=${tmp}/${fqdn}/file-checksum-observation-error.log
       for file_as_base64 in ${file_list_as_base64[@]}; do
         file_source=$(_decode_property ${file_as_base64} .source)

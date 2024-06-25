@@ -11,7 +11,7 @@ package:
   - curl
   - dnf-automatic
   - git
-  - pip
+  - python3-pip
 user:
   -
     username: grenade
@@ -46,11 +46,26 @@ command:
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
-  - test -x /usr/local/bin/node_exporter || ( curl -sLo /tmp/node_exporter-1.8.0.linux-amd64.tar.gz https://github.com/prometheus/node_exporter/releases/download/v1.8.0/node_exporter-1.8.0.linux-amd64.tar.gz && sudo tar xvfz /tmp/node_exporter-1.8.0.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 node_exporter-1.8.0.linux-amd64/node_exporter )
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - for core in {1..96}; do systemctl list-units --type=service | grep quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service; done
   - for core in {115..204}; do systemctl list-units --type=service | grep quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service; done
   - for core in {97..114}; do systemctl is-active quilibrium-worker@${core}.service || sudo systemctl restart quilibrium-worker@${core}.service; done
+archive:
+  -
+    source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
+    target: /tmp/node_exporter-1.8.1.linux-amd64.tar.gz
+    sha256: fbadb376afa7c883f87f70795700a8a200f7fd45412532cc1938a24d41078011
+    extract:
+      -
+        source: node_exporter-1.8.1.linux-amd64/node_exporter
+        target: /usr/local/bin/node_exporter
+        sha256: 5f9fb023724051a76a9e455c25d83b8d5ba91b8f3d83da9666cd7f1c6d57e30e
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl start prometheus-node-exporter.service
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
