@@ -139,19 +139,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name bob.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d bob.thgttg.com
-            -d cockpit.bob.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name bob.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d bob.thgttg.com
+          -d cockpit.bob.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/bob.thgttg.com.conf /etc/nginx/sites-enabled/bob.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -162,19 +162,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name frootmig.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d frootmig.thgttg.com
-            -d cockpit.frootmig.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name frootmig.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d frootmig.thgttg.com
+          -d cockpit.frootmig.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/frootmig.thgttg.com.conf /etc/nginx/sites-enabled/frootmig.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -185,19 +185,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name caveman.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d caveman.thgttg.com
-            -d cockpit.caveman.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name caveman.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d caveman.thgttg.com
+          -d cockpit.caveman.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/caveman.thgttg.com.conf /etc/nginx/sites-enabled/caveman.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -208,19 +208,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name expralite.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d expralite.thgttg.com
-            -d cockpit.expralite.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name expralite.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d expralite.thgttg.com
+          -d cockpit.expralite.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/expralite.thgttg.com.conf /etc/nginx/sites-enabled/expralite.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -231,19 +231,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name anjie.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d anjie.thgttg.com
-            -d cockpit.anjie.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name anjie.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d anjie.thgttg.com
+          -d cockpit.anjie.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/anjie.thgttg.com.conf /etc/nginx/sites-enabled/anjie.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -254,19 +254,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name golgafrinchans.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d golgafrinchans.thgttg.com
-            -d cockpit.golgafrinchans.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name golgafrinchans.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d golgafrinchans.thgttg.com
+          -d cockpit.golgafrinchans.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/golgafrinchans.thgttg.com.conf /etc/nginx/sites-enabled/golgafrinchans.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -277,19 +277,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name gallumbits.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d gallumbits.thgttg.com
-            -d cockpit.gallumbits.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name gallumbits.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d gallumbits.thgttg.com
+          -d cockpit.gallumbits.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/gallumbits.thgttg.com.conf /etc/nginx/sites-enabled/gallumbits.thgttg.com.conf
         - sudo systemctl restart nginx.service
