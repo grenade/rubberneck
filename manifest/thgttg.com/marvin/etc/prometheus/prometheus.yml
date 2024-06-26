@@ -15,7 +15,7 @@ scrape_configs:
     static_configs:
       -
         targets:
-          - lava.v8r.io
+          #- lava.v8r.io
           - midgard.v8r.io
           - badass.nebra.systems
           - allitnils.thgttg.com
@@ -35,15 +35,15 @@ scrape_configs:
           - frootmig.thgttg.com
           - gallumbits.thgttg.com
           - golgafrinchans.thgttg.com
-  -
-    job_name: tendermint
-    scheme: https
-    metrics_path: /metrics/tendermint
-    static_configs:
-      -
-        targets:
-          #- celestia.thgttg.com
-          - lava.v8r.io
+  #-
+  #  job_name: tendermint
+  #  scheme: https
+  #  metrics_path: /metrics/tendermint
+  #  static_configs:
+  #    -
+  #      targets:
+  #        #- celestia.thgttg.com
+  #        - lava.v8r.io
   -
     job_name: gpu
     scheme: https
