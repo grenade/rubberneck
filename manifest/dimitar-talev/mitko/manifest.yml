@@ -47,6 +47,33 @@ archive:
             - sudo systemctl start prometheus-node-exporter.service
 file:
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/root/.cloudflare/nebra.systems.gpg
+    target: /root/.cloudflare/nebra.systems
+    sha256: 60dfdb0907b475fb60e0a72404bd9261eebe5ae9523971b0bba30a5dbe413bd2
+    chmod: 600
+    command:
+      pre:
+        - sudo mkdir -p /root/.cloudflare
+        - sudo chmod 600 /root/.cloudflare
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/root/.cloudflare/thgttg.com.gpg
+    target: /root/.cloudflare/thgttg.com
+    sha256: 905d66e5a34701afb7bfa183c15f3acb8d6f9c83b47c99eaf226441e43058c26
+    chmod: 600
+    command:
+      pre:
+        - sudo mkdir -p /root/.cloudflare
+        - sudo chmod 600 /root/.cloudflare
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/root/.cloudflare/v8r.io.gpg
+    target: /root/.cloudflare/v8r.io
+    sha256: 1f14d4cd2980d2e9e3645d18d25a9c8b2dd2e8327b3809d4b711c0b66d5df009
+    chmod: 600
+    command:
+      pre:
+        - sudo mkdir -p /root/.cloudflare
+        - sudo chmod 600 /root/.cloudflare
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
     target: /etc/systemd/system/prometheus-node-exporter.service
     command:
@@ -67,6 +94,51 @@ file:
         - sudo mkdir -p /etc/nginx/sites-available
         - sudo mkdir -p /etc/nginx/sites-enabled
       post:
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/mitko.thgttg.com.conf
+    target: /etc/nginx/sites-available/mitko.thgttg.com.conf
+    command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name mitko.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d mitko.thgttg.com
+          -d cockpit.mitko.thgttg.com
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/mitko.thgttg.com.conf /etc/nginx/sites-enabled/mitko.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/badass.nebra.systems.conf
+    target: /etc/nginx/sites-available/badass.nebra.systems.conf
+    command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@nebra.systems
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name badass.nebra.systems
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/nebra.systems
+          --dns-cloudflare-propagation-seconds 60
+          -d badass.nebra.systems
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/badass.nebra.systems.conf /etc/nginx/sites-enabled/badass.nebra.systems.conf
         - sudo systemctl restart nginx.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/quordlepleen.thgttg.com.conf
