@@ -131,19 +131,19 @@ file:
       pre:
         - >
           sudo certbot certonly
-            -m ops@thgttg.com
-            --agree-tos
-            --no-eff-email
-            --noninteractive
-            --cert-name novgorodian.thgttg.com
-            --expand
-            --allow-subset-of-names
-            --key-type ecdsa
-            --dns-cloudflare
-            --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
-            --dns-cloudflare-propagation-seconds 60
-            -d novgorodian.thgttg.com
-            -d cockpit.novgorodian.thgttg.com
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name novgorodian.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d novgorodian.thgttg.com
+          -d cockpit.novgorodian.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/novgorodian.thgttg.com.conf /etc/nginx/sites-enabled/novgorodian.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -307,4 +307,27 @@ file:
           -d cockpit.gallumbits.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/gallumbits.thgttg.com.conf /etc/nginx/sites-enabled/gallumbits.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/effrafax.thgttg.com.conf
+    target: /etc/nginx/sites-available/effrafax.thgttg.com.conf
+    command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name effrafax.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d effrafax.thgttg.com
+          -d cockpit.effrafax.thgttg.com
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/effrafax.thgttg.com.conf /etc/nginx/sites-enabled/effrafax.thgttg.com.conf
         - sudo systemctl restart nginx.service
