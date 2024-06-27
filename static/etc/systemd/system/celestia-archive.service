@@ -1,0 +1,20 @@
+[Unit]
+Description=celestia archive node
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/var/lib/celestia/.celestia-app/config/app.toml
+ConditionPathExists=/var/lib/celestia/.celestia-app/config/config.toml
+ConditionPathExists=/var/lib/celestia/.celestia-app/config/genesis.json
+ConditionPathExists=/var/lib/celestia/.celestia-app/config/seeds.csv
+
+[Service]
+Type=simple
+User=celestia
+Group=celestia
+WorkingDirectory=/var/lib/celestia/.celestia-app
+ExecStart=/usr/local/bin/celestia-appd start
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

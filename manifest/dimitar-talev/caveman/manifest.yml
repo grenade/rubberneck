@@ -44,7 +44,25 @@ archive:
           post:
             - sudo systemctl daemon-reload
             - sudo systemctl start prometheus-node-exporter.service
+  -
+    source: https://github.com/celestiaorg/celestia-app/releases/download/v1.12.0/celestia-app_Linux_x86_64.tar.gz
+    target: /tmp/celestia-app_Linux_x86_64.tar.gz
+    sha256: 02f92ec0df91e7e4dbfeac5924b03be13e6b13af25c0f32949c697e1e12bd5e0
+    extract:
+      -
+        source: celestia-appd
+        target: /usr/local/bin/celestia-appd
+        sha256: 5aa4c8e5dacb3908e36ed8d1ba27d75e9a39a1d857eea20d8d48c167092535d6
+        command:
+          pre:
+            - systemctl is-active --quiet celestia-archive.service && sudo systemctl stop celestia-archive.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start celestia-archive.service
 file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/etc/cockpit/cockpit.conf
+    target: /etc/cockpit/cockpit.conf
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
     target: /etc/systemd/system/prometheus-node-exporter.service
@@ -56,5 +74,27 @@ file:
         - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
         - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/etc/cockpit/cockpit.conf
-    target: /etc/cockpit/cockpit.conf
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/celestia-archive.service
+    target: /etc/systemd/system/celestia-archive.service
+    command:
+      pre:
+        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+        - systemctl is-active --quiet celestia-archive.service && sudo systemctl stop celestia-archive.service
+      post:
+        - sudo --set-home -u celestia /usr/local/bin/celestia-appd init 'черно море' --chain-id celestia
+        - sudo --set-home -u celestia /usr/local/bin/celestia-appd download-genesis celestia
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled celestia-archive.service || sudo systemctl enable celestia-archive.service
+        - systemctl is-active celestia-archive.service || sudo systemctl start celestia-archive.service
+  -
+    source: https://raw.githubusercontent.com/celestiaorg/networks/master/celestia/seeds.txt
+    target: /var/lib/celestia/.celestia-app/config/seeds.txt
+    chown: celestia:celestia
+    command:
+      pre:
+        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+        - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
+      post:
+        - sudo -u celestia cat /var/lib/celestia/.celestia-app/config/seeds.txt | tr '\n' ',' | sudo -u celestia tee /var/lib/celestia/.celestia-app/config/seeds.csv
+        - sudo -u celestia sed -i -e "s/^seeds *=.*/seeds = \"$(cat /var/lib/celestia/.celestia-app/config/seeds.csv)\"/" /var/lib/celestia/.celestia-app/config/config.toml
+        - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
