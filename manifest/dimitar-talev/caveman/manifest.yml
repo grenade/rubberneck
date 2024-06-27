@@ -23,6 +23,8 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
 firewall:
   port:
+    - 2121/tcp
+    - 2121/udp
     - 9100/tcp
 command:
   - sudo passwd -l root
