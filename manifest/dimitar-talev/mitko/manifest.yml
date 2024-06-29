@@ -116,6 +116,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d mitko.thgttg.com
           -d cockpit.mitko.thgttg.com
+          -d ilo.mitko.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/mitko.thgttg.com.conf /etc/nginx/sites-enabled/mitko.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -152,6 +153,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/allitnils.thgttg.com.conf
     target: /etc/nginx/sites-available/allitnils.thgttg.com.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name allitnils.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d allitnils.thgttg.com
+          -d cockpit.allitnils.thgttg.com
+          -d ilo.allitnils.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/allitnils.thgttg.com.conf /etc/nginx/sites-enabled/allitnils.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -159,6 +177,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/colin.thgttg.com.conf
     target: /etc/nginx/sites-available/colin.thgttg.com.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name colin.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d colin.thgttg.com
+          -d cockpit.colin.thgttg.com
+          -d ilo.colin.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/colin.thgttg.com.conf /etc/nginx/sites-enabled/colin.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -166,6 +201,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/gramathea.thgttg.com.conf
     target: /etc/nginx/sites-available/gramathea.thgttg.com.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name gramathea.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d gramathea.thgttg.com
+          -d cockpit.gramathea.thgttg.com
+          -d ilo.gramathea.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/gramathea.thgttg.com.conf /etc/nginx/sites-enabled/gramathea.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -173,6 +225,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/hawalius.thgttg.com.conf
     target: /etc/nginx/sites-available/hawalius.thgttg.com.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name hawalius.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d hawalius.thgttg.com
+          -d cockpit.hawalius.thgttg.com
+          -d ilo.hawalius.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/hawalius.thgttg.com.conf /etc/nginx/sites-enabled/hawalius.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -180,6 +249,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/krikkit.thgttg.com.conf
     target: /etc/nginx/sites-available/krikkit.thgttg.com.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name krikkit.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d krikkit.thgttg.com
+          -d cockpit.krikkit.thgttg.com
+          -d ilo.krikkit.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/krikkit.thgttg.com.conf /etc/nginx/sites-enabled/krikkit.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -187,6 +273,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/slartibartfast.thgttg.com.conf
     target: /etc/nginx/sites-available/slartibartfast.thgttg.com.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name slartibartfast.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d slartibartfast.thgttg.com
+          -d cockpit.slartibartfast.thgttg.com
+          -d ilo.slartibartfast.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/slartibartfast.thgttg.com.conf /etc/nginx/sites-enabled/slartibartfast.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -194,6 +297,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/midgard.v8r.io.conf
     target: /etc/nginx/sites-available/midgard.v8r.io.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name midgard.v8r.io
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/v8r.io
+          --dns-cloudflare-propagation-seconds 60
+          -d midgard.v8r.io
+          -d cockpit.midgard.v8r.io
+          -d ilo.midgard.v8r.io
       post:
         - sudo ln -sfr /etc/nginx/sites-available/midgard.v8r.io.conf /etc/nginx/sites-enabled/midgard.v8r.io.conf
         - sudo systemctl restart nginx.service
@@ -217,6 +337,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d novgorodian.thgttg.com
           -d cockpit.novgorodian.thgttg.com
+          -d ilo.novgorodian.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/novgorodian.thgttg.com.conf /etc/nginx/sites-enabled/novgorodian.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -240,6 +361,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d bob.thgttg.com
           -d cockpit.bob.thgttg.com
+          -d ilo.bob.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/bob.thgttg.com.conf /etc/nginx/sites-enabled/bob.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -263,6 +385,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d frootmig.thgttg.com
           -d cockpit.frootmig.thgttg.com
+          -d ilo.frootmig.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/frootmig.thgttg.com.conf /etc/nginx/sites-enabled/frootmig.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -286,6 +409,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d caveman.thgttg.com
           -d cockpit.caveman.thgttg.com
+          -d ilo.caveman.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/caveman.thgttg.com.conf /etc/nginx/sites-enabled/caveman.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -309,6 +433,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d expralite.thgttg.com
           -d cockpit.expralite.thgttg.com
+          -d ilo.expralite.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/expralite.thgttg.com.conf /etc/nginx/sites-enabled/expralite.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -332,6 +457,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d anjie.thgttg.com
           -d cockpit.anjie.thgttg.com
+          -d ilo.anjie.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/anjie.thgttg.com.conf /etc/nginx/sites-enabled/anjie.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -355,6 +481,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d golgafrinchans.thgttg.com
           -d cockpit.golgafrinchans.thgttg.com
+          -d ilo.golgafrinchans.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/golgafrinchans.thgttg.com.conf /etc/nginx/sites-enabled/golgafrinchans.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -378,6 +505,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d gallumbits.thgttg.com
           -d cockpit.gallumbits.thgttg.com
+          -d ilo.gallumbits.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/gallumbits.thgttg.com.conf /etc/nginx/sites-enabled/gallumbits.thgttg.com.conf
         - sudo systemctl restart nginx.service
@@ -401,6 +529,7 @@ file:
           --dns-cloudflare-propagation-seconds 60
           -d effrafax.thgttg.com
           -d cockpit.effrafax.thgttg.com
+          -d ilo.effrafax.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/effrafax.thgttg.com.conf /etc/nginx/sites-enabled/effrafax.thgttg.com.conf
         - sudo systemctl restart nginx.service
