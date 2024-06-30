@@ -3,9 +3,9 @@ Description=celestia archive node
 Wants=network-online.target
 After=network-online.target
 ConditionPathExists=/var/lib/celestia/.celestia-app/config/app.toml
+ConditionPathExists=/var/lib/celestia/.celestia-app/config/client.toml
 ConditionPathExists=/var/lib/celestia/.celestia-app/config/config.toml
 ConditionPathExists=/var/lib/celestia/.celestia-app/config/genesis.json
-ConditionPathExists=/var/lib/celestia/.celestia-app/config/seeds.csv
 
 [Service]
 Type=simple
