@@ -105,6 +105,7 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/app.toml
     target: /var/lib/celestia/.celestia-app/config/app.toml
     chown: celestia:celestia
+    chmod: 644
     command:
       pre:
         - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
@@ -115,6 +116,7 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/client.toml
     target: /var/lib/celestia/.celestia-app/config/client.toml
     chown: celestia:celestia
+    chmod: 600
     command:
       pre:
         - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
@@ -125,6 +127,7 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/config.toml
     target: /var/lib/celestia/.celestia-app/config/config.toml
     chown: celestia:celestia
+    chmod: 644
     command:
       pre:
         - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
