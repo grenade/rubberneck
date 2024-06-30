@@ -101,3 +101,33 @@ file:
         - sudo -u celestia cat /var/lib/celestia/.celestia-app/config/seeds.txt | tr '\n' ',' | sudo -u celestia tee /var/lib/celestia/.celestia-app/config/seeds.csv
         - sudo -u celestia sed -i -e "s/^seeds *=.*/seeds = \"$(cat /var/lib/celestia/.celestia-app/config/seeds.csv)\"/" /var/lib/celestia/.celestia-app/config/config.toml
         - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/app.toml
+    target: /var/lib/celestia/.celestia-app/config/app.toml
+    chown: celestia:celestia
+    command:
+      pre:
+        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+        - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
+      post:
+        - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/client.toml
+    target: /var/lib/celestia/.celestia-app/config/client.toml
+    chown: celestia:celestia
+    command:
+      pre:
+        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+        - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
+      post:
+        - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/config.toml
+    target: /var/lib/celestia/.celestia-app/config/config.toml
+    chown: celestia:celestia
+    command:
+      pre:
+        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+        - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
+      post:
+        - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service

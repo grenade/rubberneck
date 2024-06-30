@@ -2,8 +2,13 @@
 
 *.sha256
 
-# secrets
-manifest/**/.node/*.yml
+# reverse proxy dns secrets
 **/.cloudflare/*.com
 **/.cloudflare/*.io
 **/.cloudflare/*.systems
+
+# celestia node secrets
+manifest/**/.celestia-app/**/*.json
+
+# quilibrium node secrets
+manifest/**/.node/*.yml
