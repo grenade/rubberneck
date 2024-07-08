@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
 
+#rm -fr /tmp/quil
 mkdir -p /tmp/quil
-for artifact in $(curl -sL https://releases.quilibrium.com/release | grep linux-amd64); do
+
+artifacts=($(curl -sL https://releases.quilibrium.com/release | grep linux-amd64))
+for artifact in ${artifacts[@]}; do
   echo "-"
   echo "  artifact: ${artifact}"
   if [ ! -s /tmp/quil/${artifact} ]; then
