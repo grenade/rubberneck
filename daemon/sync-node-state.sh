@@ -98,7 +98,47 @@ for intent in ${intents[@]}; do
       user_list_as_base64=$(yq -r  '(.user//empty)|.[]|@base64' ${manifest_path})
       for user_as_base64 in ${user_list_as_base64[@]}; do
         username=$(_decode_property ${user_as_base64} .username)
+        system=$(_decode_property ${user_as_base64} .system//false)
+        home=$(_decode_property ${user_as_base64} .home)
+        if [ "${home}" = "null" ]; then
+          if [ "${username}" = "root" ]; then
+            home=/root
+          elif [ "${system}" = "true" ]; then
+            home=/var/lib/${username}
+          else
+            home=/home/${username}
+          fi
+        fi
         mkdir -p ${tmp}/${fqdn}/${username}
+
+        observation_error_log=${tmp}/${fqdn}/user-observation-error-${username}.log
+        user_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "id ${username} 2> /dev/null" 2> ${observation_error_log})
+        user_observed_exit_code=$?
+        if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+          echo "[${fqdn}:user:${username}] user observation failed due to connection timeout. observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+          rm -f ${observation_error_log}
+          continue
+        elif [ $(grep . ${observation_error_log} | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+          echo "[${fqdn}:user:${username}] user observation failed. observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+          rm -f ${observation_error_log}
+          continue
+        elif [ "${user_observed_exit_code}" = "0" ]; then
+          echo "[${fqdn}:user:${username}] user observed"
+        elif [ "${action}" = "sync" ] && [ "${username}" != "root" ]; then
+          if [ "${system}" = "true" ]; then
+            user_create_command="sudo useradd --create-home --home-dir ${home} --user-group ${username}"
+          else
+            user_create_command="sudo useradd --system --create-home --home-dir ${home} --user-group ${username}"
+          fi
+          if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} ${user_create_command}; then
+            echo "[${fqdn}:user:${username}] user creation succeeded"
+          else
+            echo "[${fqdn}:user:${username}] user creation failed"
+          fi
+        else
+          echo "[${fqdn}:user:${username}] user creation skipped"
+        fi
+        rm -f ${observation_error_log}
 
         authorized_key_list_as_base64=$(_decode_property ${user_as_base64} '(.authorized.keys//empty)|.[]|@base64')
         for authorized_key_as_base64 in ${authorized_key_list_as_base64[@]}; do
@@ -122,22 +162,22 @@ for intent in ${intents[@]}; do
           fi
         done
         if [ "${action}" = "sync" ]; then
-          if [ "${username}" = "root" ]; then
-            remote_path=/root/.ssh/
-          else
-            remote_path=/home/${username}/.ssh/
-          fi
           sort -u ${tmp}/${fqdn}/${username}/authorized_keys_raw > ${tmp}/${fqdn}/${username}/authorized_keys
           if [ -s ${tmp}/${fqdn}/${username}/authorized_keys ]; then
-            chmod o-w ${tmp}/${fqdn}/${username}/authorized_keys
-            if rsync -e "ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port}" -og --chown=${username}:${username} --rsync-path='sudo rsync' -a ${tmp}/${fqdn}/${username}/authorized_keys ${ops_username}@${fqdn}:${remote_path}; then
-              echo "[${fqdn}:${remote_path}authorized_keys] sync suceeded"
+            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo mkdir -p ${home}/.ssh; sudo chown -R ${username}:${username} ${home}/.ssh"; then
+              echo "[${fqdn}:${home}/.ssh] owner (${username}) verified"
             else
-              echo "[${fqdn}:${remote_path}authorized_keys] sync failed"
+              echo "[${fqdn}:${home}/.ssh] owner (${username}) verification failed"
+            fi
+            chmod o-w ${tmp}/${fqdn}/${username}/authorized_keys
+            if rsync -e "ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port}" -og --chown=${username}:${username} --rsync-path='sudo rsync' -a ${tmp}/${fqdn}/${username}/authorized_keys ${ops_username}@${fqdn}:${home}/.ssh/; then
+              echo "[${fqdn}:${home}/.ssh/authorized_keys] sync suceeded"
+            else
+              echo "[${fqdn}:${home}/.ssh/authorized_keys] sync failed"
             fi
           fi
         else
-          echo "[${fqdn}:${remote_path}authorized_keys] sync skipped"
+          echo "[${fqdn}:${home}/.ssh/authorized_keys] sync skipped"
         fi
       done
 
@@ -196,7 +236,7 @@ for intent in ${intents[@]}; do
           rm -f ${observation_error_log}
           continue
         elif [ "${package_install_observed}" = "${package}" ]; then
-          echo "[${fqdn}:package ${package_index}] package install detected, package: ${package}"
+          echo "[${fqdn}:package ${package_index}] package install observed, package: ${package}"
         elif [ "${action}" = "sync" ]; then
           if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo ${package_manager} install -y ${package}; then
             echo "[${fqdn}:package ${package_index}] package install succeeded, package: ${package}"
@@ -225,7 +265,7 @@ for intent in ${intents[@]}; do
             rm -f ${observation_error_log}
             continue
           elif [ "${firewall_port_proto}" = "${firewall_exception_observed}" ]; then
-            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule detected: ${firewall_port_proto}"
+            echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule observed: ${firewall_port_proto}"
           elif [ "${action}" = "sync" ]; then
             if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo firewall-cmd --zone=FedoraServer --add-port=${firewall_port_proto} --permanent && sudo firewall-cmd --reload"; then
               echo "[${fqdn}:firewall_port_proto ${firewall_port_proto_index}] allow rule added: ${firewall_port_proto}"
