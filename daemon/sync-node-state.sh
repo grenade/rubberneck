@@ -529,6 +529,156 @@ for intent in ${intents[@]}; do
         unset file_shagit_expected
         file_index=$((file_index+1))
       done
+
+      service_list_as_base64=$(yq -r  '.service//empty' ${manifest_path} | jq -r '.[] | @base64')
+      service_index=0
+      observation_error_log=${tmp}/${fqdn}/service-checksum-observation-error.log
+      for service_as_base64 in ${service_list_as_base64[@]}; do
+        service_source=$(_decode_property ${service_as_base64} .source)
+        service_target=$(_decode_property ${service_as_base64} .target)
+        service_unit=$(basename ${service_target})
+        service_sha256_expected=$(_decode_property ${service_as_base64} .sha256)
+
+        if [ ${#service_sha256_expected} -eq 64 ]; then
+          service_sha256_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${service_target} 2> /dev/null | cut -d ' ' -f 1" 2> ${observation_error_log})
+          if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+            echo "[${fqdn}:service ${service_index}] sha256 observation failed due to connection timeout. target: ${service_target}, source: ${service_source}, sha256 expected: ${service_sha256_expected}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
+            continue
+          elif [ $(grep . ${observation_error_log} | wc -l | cut -d ' ' -f 1) -gt 0 ]; then
+            echo "[${fqdn}:service ${service_index}] sha256 observation failed. target: ${service_target}, source: ${service_source}, sha256 expected: ${service_sha256_expected}, observation error: $(cat ${observation_error_log} | tr '\n' ' ')"
+            rm -f ${observation_error_log}
+            continue
+          fi
+          rm -f ${observation_error_log}
+        elif [[ ${service_source} == "https://raw.githubusercontent.com/"* ]]; then
+          service_source_owner=$(echo ${service_source} | cut -d '/' -f 4)
+          service_source_repo=$(echo ${service_source} | cut -d '/' -f 5)
+          service_source_rev=$(echo ${service_source} | cut -d '/' -f 6)
+          service_source_path=$(echo ${service_source} | cut -d '/' -f 7-)
+          service_shagit_expected=$(curl \
+            --silent \
+            --location \
+            --header 'X-GitHub-Api-Version: 2022-11-28' \
+            --header 'Accept: application/vnd.github.object' \
+            --header "Authorization: Bearer ${rubberneck_github_token}" \
+            --url "https://api.github.com/repos/${service_source_owner}/${service_source_repo}/contents/${service_source_path}?ref=${service_source_rev}" \
+            | jq -r '.sha')
+          service_shagit_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo git hash-object ${service_target} 2> /dev/null" 2> ${observation_error_log})
+          if grep -q "timed out" ${observation_error_log} &> /dev/null; then
+            echo "[${fqdn}:service ${service_index}] git sha observation failed. target: ${service_target}, source: ${service_source}, git sha expected: ${service_shagit_expected}, observation error: $(head -n 1 ${observation_error_log})"
+            rm -f ${observation_error_log}
+            continue
+          fi
+          rm -f ${observation_error_log}
+        fi
+
+        if [ ${#service_sha256_expected} -eq 64 ] && [ ${#service_sha256_observed} -eq 64 ] && [ "${service_sha256_expected}" = "${service_sha256_observed}" ]; then
+          # observed sha256 checksum is valid and matches expected sha256 checksum
+          echo "[${fqdn}:service ${service_index}] sha256 validation succeeded. target: ${service_target}, source: ${service_source}, sha256 expected: ${service_sha256_expected}, observed: ${service_sha256_observed}"
+        elif [ ${#service_shagit_expected} -eq 40 ] && [ ${#service_shagit_observed} -eq 40 ] && [ "${service_shagit_expected}" = "${service_shagit_observed}" ]; then
+          # observed git sha is valid and matches expected git sha
+          echo "[${fqdn}:service ${service_index}] git sha validation succeeded. target: ${service_target}, source: ${service_source}, git sha expected: ${service_shagit_expected}, observed: ${service_shagit_observed}"
+        else
+          if [ ${#service_sha256_expected} -eq 64 ]; then
+            echo "[${fqdn}:service ${service_index}] sha256 validation failed. target: ${service_target}, source: ${service_source}, sha256 expected: ${service_sha256_expected}, observed: ${service_sha256_observed}"
+          elif [ ${#service_shagit_expected} -eq 40 ]; then
+            echo "[${fqdn}:service ${service_index}] git sha validation failed. target: ${service_target}, source: ${service_source}, git sha expected: ${service_shagit_expected}, observed: ${service_shagit_observed}"
+          else
+            echo "[${fqdn}:service ${service_index}] validation failed. target: ${service_target}, source: ${service_source}"
+          fi
+          service_pre_command_index=0
+          declare -a service_pre_command_list=()
+          if [[ ${service_unit} == *@.service ]]; then
+            service_pre_command_list+=( "sudo systemctl stop '$(echo ${service_unit} | cut -d '@' -f 1)@*.service'" )
+          else
+            service_pre_command_list+=( "sudo systemctl stop ${service_unit}" )
+          fi
+          for service_pre_command in ${service_pre_command_list[@]}; do
+            echo "[${fqdn}:service ${service_index}, pre command ${service_pre_command_index}] ${service_pre_command}"
+            if [ "${action}" = "sync" ]; then
+              ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${service_pre_command}" &> /dev/null
+              command_exit_code=$?
+              echo "[${fqdn}:service ${service_index}, pre command ${service_pre_command_index}] exit code: ${command_exit_code}, command: ${service_pre_command}"
+            else
+              echo "[${fqdn}:service ${service_index}, pre command ${service_pre_command_index}] skipped"
+            fi
+            service_pre_command_index=$((service_pre_command_index+1))
+          done
+          if [ "${action}" = "sync" ]; then
+            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${service_target} ${service_source}; then
+              echo "[${fqdn}:service ${service_index}] download succeeded (${service_target}, ${service_source})"
+              declare -a service_post_command_list=()
+              service_post_command_index=0
+              if [[ ${service_unit} == *@.service ]]; then
+                service_instance_active_list=$(_decode_property ${service_as_base64} '(.state.active//empty)|.[]')
+                for service_instance in ${service_instance_active_list[@]}; do
+                  service_instance_unit=$(echo ${service_unit} | cut -d '@' -f 1)@${service_instance}.service
+                  service_post_command_list+=( "sudo systemctl start ${service_instance_unit}" )
+                done
+                service_instance_enable_list=$(_decode_property ${service_as_base64} '(.state.enable//empty)|.[]')
+                for service_instance in ${service_instance_enable_list[@]}; do
+                  service_instance_unit=$(echo ${service_unit} | cut -d '@' -f 1)@${service_instance}.service
+                  service_post_command_list+=( "sudo systemctl enable ${service_instance_unit}" )
+                done
+              else
+                service_state_active=$(_decode_property ${service_as_base64} '.state.active')
+                if [ "${service_state_active}" = "true" ]; then
+                  service_post_command_list+=( "sudo systemctl start ${service_unit}" )
+                fi
+                service_state_enable=$(_decode_property ${service_as_base64} '.state.enable')
+                if [ "${service_state_enable}" = "true" ]; then
+                  service_post_command_list+=( "sudo systemctl enable ${service_unit}" )
+                fi
+              fi
+              for service_post_command in ${service_post_command_list[@]}; do
+                ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${service_post_command}" &> /dev/null
+                command_exit_code=$?
+                echo "[${fqdn}:service ${service_index}, post command ${service_post_command_index}] exit code: ${command_exit_code}, command: ${service_post_command}"
+                service_post_command_index=$((service_post_command_index+1))
+              done
+            else
+              echo "[${fqdn}:service ${service_index}] download failed (${service_target}, ${service_source})"
+            fi
+          fi
+        fi
+        # create commands to ensure service is active and enabled if configured to be
+        declare -a service_command_list=()
+        service_command_index=0
+        if [[ ${service_unit} == *@.service ]]; then
+          service_instance_active_list=$(_decode_property ${service_as_base64} '(.state.active//empty)|.[]')
+          for service_instance in ${service_instance_active_list[@]}; do
+            service_instance_unit=$(echo ${service_unit} | cut -d '@' -f 1)@${service_instance}.service
+            service_command_list+=( "systemctl is-active ${service_instance_unit} || sudo systemctl start ${service_instance_unit}" )
+          done
+          service_instance_enable_list=$(_decode_property ${service_as_base64} '(.state.enable//empty)|.[]')
+          for service_instance in ${service_instance_enable_list[@]}; do
+            service_instance_unit=$(echo ${service_unit} | cut -d '@' -f 1)@${service_instance}.service
+            service_command_list+=( "systemctl is-enabled ${service_instance_unit} || sudo systemctl enable ${service_instance_unit}" )
+          done
+        else
+          service_state_active=$(_decode_property ${service_as_base64} '.state.active')
+          if [ "${service_state_active}" = "true" ]; then
+            service_command_list+=( "systemctl is-active ${service_unit} || sudo systemctl start ${service_unit}" )
+          fi
+          service_state_enable=$(_decode_property ${service_as_base64} '.state.enable')
+          if [ "${service_state_enable}" = "true" ]; then
+            service_command_list+=( "systemctl is-enabled ${service_unit} || sudo systemctl enable ${service_unit}" )
+          fi
+        fi
+        for service_command in ${service_command_list[@]}; do
+          ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${service_command}" &> /dev/null
+          command_exit_code=$?
+          echo "[${fqdn}:service ${service_index}, command ${service_command_index}] exit code: ${command_exit_code}, command: ${service_command}"
+          service_command_index=$((service_command_index+1))
+        done
+        unset service_source
+        unset service_target
+        unset service_unit
+        unset service_sha256_expected
+        unset service_shagit_expected
+        service_index=$((service_index+1))
+      done
     else
       echo "[${intent}/${hostname}] manifest fetch failed"
     fi
