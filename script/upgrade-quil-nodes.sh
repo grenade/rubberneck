@@ -4,6 +4,7 @@ os=linux
 arch=amd64
 release_files=($(curl -sL https://releases.quilibrium.com/release | grep ${os}-${arch}))
 expected_version=$(echo ${release_files[0]} | sed 's/node-//' | sed "s/-${os}-${arch}//")
+echo "expected version: ${expected_version}"
 
 for release_file in ${release_files[@]}; do
   echo "-"
@@ -28,8 +29,26 @@ for release_file in ${release_files[@]}; do
         checksum_status=❌
       fi
       echo "    observed sha256: ${checksum_status} ${observed_sha256}"
+      if [ ${observed_sha256} != ${expected_sha256} ]; then
+        ssh ${fqdn} "
+          systemctl is-active quilibrium.service && sudo systemctl stop quilibrium.service
+          sudo systemctl stop 'quilibrium-worker@*.service'
+          sudo -u quilibrium curl -sLo ${deployed_path} https://releases.quilibrium.com/${release_file}
+        "
+      fi
     done
   fi
+done
+
+for fqdn in {{allitnils,colin,gramathea,hawalius,krikkit,quordlepleen,slartibartfast}.thgttg.com,midgard.v8r.io}; do
+  echo "- ${fqdn}"
+  ssh ${fqdn} '
+    for sig in /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.{5,12}; do
+      if sudo test -f ${sig} && sudo rm ${sig}; then
+        echo "deleted ${sig}"
+      fi
+    done
+  '
 done
 
 #for fqdn in {{allitnils,colin,gramathea,hawalius,krikkit,quordlepleen,slartibartfast}.thgttg.com,midgard.v8r.io}; do
@@ -44,6 +63,6 @@ done
 #      /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.9;
 #    sudo test -f /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.12 || sudo -u quilibrium curl \
 #      --output /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.12 \
-#      --url https://releases.quilibrium.com/node-1.4.20.1-linux-amd64.dgst.sig.12;
+#      --url https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.12;
 #  "
 #done
