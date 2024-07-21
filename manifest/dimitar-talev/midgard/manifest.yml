@@ -14,13 +14,17 @@ package:
   - python3-pip
 user:
   -
+    username: chd
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICqLZ8g4OEkYREvtocms3pUgdUVIxiJ+WZHv3ZsMROZL
+  -
     username: grenade
     authorized:
       keys:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
-        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPb24HEQ++aNFWaqVyMtIs6GotUB8R+q61XOoI2z6uMj
-        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAID83JhRg/lgInWM/XwMfjaDzTMDPS5M7zuVeOm0O5Y5W
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
 firewall:
   port:
     - 9100/tcp
