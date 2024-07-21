@@ -4,7 +4,7 @@ os=linux
 arch=amd64
 release_files=($(curl -sL https://releases.quilibrium.com/release | grep ${os}-${arch}))
 expected_version=$(echo ${release_files[0]} | sed 's/node-//' | sed "s/-${os}-${arch}//")
-echo "expected version: ${expected_version}"
+echo "latest quilibrium version: ${expected_version}"
 
 for release_file in ${release_files[@]}; do
   echo "-"
