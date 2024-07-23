@@ -145,6 +145,23 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/quordlepleen.thgttg.com.conf
     target: /etc/nginx/sites-available/quordlepleen.thgttg.com.conf
     command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name quordlepleen.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d allitnils.thgttg.com
+          -d cockpit.quordlepleen.thgttg.com
+          -d ilo.quordlepleen.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/quordlepleen.thgttg.com.conf /etc/nginx/sites-enabled/quordlepleen.thgttg.com.conf
         - sudo systemctl restart nginx.service

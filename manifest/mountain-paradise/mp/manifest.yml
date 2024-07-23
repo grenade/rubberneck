@@ -4,4 +4,76 @@ domain: thgttg.com
 os:
   name: fedora
 package:
+  - git
+  - certbot
+  - cockpit-pcp
+  - curl
+  - dnf-automatic
+  - python3-certbot-dns-cloudflare
   - wireguard-tools
+user:
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
+firewall:
+  port:
+    - 9100/tcp
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - systemctl is-active nginx.service || sudo systemctl restart nginx.service
+archive:
+  -
+    source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
+    target: /tmp/node_exporter-1.8.1.linux-amd64.tar.gz
+    sha256: fbadb376afa7c883f87f70795700a8a200f7fd45412532cc1938a24d41078011
+    extract:
+      -
+        source: node_exporter-1.8.1.linux-amd64/node_exporter
+        target: /usr/local/bin/node_exporter
+        sha256: 5f9fb023724051a76a9e455c25d83b8d5ba91b8f3d83da9666cd7f1c6d57e30e
+        command:
+          pre:
+            - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start prometheus-node-exporter.service
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/mountain-paradise/mp/etc/nginx/sites-available/poweredge-1.thgttg.com.conf
+    target: /etc/nginx/sites-available/poweredge-1.thgttg.com.conf
+    command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name poweredge-1.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d allitnils.thgttg.com
+          -d idrac.poweredge-1.thgttg.com
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/poweredge-1.thgttg.com.conf /etc/nginx/sites-enabled/poweredge-1.thgttg.com.conf
+        - sudo systemctl restart nginx.service
