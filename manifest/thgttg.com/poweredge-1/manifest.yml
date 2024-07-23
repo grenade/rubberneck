@@ -1,0 +1,157 @@
+---
+hostname: poweredge-1
+domain: thgttg.com
+action: sync
+os:
+  name: ubuntu
+package:
+  - curl
+  - git
+  - python3-pip
+user:
+  -
+    username: chd
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAICqLZ8g4OEkYREvtocms3pUgdUVIxiJ+WZHv3ZsMROZL
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - for core in {25..204}; do systemctl list-units --type=service | grep quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service; done
+  - for core in {1..24}; do systemctl is-active quilibrium-worker@${core}.service || sudo systemctl restart quilibrium-worker@${core}.service; done
+  - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
+archive:
+  -
+    source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
+    target: /tmp/node_exporter-1.8.1.linux-amd64.tar.gz
+    sha256: fbadb376afa7c883f87f70795700a8a200f7fd45412532cc1938a24d41078011
+    extract:
+      -
+        source: node_exporter-1.8.1.linux-amd64/node_exporter
+        target: /usr/local/bin/node_exporter
+        sha256: 5f9fb023724051a76a9e455c25d83b8d5ba91b8f3d83da9666cd7f1c6d57e30e
+        command:
+          pre:
+            - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start prometheus-node-exporter.service
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium.service
+    target: /etc/systemd/system/quilibrium.service
+    command:
+      pre:
+        - sudo systemctl stop 'quilibrium-worker@*'.service
+        - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
+        - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
+        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.node
+      post:
+        - sudo systemctl daemon-reload
+        - for core in {1..24}; do sudo systemctl start quilibrium-worker@${core}.service; done
+        - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
+        - sudo systemctl start quilibrium.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/quilibrium-worker%40.service
+    target: /etc/systemd/system/quilibrium-worker@.service
+    command:
+      pre:
+        - sudo systemctl stop 'quilibrium-worker@*'.service
+        - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
+        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.node
+      post:
+        - sudo systemctl daemon-reload
+        - for core in {1..24}; do sudo systemctl start quilibrium-worker@${core}.service; done
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64
+    target: /var/lib/quilibrium/.local/bin/quilibrium
+    sha256: 9092e8191e7eb81a84d5917d6a60abf0809fba8a3c9221a7ecf82e8829aab622
+    chown: quilibrium:quilibrium
+    chmod: '+x'
+    command:
+      pre:
+        - sudo systemctl stop 'quilibrium-worker@*'.service
+        - systemctl is-active --quiet quilibrium.service && sudo systemctl stop quilibrium.service
+        - id quilibrium || sudo useradd --system --create-home --home-dir /var/lib/quilibrium --user-group quilibrium
+        - sudo -u quilibrium mkdir -p /var/lib/quilibrium/.local/bin
+      post:
+        - sudo chown quilibrium:quilibrium /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo systemctl daemon-reload
+        - for core in {1..24}; do sudo systemctl start quilibrium-worker@${core}.service; done
+        - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
+          sudo systemctl start quilibrium.service
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst
+    sha256: 875842e00b0b5066dbb731de8fc91c3e24668cac57860d07f14be2074fa89c48
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.1
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.1
+    sha256: 14a2cbc69bfa15826eb67ef1a84f341de27846408c2c501606aea2da1296cd19
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.2
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.2
+    sha256: f457b01e3e7f148ccab88d05895791c60912d4d89c004cfa52c6a68eeaead436
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.3
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.3
+    sha256: 2847d1839a0472595caa5b4c516e1eb2c5bd62c4e987a4f74906cad9889d4094
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.4
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.4
+    sha256: 6dc979a1b654743eb5c77350b2be8bf530822b203a4c87cc57c06f124509177b
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.6
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.6
+    sha256: 09ed23372b58896ddaa4736306c94817b05d8c3861c3601dd1c3168b19e8caf5
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.8
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.8
+    sha256: 7bf93afd3610faefc5841176822aee9c2014c262c4f7189ca3e8ed3c8bd71c24
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.9
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.9
+    sha256: 9f805f3c086eb9b0d7a5ebaaa27fc05a930b180681a6606fd6767fd16d1e57b6
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.13
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.13
+    sha256: 054da853889fa05513052b14a884fbb0e3a8bbe94665bea25ca113420c8c054a
+    chown: quilibrium:quilibrium
+  -
+    source: https://releases.quilibrium.com/node-1.4.21-linux-amd64.dgst.sig.15
+    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.15
+    sha256: ef8ce8ae6f6a3eee3dab4dea5a5e9e9e5a7178d26f32098f611549182830cbf9
+    chown: quilibrium:quilibrium
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/sysctl.d/90-quilibrium.conf
+    target: /etc/sysctl.d/90-quilibrium.conf
+    command:
+      post:
+        - sudo sysctl -w net.core.rmem_max=4194304
+        - sudo sysctl -w net.core.wmem_max=4194304
