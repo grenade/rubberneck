@@ -285,11 +285,17 @@ for intent in ${intents[@]}; do
       command_list_as_base64=$(yq -r '(.command//empty)|.[]|@base64' ${manifest_path})
       command_index=0
       for command_as_base64 in ${command_list_as_base64[@]}; do
+        command_error_log=${tmp}/${fqdn}/command-${command_index}-error.log
         command=$(echo ${command_as_base64} | base64 --decode)
         if [ "${action}" = "sync" ]; then
-          ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> /dev/null
+          ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> ${command_error_log}
           command_exit_code=$?
-          echo "[${fqdn}:command ${command_index}] exit code: ${command_exit_code}, command: ${command}"
+          if [ "${command_exit_code}" = "0" ]; then
+            echo "[${fqdn}:command ${command_index}] exit code: ${command_exit_code}, command: ${command}"
+          else
+            echo "[${fqdn}:command ${command_index}] exit code: ${command_exit_code}, command: ${command}, error: $(cat ${command_error_log} | tr '\n' ' ')"
+          fi
+          rm -f ${command_error_log}
         else
           echo "[${fqdn}:command ${command_index}] skipped"
         fi
