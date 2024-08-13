@@ -38,7 +38,7 @@ command:
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/yq || sudo pip install yq
-  - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
+  - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
   - for core in {25..204}; do systemctl list-units --type=service | grep quilibrium-worker@${core}.service && sudo systemctl stop quilibrium-worker@${core}.service; done
   - for core in {1..24}; do systemctl is-active quilibrium-worker@${core}.service || sudo systemctl restart quilibrium-worker@${core}.service; done
   - systemctl is-active quilibrium.service || sudo systemctl restart quilibrium.service
