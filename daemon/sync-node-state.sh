@@ -309,6 +309,25 @@ for intent in ${intents[@]}; do
         for archive_extract_as_base64 in ${archive_extract_list_as_base64[@]}; do
           archive_extract_source=$(_decode_property ${archive_extract_as_base64} .source)
           archive_extract_target=$(_decode_property ${archive_extract_as_base64} .target)
+          case ${archive_source_ext} in
+            gz)
+              if [[ ${archive_extract_source} == */* ]]; then
+                archive_extract_command="sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) --strip-components=1 ${archive_extract_source}"
+              else
+                archive_extract_command="sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) ${archive_extract_source}"
+              fi
+              ;;
+            zip)
+              if [[ ${archive_extract_source} == */* ]]; then
+                archive_extract_command="sudo unzip -j ${archive_target} ${archive_extract_source} -d $(dirname ${archive_extract_target})"
+              else
+                archive_extract_command="sudo unzip ${archive_target} ${archive_extract_source} -d $(dirname ${archive_extract_target})"
+              fi
+              ;;
+            *)
+              archive_extract_command=false
+              ;;
+          esac
           archive_extract_sha256_expected=$(_decode_property ${archive_extract_as_base64} .sha256)
           archive_extract_sha256_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${archive_extract_target} 2> /dev/null | cut -d ' ' -f 1" 2> ${observation_error_log})
           if grep -q "timed out" ${observation_error_log} &> /dev/null; then
@@ -347,12 +366,7 @@ for intent in ${intents[@]}; do
               fi
               archive_extract_pre_command_index=$((archive_extract_pre_command_index+1))
             done
-            if [[ ${archive_extract_source} == */* ]]; then
-              archive_extract_strip=1
-            else
-              archive_extract_strip=0
-            fi
-            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) --strip-components=${archive_extract_strip} ${archive_extract_source} > /dev/null"; then
+            if [ "${archive_extract_command}" != "false" ] && ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${archive_extract_command} > /dev/null"; then
               echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract succeeded. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
               # todo: handle chown/chmod
               archive_extract_post_command_list_as_base64=$(_decode_property ${archive_extract_as_base64} '(.command.post//empty)|.[]|@base64')
@@ -369,6 +383,8 @@ for intent in ${intents[@]}; do
                 fi
                 archive_extract_post_command_index=$((archive_extract_post_command_index+1))
               done
+            elif [ "${archive_extract_command}" = "false" ]; then
+              echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract skipped. no implementation for ${archive_source_ext} file extraction. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
             else
               echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract failed. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
             fi
