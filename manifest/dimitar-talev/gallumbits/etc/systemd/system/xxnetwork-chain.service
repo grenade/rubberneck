@@ -1,0 +1,24 @@
+[Unit]
+Description=xx network chain
+After=local-fs.target network-online.target network.target
+Wants=local-fs.target network-online.target network.target
+ConditionPathExists=/usr/local/bin/xxnetwork-chain
+
+[Service]
+ExecStart=/usr/local/bin/xxnetwork-chain \
+    --name 'черно море' \
+    --validator \
+    --telemetry-url 'wss://telemetry.polkadot.io/submit/ 0' \
+    --base-path /var/lib/substrate/xxnetwork-chain \
+    --prometheus-external \
+    --rpc-methods safe \
+    --port 15974 \
+    --ws-port 63007
+User=substrate
+Group=substrate
+LimitNOFILE=infinity
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target
