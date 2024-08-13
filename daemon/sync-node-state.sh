@@ -290,7 +290,7 @@ for intent in ${intents[@]}; do
         if [ "${action}" = "sync" ]; then
           ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "${command}" &> ${command_error_log}
           command_exit_code=$?
-          if [ "${command_exit_code}" = "0" ]; then
+          if [ ${command_exit_code} -eq 0 ]; then
             echo "[${fqdn}:command ${command_index}] exit code: ${command_exit_code}, command: ${command}"
           else
             echo "[${fqdn}:command ${command_index}] exit code: ${command_exit_code}, command: ${command}, error: $(cat ${command_error_log} | tr '\n' ' ')"
