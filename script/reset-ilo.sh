@@ -77,7 +77,18 @@ for fqdn in ${fqdn_list[@]}; do
   else
     unset ilo_firmware_license
   fi
-  echo "- ${fqdn} ${color_dim}(ilo ${ilo_version})${color_reset}"
+  case ${ilo_version} in
+    3)
+      echo "❸ ${fqdn}"
+      ;;
+    4)
+      echo "❹ ${fqdn}"
+      ;;
+    5)
+      echo "❺ ${fqdn}"
+      ;;
+  esac
+  
   echo "  - ilo firmware:"
   case ${ilo_version} in
     3)
@@ -154,6 +165,12 @@ for fqdn in ${fqdn_list[@]}; do
       echo "  🔨 user removed: ${observed_user}"
     fi
   done
+
+  # todo:
+  # <DHCP_ENABLE VALUE="Y"/>
+  # <DHCP_GATEWAY VALUE="Y"/>
+  # <DHCP_DNS_SERVER VALUE="Y"/>
+  # <DHCP_DOMAIN_NAME VALUE="N"/>
 
   observed_ilo_timezone=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep TIMEZONE | cut -d '\"' -f 2")
   if [ "${timezone}" = "${observed_ilo_timezone}" ] || [ "${timezone_alt}" = "${observed_ilo_timezone}" ]; then
