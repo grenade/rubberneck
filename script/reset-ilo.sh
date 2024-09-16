@@ -1,10 +1,19 @@
 #!/usr/bin/env bash
 
+# see:
+# - ilo 3: https://support.hpe.com/connect/s/softwaredetails?language=en_US&collectionId=MTX-588efdaa80f74606&tab=releaseNotes
+# - ilo 4: https://support.hpe.com/connect/s/softwaredetails?language=en_US&collectionId=MTX-d8701885e8a84180&tab=releaseNotes
+# - ilo 5: https://support.hpe.com/connect/s/softwaredetails?language=en_US&collectionId=MTX-8aa4f1e30dfc4417&tab=releaseNotes
+# todo:
+# - [x] delete users
+# - [ ] reset administrator certificate/key
+
 install_dependencies="${install_dependencies:=false}"
 reset_password="${reset_password:=false}"
 update_firmware="${update_firmware:=false}"
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 timezone=Europe/Sofia
+timezone_alt='Athens, Bucharest, Cairo, Jerusalem'
 
 declare -a fqdn_list=()
 fqdn_list+=( allitnils.thgttg.com )
@@ -138,8 +147,16 @@ for fqdn in ${fqdn_list[@]}; do
     ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><USER_INFO MODE=\"write\"><MOD_USER USER_LOGIN=\"Administrator\"><PASSWORD value=\"${password}\"/></MOD_USER></USER_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
   fi
 
+  observed_user_list=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><USER_INFO MODE=\"read\"><GET_ALL_USERS /></USER_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | sed --quiet '/USER_LOGIN/p' | grep -oE '\"([^\" ]+)\"' | tr -d '\"'")
+  for observed_user in ${observed_user_list[@]}; do
+    if [ "${observed_user}" != "Administrator" ]; then
+      ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><USER_INFO MODE=\"write\"><DELETE_USER USER_LOGIN=\"${observed_user}\"/></USER_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+      echo "  🔨 user removed: ${observed_user}"
+    fi
+  done
+
   observed_ilo_timezone=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep TIMEZONE | cut -d '\"' -f 2")
-  if [ "${timezone}" = "${observed_ilo_timezone}" ]; then
+  if [ "${timezone}" = "${observed_ilo_timezone}" ] || [ "${timezone_alt}" = "${observed_ilo_timezone}" ]; then
     echo "  ✅ ilo timezone"
   else
     ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><TIMEZONE value=\"${timezone}\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
@@ -158,7 +175,7 @@ for fqdn in ${fqdn_list[@]}; do
   if [ "${domain}" = "${observed_ilo_domain}" ]; then
     echo "  ✅ ilo domain"
   else
-    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DOMAIN_NAME value=\"${domain}\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DHCP_DOMAIN_NAME value=\"N\"/><DOMAIN_NAME value=\"${domain}\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
     echo "  🔨 ilo domain: ${observed_ilo_domain} -> ${domain}"
   fi
 
