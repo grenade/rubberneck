@@ -4,6 +4,7 @@ install_dependencies="${install_dependencies:=false}"
 reset_password="${reset_password:=false}"
 update_firmware="${update_firmware:=false}"
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+timezone=Europe/Sofia
 
 declare -a fqdn_list=()
 fqdn_list+=( allitnils.thgttg.com )
@@ -36,6 +37,7 @@ ilo_firmware_license_pattern='LICENSE_TYPE = "([^"]+)"'
 
 for fqdn in ${fqdn_list[@]}; do
   hostname=${fqdn%%.*}
+  domain=${fqdn#*.}
   password=$(${script_dir}/get-ilo-password.sh ${fqdn})
 
   if [ "${install_dependencies}" = "true" ] || [ "${install_dependencies}" = "1" ]; then
@@ -78,7 +80,7 @@ for fqdn in ${fqdn_list[@]}; do
             ssh ${hostname} '
               curl -fL -o /tmp/CP016462.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p1255562964/v73832/CP016462.scexe;
               chmod +x /tmp/CP016462.scexe;
-              sudo /tmp/CP016462.scexe;
+              sudo /tmp/CP016462.scexe -s;
             '
             echo "    🔨 version: ${ilo_firmware_version} -> 1.28"
           fi
@@ -90,7 +92,7 @@ for fqdn in ${fqdn_list[@]}; do
             ssh ${hostname} '
               curl -fL -o /tmp/CP046328.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p1573561412/v189986/CP046328.scexe;
               chmod +x /tmp/CP046328.scexe;
-              sudo /tmp/CP046328.scexe;
+              sudo /tmp/CP046328.scexe -s;
             '
             echo "    🔨 version: ${ilo_firmware_version} -> 1.94"
           else
@@ -106,7 +108,7 @@ for fqdn in ${fqdn_list[@]}; do
         ssh ${hostname} '
           curl -fL -o /tmp/CP053894.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p192122427/v218149/CP053894.scexe;
           chmod +x /tmp/CP053894.scexe;
-          sudo /tmp/CP053894.scexe;
+          sudo /tmp/CP053894.scexe -s;
         '
         echo "    🔨 version: ${ilo_firmware_version} -> 2.82"
       else
@@ -134,6 +136,30 @@ for fqdn in ${fqdn_list[@]}; do
 
   if [ "${reset_password}" = "true" ] || [ "${reset_password}" = "1" ]; then
     ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><USER_INFO MODE=\"write\"><MOD_USER USER_LOGIN=\"Administrator\"><PASSWORD value=\"${password}\"/></MOD_USER></USER_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+  fi
+
+  observed_ilo_timezone=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep TIMEZONE | cut -d '\"' -f 2")
+  if [ "${timezone}" = "${observed_ilo_timezone}" ]; then
+    echo "  ✅ ilo timezone"
+  else
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><TIMEZONE value=\"${timezone}\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    echo "  🔨 ilo timezone: ${observed_ilo_timezone} -> ${timezone}"
+  fi
+
+  observed_ilo_hostname=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep DNS_NAME | cut -d '\"' -f 2")
+  if [ "ilo-${hostname}" = "${observed_ilo_hostname}" ]; then
+    echo "  ✅ ilo hostname"
+  else
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DNS_NAME value=\"ilo-${hostname}\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    echo "  🔨 ilo hostname: ${observed_ilo_hostname} -> ilo-${hostname}"
+  fi
+
+  observed_ilo_domain=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep '<DOMAIN_NAME' | cut -d '\"' -f 2")
+  if [ "${domain}" = "${observed_ilo_domain}" ]; then
+    echo "  ✅ ilo domain"
+  else
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DOMAIN_NAME value=\"${domain}\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    echo "  🔨 ilo domain: ${observed_ilo_domain} -> ${domain}"
   fi
 
   observed_hostname=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><SERVER_INFO MODE=\"read\"><GET_SERVER_NAME /></SERVER_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep SERVER_NAME | cut -d '\"' -f 2")
