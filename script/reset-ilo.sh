@@ -16,6 +16,8 @@ timezone=Europe/Sofia
 timezone_alt='Athens, Bucharest, Cairo, Jerusalem'
 
 declare -a fqdn_list=()
+fqdn_list+=( kavula.thgttg.com )
+fqdn_list+=( mp.thgttg.com )
 fqdn_list+=( allitnils.thgttg.com )
 fqdn_list+=( anjie.thgttg.com )
 fqdn_list+=( blart.thgttg.com )
@@ -98,7 +100,7 @@ for fqdn in ${fqdn_list[@]}; do
             # firmware 1.1x must be upgraded to 1.28 before being upgraded to newer versions in order to add support for newer image signature algorithms
             # see: https://community.hpe.com/t5/server-management-remote-server/hp-advisory-says-to-update-to-ilo-3-1-57-or-later-yet-1-55-is/m-p/6102521/highlight/true#M7345
             ssh ${hostname} '
-              curl -fL -o /tmp/CP016462.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p1255562964/v73832/CP016462.scexe;
+              curl -sfL -o /tmp/CP016462.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p1255562964/v73832/CP016462.scexe;
               chmod +x /tmp/CP016462.scexe;
               sudo /tmp/CP016462.scexe -s;
             '
@@ -110,7 +112,7 @@ for fqdn in ${fqdn_list[@]}; do
             echo "    ✅ version: ${ilo_firmware_version}"
           elif [ "${update_firmware}" = "true" ] || [ "${update_firmware}" = "1" ]; then
             ssh ${hostname} '
-              curl -fL -o /tmp/CP046328.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p1573561412/v189986/CP046328.scexe;
+              curl -sfL -o /tmp/CP046328.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p1573561412/v189986/CP046328.scexe;
               chmod +x /tmp/CP046328.scexe;
               sudo /tmp/CP046328.scexe -s;
             '
@@ -126,7 +128,7 @@ for fqdn in ${fqdn_list[@]}; do
         echo "    ✅ version: ${ilo_firmware_version}"
       elif [ "${update_firmware}" = "true" ] || [ "${update_firmware}" = "1" ]; then
         ssh ${hostname} '
-          curl -fL -o /tmp/CP053894.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p192122427/v218149/CP053894.scexe;
+          curl -sfL -o /tmp/CP053894.scexe https://downloads.hpe.com/pub/softlib2/software1/sc-linux-fw-ilo/p192122427/v218149/CP053894.scexe;
           chmod +x /tmp/CP053894.scexe;
           sudo /tmp/CP053894.scexe -s;
         '
@@ -166,12 +168,43 @@ for fqdn in ${fqdn_list[@]}; do
     fi
   done
 
-  # todo:
   # <DHCP_ENABLE VALUE="Y"/>
-  # <DHCP_GATEWAY VALUE="Y"/>
-  # <DHCP_DNS_SERVER VALUE="Y"/>
-  # <DHCP_DOMAIN_NAME VALUE="N"/>
+  observed_ilo_dhcp_enable=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep DHCP_ENABLE | cut -d '\"' -f 2")
+  if [ "Y" = "${observed_ilo_dhcp_enable:0:1}" ]; then
+    echo "  ✅ dhcp enable"
+  else
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DHCP_ENABLE value=\"Y\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    echo "  🔨 dhcp enable: ${observed_ilo_dhcp_enable} -> Y"
+  fi
 
+  # <DHCP_GATEWAY VALUE="Y"/>
+  observed_ilo_dhcp_gateway=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep DHCP_GATEWAY | cut -d '\"' -f 2")
+  if [ "Y" = "${observed_ilo_dhcp_gateway:0:1}" ]; then
+    echo "  ✅ dhcp gateway"
+  else
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DHCP_GATEWAY value=\"Y\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    echo "  🔨 dhcp gateway: ${observed_ilo_dhcp_gateway} -> Y"
+  fi
+
+  # <DHCP_DNS_SERVER VALUE="Y"/>
+  observed_ilo_dhcp_dns=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep DHCP_DNS_SERVER | cut -d '\"' -f 2")
+  if [ "Y" = "${observed_ilo_dhcp_dns:0:1}" ]; then
+    echo "  ✅ dhcp dns"
+  else
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DHCP_DNS_SERVER value=\"Y\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    echo "  🔨 dhcp dns: ${observed_ilo_dhcp_dns} -> Y"
+  fi
+
+  # <DHCP_DOMAIN_NAME VALUE="N"/>
+  observed_ilo_dhcp_domain=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep DHCP_DOMAIN_NAME | cut -d '\"' -f 2")
+  if [ "N" = "${observed_ilo_dhcp_domain:0:1}" ]; then
+    echo "  ✅ dhcp domain"
+  else
+    ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"write\"><MOD_NETWORK_SETTINGS><DHCP_DOMAIN_NAME value=\"N\"/></MOD_NETWORK_SETTINGS></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
+    echo "  🔨 dhcp domain: ${observed_ilo_dhcp_domain} -> N"
+  fi
+
+  # <TIMEZONE VALUE="${timezone}"/>
   observed_ilo_timezone=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep TIMEZONE | cut -d '\"' -f 2")
   if [ "${timezone}" = "${observed_ilo_timezone}" ] || [ "${timezone_alt}" = "${observed_ilo_timezone}" ]; then
     echo "  ✅ ilo timezone"
@@ -180,6 +213,7 @@ for fqdn in ${fqdn_list[@]}; do
     echo "  🔨 ilo timezone: ${observed_ilo_timezone} -> ${timezone}"
   fi
 
+  # <DNS_NAME VALUE="ilo-${hostname}"/>
   observed_ilo_hostname=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep DNS_NAME | cut -d '\"' -f 2")
   if [ "ilo-${hostname}" = "${observed_ilo_hostname}" ]; then
     echo "  ✅ ilo hostname"
@@ -188,6 +222,7 @@ for fqdn in ${fqdn_list[@]}; do
     echo "  🔨 ilo hostname: ${observed_ilo_hostname} -> ilo-${hostname}"
   fi
 
+  # <DOMAIN_NAME VALUE="${domain}"/>
   observed_ilo_domain=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><RIB_INFO MODE=\"read\"><GET_NETWORK_SETTINGS /></RIB_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | grep '<DOMAIN_NAME' | cut -d '\"' -f 2")
   if [ "${domain}" = "${observed_ilo_domain}" ]; then
     echo "  ✅ ilo domain"
