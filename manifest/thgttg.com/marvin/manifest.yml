@@ -63,6 +63,12 @@ command:
   - test -x /usr/local/bin/prometheus || ( curl -sLo /tmp/prometheus-2.50.1.linux-amd64.tar.gz https://github.com/prometheus/prometheus/releases/download/v2.50.1/prometheus-2.50.1.linux-amd64.tar.gz && sudo tar xvfz /tmp/prometheus-2.50.1.linux-amd64.tar.gz -C /usr/local/bin --strip-components=1 prometheus-2.50.1.linux-amd64/prometheus prometheus-2.50.1.linux-amd64/promtool && sudo tar xvfz /tmp/prometheus-2.50.1.linux-amd64.tar.gz -C /etc/prometheus --strip-components=1 prometheus-2.50.1.linux-amd64/console_libraries prometheus-2.50.1.linux-amd64/consoles )
 file:
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
+    target: /etc/ssh/sshd_config.d/39-ed25519-only.conf
+    command:
+      post:
+        - sudo systemctl restart sshd.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
     target: /etc/systemd/system/prometheus-node-exporter.service
     command:
