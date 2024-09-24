@@ -75,25 +75,25 @@ file:
         - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
         - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/mountain-paradise/mp/etc/nginx/sites-available/poweredge-1.thgttg.com.conf
-    target: /etc/nginx/sites-available/poweredge-1.thgttg.com.conf
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/mountain-paradise/mp/etc/nginx/sites-available/innangard.v8r.io.conf
+    target: /etc/nginx/sites-available/innangard.v8r.io.conf
     command:
       pre:
         - >
           sudo certbot certonly
-          -m ops@thgttg.com
+          -m ops@v8r.io
           --agree-tos
           --no-eff-email
           --noninteractive
-          --cert-name poweredge-1.thgttg.com
+          --cert-name innangard.v8r.io
           --expand
           --allow-subset-of-names
           --key-type ecdsa
           --dns-cloudflare
-          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-credentials /root/.cloudflare/v8r.io
           --dns-cloudflare-propagation-seconds 60
-          -d allitnils.thgttg.com
-          -d idrac.poweredge-1.thgttg.com
+          -d cockpit.innangard.v8r.io
+          -d idrac.innangard.v8r.io
       post:
-        - sudo ln -sfr /etc/nginx/sites-available/poweredge-1.thgttg.com.conf /etc/nginx/sites-enabled/poweredge-1.thgttg.com.conf
+        - sudo ln -sfr /etc/nginx/sites-available/innangard.v8r.io.conf /etc/nginx/sites-enabled/innangard.v8r.io.conf
         - sudo systemctl restart nginx.service

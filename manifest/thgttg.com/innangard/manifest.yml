@@ -47,6 +47,12 @@ archive:
             - sudo systemctl start prometheus-node-exporter.service
 file:
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
+    target: /etc/ssh/sshd_config.d/39-ed25519-only.conf
+    command:
+      post:
+        - sudo systemctl restart sshd.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
     target: /etc/systemd/system/prometheus-node-exporter.service
     command:
