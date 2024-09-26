@@ -3,6 +3,8 @@
 max_session_age_in_seconds=1800
 script_dir=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
+subl /tmp/ilo
+
 # to reset the administrator password, execute on host:
 
 # sudo dnf install -y https://downloads.hpe.com/pub/softlib2/software1/pubsw-linux/p215998034/v109045/hponcfg-4.6.0-0.x86_64.rpm
@@ -22,6 +24,9 @@ color_red=$(tput setaf 1)
 color_reset=$(tput sgr0)
 
 declare -a fqdn_list=()
+fqdn_list+=( expralite.thgttg.com )
+fqdn_list+=( kavula.thgttg.com )
+fqdn_list+=( mp.thgttg.com )
 fqdn_list+=( allitnils.thgttg.com )
 fqdn_list+=( anjie.thgttg.com )
 fqdn_list+=( blart.thgttg.com )
@@ -35,14 +40,16 @@ fqdn_list+=( golgafrinchans.thgttg.com )
 fqdn_list+=( gramathea.thgttg.com )
 fqdn_list+=( hawalius.thgttg.com )
 fqdn_list+=( krikkit.thgttg.com )
+fqdn_list+=( midgard.v8r.io )
 fqdn_list+=( mitko.thgttg.com )
 fqdn_list+=( novgorodian.thgttg.com )
 fqdn_list+=( quordlepleen.thgttg.com )
 fqdn_list+=( slartibartfast.thgttg.com )
-fqdn_list+=( midgard.v8r.io )
 
 echo "probing ${#fqdn_list[@]} interfaces..."
 for fqdn in ${fqdn_list[@]}; do
+  domain=${fqdn#*.}
+  hostname=${fqdn%%.*}
   if [ ! -d /tmp/ilo/${fqdn} ]; then
     mkdir -p /tmp/ilo/${fqdn}
   fi
@@ -58,8 +65,8 @@ for fqdn in ${fqdn_list[@]}; do
   if [ "${session_age_in_seconds}" -lt "${max_session_age_in_seconds}" ] || curl \
     --silent \
     --connect-timeout 1 \
-    --header "Content-Type: application/json" \
-    --header "OData-Version: 4.0" \
+    --header 'Content-Type: application/json' \
+    --header 'OData-Version: 4.0' \
     --request POST \
     --data "{\"UserName\":\"Administrator\",\"Password\":\"$(${script_dir}/get-ilo-password.sh ${fqdn})\"}" \
     --dump-header ${response_headers_create_session_path} \
@@ -72,8 +79,8 @@ for fqdn in ${fqdn_list[@]}; do
         #echo "    - ${method}"
         if curl \
           --silent \
-          --header "Content-Type: application/json" \
-          --header "OData-Version: 4.0" \
+          --header 'Content-Type: application/json' \
+          --header 'OData-Version: 4.0' \
           --header "X-Auth-Token: ${token}" \
           --request GET \
           --output /tmp/ilo/${fqdn}/response-body-${method} \
@@ -85,8 +92,8 @@ for fqdn in ${fqdn_list[@]}; do
             #echo "      ${member_number}:"
             if curl \
               --silent \
-              --header "Content-Type: application/json" \
-              --header "OData-Version: 4.0" \
+              --header 'Content-Type: application/json' \
+              --header 'OData-Version: 4.0' \
               --header "X-Auth-Token: ${token}" \
               --request GET \
               --output /tmp/ilo/${fqdn}/response-body-${method}-${member_number} \
@@ -103,8 +110,8 @@ for fqdn in ${fqdn_list[@]}; do
               ethernet_interfaces_uri=https://ilo.$fqdn$(jq -r '.EthernetInterfaces."@odata.id"' /tmp/ilo/${fqdn}/response-body-${method}-1.json)
               if curl \
                 --silent \
-                --header "Content-Type: application/json" \
-                --header "OData-Version: 4.0" \
+                --header 'Content-Type: application/json' \
+                --header 'OData-Version: 4.0' \
                 --header "X-Auth-Token: ${token}" \
                 --request GET \
                 --output /tmp/ilo/${fqdn}/response-body-${method}-1-ethernet-interfaces \
@@ -115,8 +122,8 @@ for fqdn in ${fqdn_list[@]}; do
                   member_number=$(echo ${member} | cut -d '/' -f 7)
                   if curl \
                     --silent \
-                    --header "Content-Type: application/json" \
-                    --header "OData-Version: 4.0" \
+                    --header 'Content-Type: application/json' \
+                    --header 'OData-Version: 4.0' \
                     --header "X-Auth-Token: ${token}" \
                     --request GET \
                     --output /tmp/ilo/${fqdn}/response-body-${method}-1-ethernet-interface-${member_number} \
@@ -136,8 +143,8 @@ for fqdn in ${fqdn_list[@]}; do
 
       if curl \
         --silent \
-        --header "Content-Type: application/json" \
-        --header "OData-Version: 4.0" \
+        --header 'Content-Type: application/json' \
+        --header 'OData-Version: 4.0' \
         --header "X-Auth-Token: ${token}" \
         --request GET \
         --output /tmp/ilo/${fqdn}/metrics-power \
@@ -148,8 +155,8 @@ for fqdn in ${fqdn_list[@]}; do
 
       if curl \
         --silent \
-        --header "Content-Type: application/json" \
-        --header "OData-Version: 4.0" \
+        --header 'Content-Type: application/json' \
+        --header 'OData-Version: 4.0' \
         --header "X-Auth-Token: ${token}" \
         --request GET \
         --output /tmp/ilo/${fqdn}/metrics-thermal \
@@ -160,8 +167,8 @@ for fqdn in ${fqdn_list[@]}; do
 
       if curl \
         --silent \
-        --header "Content-Type: application/json" \
-        --header "OData-Version: 4.0" \
+        --header 'Content-Type: application/json' \
+        --header 'OData-Version: 4.0' \
         --header "X-Auth-Token: ${token}" \
         --request GET \
         --output /tmp/ilo/${fqdn}/metrics-compute \
@@ -191,14 +198,56 @@ for fqdn in ${fqdn_list[@]}; do
     memory_total=$(jq -r .MemorySummary.TotalSystemMemoryGiB /tmp/ilo/${fqdn}/response-body-systems-1.json)
     memory_health=$(jq -r .MemorySummary.Status.HealthRollup /tmp/ilo/${fqdn}/response-body-systems-1.json)
 
+    power_state=$(jq -r .PowerState /tmp/ilo/${fqdn}/response-body-systems-1.json)
     indicator_led=$(jq -r .IndicatorLED /tmp/ilo/${fqdn}/response-body-systems-1.json)
     bios_version=$(jq -r .BiosVersion /tmp/ilo/${fqdn}/response-body-systems-1.json)
     ilo_hostname=$(jq -r .HostName /tmp/ilo/${fqdn}/response-body-systems-1.json)
     machine_model=$(jq -r .Model /tmp/ilo/${fqdn}/response-body-systems-1.json)
     machine_manufacturer=$(jq -r .Manufacturer /tmp/ilo/${fqdn}/response-body-systems-1.json)
 
-    echo "  - indicator: ${indicator_led,,}"
-
+    case ${power_state,,} in
+      off)
+        case ${hostname} in
+          # this works but doesn't belong in an observer script.
+          # left commented until i implement a power state fixer script.
+          #bob|frootmig|effrafax)
+          #  if curl \
+          #    --silent \
+          #    --header 'Content-Type: application/json' \
+          #    --header 'OData-Version: 4.0' \
+          #    --header "X-Auth-Token: ${token}" \
+          #    --request POST \
+          #    --data '{"ResetType":"ForceOn"}' \
+          #    --output /tmp/ilo/${fqdn}/metrics-compute \
+          #    --url https://ilo.${fqdn}/redfish/v1/Systems/1/Actions/ComputerSystem.Reset; then
+          #    echo "  - power: 🔴 -> 🟢"
+          #  else
+          #    echo "  - power: 🔴 -> 🔴"
+          #  fi
+          #  ;;
+          *)
+            echo "  - power: 🔴"
+            ;;
+        esac
+        ;;
+      on)
+        echo "  - power: 🟢"
+        ;;
+      *)
+        echo "  - power: ${power_state,,}"
+        ;;
+    esac
+    case ${indicator_led,,} in
+      off)
+        echo "  - indicator: ⚫"
+        ;;
+      on)
+        echo "  - indicator: 🔵"
+        ;;
+      *)
+        echo "  - indicator: ${indicator_led,,}"
+        ;;
+    esac
     echo "  - machine:"
     echo "    - model: ${machine_model,,}"
     echo "    - manufacturer: ${machine_manufacturer,,}"

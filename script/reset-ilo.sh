@@ -5,6 +5,7 @@
 # - ilo 4: https://support.hpe.com/connect/s/softwaredetails?language=en_US&collectionId=MTX-d8701885e8a84180&tab=releaseNotes
 # - ilo 5: https://support.hpe.com/connect/s/softwaredetails?language=en_US&collectionId=MTX-8aa4f1e30dfc4417&tab=releaseNotes
 # todo:
+
 # - [x] delete users
 # - [ ] reset administrator certificate/key
 
@@ -16,6 +17,7 @@ timezone=Europe/Sofia
 timezone_alt='Athens, Bucharest, Cairo, Jerusalem'
 
 declare -a fqdn_list=()
+fqdn_list+=( expralite.thgttg.com )
 fqdn_list+=( kavula.thgttg.com )
 fqdn_list+=( mp.thgttg.com )
 fqdn_list+=( allitnils.thgttg.com )
@@ -160,6 +162,7 @@ for fqdn in ${fqdn_list[@]}; do
     ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><USER_INFO MODE=\"write\"><MOD_USER USER_LOGIN=\"Administrator\"><PASSWORD value=\"${password}\"/></MOD_USER></USER_INFO></LOGIN></RIBCL>' | sudo hponcfg --input &> /dev/null"
   fi
 
+  # remove any user not named "Administrator"
   observed_user_list=$(ssh ${hostname} "echo '<RIBCL VERSION=\"2.0\"><LOGIN USER_LOGIN=\"Administrator\" PASSWORD=\"${password}\"><USER_INFO MODE=\"read\"><GET_ALL_USERS /></USER_INFO></LOGIN></RIBCL>' | sudo hponcfg --input | sed --quiet '/USER_LOGIN/p' | grep -oE '\"([^\" ]+)\"' | tr -d '\"'")
   for observed_user in ${observed_user_list[@]}; do
     if [ "${observed_user}" != "Administrator" ]; then
