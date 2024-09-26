@@ -1,0 +1,20 @@
+[Unit]
+Description=geth mainnet
+After=network-online.target
+
+[Service]
+User=geth
+Group=geth
+WorkingDirectory=/var/lib/geth/mainnet
+Type=simple
+#ExecStartPre=bash -c 'openssl rand -hex 32 | tr -d "\n" > /tmp/mainnet.jwt'
+ExecStart=/usr/local/bin/geth \
+    --authrpc.addr 127.0.0.1 \
+    --authrpc.port 8551 \
+    --authrpc.vhosts 127.0.0.1 \
+    --authrpc.jwtsecret /tmp/geth-mainnet.jwt
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

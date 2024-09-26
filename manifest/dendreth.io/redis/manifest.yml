@@ -1,0 +1,79 @@
+---
+hostname: redis
+domain: dendreth.io
+action: sync
+ssh:
+  port: 52219
+os:
+  name: fedora
+package:
+  - chrony
+  - cockpit-pcp
+  - curl
+  - dnf-automatic
+  - git
+  - ncurses-base
+  - ncurses-compat-libs
+  - python3-pip
+  - redis
+user:
+  -
+    username: grenade
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
+firewall:
+  port:
+    - 6379/tcp
+command:
+  - sudo passwd -l root
+  - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
+  - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
+  - test -x /usr/local/bin/yq || sudo pip install yq
+  - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
+  - systemctl is-enabled redis.service || sudo systemctl enable redis.service
+  - systemctl is-active redis.service || sudo systemctl restart redis.service
+archive:
+  -
+    source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
+    target: /tmp/node_exporter-1.8.1.linux-amd64.tar.gz
+    sha256: fbadb376afa7c883f87f70795700a8a200f7fd45412532cc1938a24d41078011
+    extract:
+      -
+        source: node_exporter-1.8.1.linux-amd64/node_exporter
+        target: /usr/local/bin/node_exporter
+        sha256: 5f9fb023724051a76a9e455c25d83b8d5ba91b8f3d83da9666cd7f1c6d57e30e
+        command:
+          pre:
+            - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start prometheus-node-exporter.service
+  -
+    source: https://www.passmark.com/downloads/pt_linux_x64.zip
+    target: /tmp/pt_linux_x64.zip
+    sha256: abd1fefd5e1f912c09244a7e56cf8c3ef9dd8b90c89f1e4c402cc0bfdeb92098
+    extract:
+      -
+        source: PerformanceTest/pt_linux_x64
+        target: /usr/local/bin/pt_linux_x64
+        sha256: 0005b5400852aa0a84886310a0e780665c319cbf16f701062911574ba8886052
+file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
+    target: /etc/ssh/sshd_config.d/39-ed25519-only.conf
+    command:
+      post:
+        - sudo systemctl restart sshd.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
+    target: /etc/systemd/system/prometheus-node-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-node-exporter.service && sudo systemctl stop prometheus-node-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
+        - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service

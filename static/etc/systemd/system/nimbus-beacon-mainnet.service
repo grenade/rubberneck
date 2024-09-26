@@ -1,0 +1,26 @@
+[Unit]
+Description=nimbus beacon mainnet
+After=geth-mainnet.service
+ConditionPathExists=/tmp/mainnet.jwt
+ConditionPathExists=/var/lib/nimbus/beacon/mainnet
+
+[Service]
+User=nimbus
+Group=nimbus
+WorkingDirectory=/var/lib/nimbus/beacon/mainnet
+Type=simple
+ExecStart=/usr/local/bin/nimbus_beacon_node \
+    --network=mainnet \
+    --data-dir=/var/lib/nimbus/beacon/mainnet \
+    --tcp-port=9000 \
+    --udp-port=9000 \
+    --rest \
+    --rest-port=5052 \
+    --metrics \
+    --web3-url http://127.0.0.1:8551 \
+    --jwt-secret /tmp/geth-mainnet.jwt
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
