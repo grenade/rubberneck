@@ -318,9 +318,10 @@ for intent in ${intents[@]}; do
           case ${archive_source_ext} in
             gz)
               if [[ ${archive_extract_source} == */* ]]; then
-                archive_extract_command="sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) --strip-components=1 ${archive_extract_source}"
+                strip_components="${archive_extract_source//[^\/]}"
+                archive_extract_command="sudo tar --extract --gzip --file ${archive_target} --directory $(dirname ${archive_extract_target}) --strip-components ${#strip_components} ${archive_extract_source}"
               else
-                archive_extract_command="sudo tar xvfz ${archive_target} -C $(dirname ${archive_extract_target}) ${archive_extract_source}"
+                archive_extract_command="sudo tar --extract --gzip --file ${archive_target} --directory $(dirname ${archive_extract_target}) ${archive_extract_source}"
               fi
               ;;
             zip)
