@@ -43,6 +43,14 @@ scrape_configs:
       -
         targets:
           - bob.thgttg.com
+  -
+    job_name: nimbus
+    scheme: https
+    metrics_path: /metrics/nimbus
+    static_configs:
+      -
+        targets:
+          - bob.thgttg.com
   #-
   #  job_name: tendermint
   #  scheme: https
