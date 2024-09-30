@@ -12,6 +12,7 @@ Type=simple
 ExecStart=/usr/local/bin/nimbus_beacon_node \
     --network=mainnet \
     --data-dir=/var/lib/nimbus/beacon/mainnet \
+    --enr-auto-update=true \
     --tcp-port=9000 \
     --udp-port=9000 \
     --rest=Yes \
