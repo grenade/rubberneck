@@ -14,13 +14,15 @@ ExecStart=/usr/local/bin/nimbus_beacon_node \
     --data-dir=/var/lib/nimbus/beacon/mainnet \
     --tcp-port=9000 \
     --udp-port=9000 \
-    --rest \
+    --rest=Yes \
     --rest-port=5052 \
-    --metrics \
-    --web3-url http://127.0.0.1:8551 \
-    --jwt-secret /tmp/geth-mainnet.jwt
+    --metrics=Yes \
+    --web3-url=http://127.0.0.1:8551 \
+    --jwt-secret=/tmp/geth-mainnet.jwt
 Restart=always
 RestartSec=2
+TimeoutSec=1200
+LimitNOFILE=16384
 
 [Install]
 WantedBy=multi-user.target
