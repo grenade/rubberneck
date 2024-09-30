@@ -7,8 +7,14 @@ User=geth
 Group=geth
 WorkingDirectory=/var/lib/geth/mainnet
 Type=simple
-#ExecStartPre=bash -c 'openssl rand -hex 32 | tr -d "\n" > /tmp/mainnet.jwt'
+ExecStartPre=bash -c 'openssl rand -hex 32 | tr -d "\n" > /tmp/mainnet.jwt'
 ExecStart=/usr/local/bin/geth \
+    --datadir /var/lib/geth/mainnet \
+    --mainnet \
+    --metrics \
+    --metrics.addr 0.0.0.0 \
+    --metrics.port 6060 \
+    --syncmode full \
     --authrpc.addr 127.0.0.1 \
     --authrpc.port 8551 \
     --authrpc.vhosts 127.0.0.1 \
