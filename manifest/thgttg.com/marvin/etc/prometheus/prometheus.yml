@@ -35,6 +35,14 @@ scrape_configs:
           - poweredge-1.thgttg.com
           - quordlepleen.thgttg.com
           - slartibartfast.thgttg.com
+  -
+    job_name: geth
+    scheme: https
+    metrics_path: /metrics/geth
+    static_configs:
+      -
+        targets:
+          - bob.thgttg.com
   #-
   #  job_name: tendermint
   #  scheme: https

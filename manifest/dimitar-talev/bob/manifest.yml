@@ -24,6 +24,8 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
 firewall:
   port:
+    - 6060/tcp
+    - 9000/udp
     - 9100/tcp
 command:
   - sudo passwd -l root
@@ -84,6 +86,7 @@ archive:
           pre:
             - systemctl is-active --quiet nimbus-beacon-mainnet.service && sudo systemctl stop nimbus-beacon-mainnet.service
           post:
+            - sudo chmod go+r /tmp/geth-mainnet.jwt
             - sudo systemctl daemon-reload
             - sudo systemctl start nimbus-beacon-mainnet.service
       -
@@ -118,6 +121,8 @@ file:
         - systemctl is-active --quiet nimbus-beacon-mainnet.service && sudo systemctl stop nimbus-beacon-mainnet.service
         - systemctl is-active --quiet geth-mainnet.service && sudo systemctl stop geth-mainnet.service
         - id geth || sudo useradd --system --create-home --home-dir /var/lib/geth --user-group geth
+        - sudo semanage fcontext -a -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
+        - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         - sudo -u geth mkdir -p /var/lib/geth/mainnet
       post:
         - sudo systemctl daemon-reload
