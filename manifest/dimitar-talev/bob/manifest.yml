@@ -124,13 +124,13 @@ file:
         - systemctl is-active --quiet nimbus-beacon-mainnet.service && sudo systemctl stop nimbus-beacon-mainnet.service
         - systemctl is-active --quiet geth-mainnet.service && sudo systemctl stop geth-mainnet.service
         - id geth || sudo useradd --system --create-home --home-dir /var/lib/geth --user-group geth
-        - sudo semanage fcontext -a -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
-        - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         - sudo -u geth mkdir -p /var/lib/geth/mainnet
       post:
         - sudo systemctl daemon-reload
         - systemctl is-enabled geth-mainnet.service || sudo systemctl enable geth-mainnet.service
         - sudo systemctl start geth-mainnet.service
+        - sleep 10
+        - sudo systemctl start nimbus-beacon-mainnet.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/nimbus-beacon-mainnet.service
     target: /etc/systemd/system/nimbus-beacon-mainnet.service
