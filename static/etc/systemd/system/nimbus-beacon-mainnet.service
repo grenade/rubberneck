@@ -1,7 +1,7 @@
 [Unit]
 Description=nimbus beacon mainnet
 BindsTo=geth-mainnet.service
-ConditionPathExists=/tmp/mainnet.jwt
+ConditionPathExists=/tmp/geth-mainnet.jwt
 ConditionPathExists=/var/lib/nimbus/beacon/mainnet
 
 [Service]
