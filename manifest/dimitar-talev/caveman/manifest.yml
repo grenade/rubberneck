@@ -25,6 +25,7 @@ user:
 firewall:
   port:
     - 5052/tcp
+    - 5064/tcp # lighthouse beacon mainnet metrics
     - 8008/tcp
     - 8551/tcp
     - 6060/tcp
@@ -39,6 +40,8 @@ command:
   - test -x /usr/local/bin/yq || sudo pip install yq
   - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
   #- systemctl is-active celestia-archive.service || sudo systemctl restart celestia-archive.service
+  - systemctl is-active reth-mainnet.service || sudo systemctl restart reth-mainnet.service
+  - systemctl is-active lighthouse-beacon-mainnet.service || sudo systemctl restart lighthouse-beacon-mainnet.service
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
