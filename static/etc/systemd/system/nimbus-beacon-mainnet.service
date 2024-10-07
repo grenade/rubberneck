@@ -1,7 +1,6 @@
 [Unit]
 Description=nimbus beacon mainnet
 BindsTo=geth-mainnet.service
-ConditionPathExists=/tmp/geth-mainnet.jwt
 ConditionPathExists=/var/lib/nimbus/beacon/mainnet
 
 [Service]
@@ -9,6 +8,7 @@ User=nimbus
 Group=nimbus
 WorkingDirectory=/var/lib/nimbus/beacon/mainnet
 Type=simple
+ExecStartPre=bash -c 'while [ ! -f /tmp/geth-mainnet.jwt ]; do echo "awaiting geth jwt secret..."; sleep 1; done;'
 ExecStart=/usr/local/bin/nimbus_beacon_node \
     --network=mainnet \
     --data-dir=/var/lib/nimbus/beacon/mainnet \

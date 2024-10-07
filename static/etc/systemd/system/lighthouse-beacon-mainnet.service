@@ -1,0 +1,27 @@
+[Unit]
+Description=lighthouse beacon mainnet
+BindsTo=reth-mainnet.service
+ConditionPathExists=/var/lib/lighthouse/beacon/mainnet
+
+[Service]
+User=lighthouse
+Group=lighthouse
+WorkingDirectory=/var/lib/lighthouse/beacon/mainnet
+Type=simple
+ExecStartPre=bash -c 'while [ ! -f /tmp/reth-mainnet.jwt ]; do echo "awaiting reth jwt secret..."; sleep 1; done;'
+ExecStart=/usr/local/bin/lighthouse beacon_node \
+    --network mainnet \
+    --datadir /var/lib/lighthouse/beacon/mainnet \
+    --execution-endpoint http://127.0.0.1:8551 \
+    --execution-jwt /tmp/reth-mainnet.jwt \
+    --checkpoint-sync-url https://mainnet.checkpoint.sigp.io \
+    --disable-deposit-contract-sync \
+    --metrics \
+    --metrics-address 0.0.0.0 \
+    --metrics-port 5064 \
+    --metrics-allow-origin *
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
