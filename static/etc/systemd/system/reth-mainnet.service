@@ -7,6 +7,7 @@ User=reth
 Group=reth
 WorkingDirectory=/var/lib/reth/mainnet
 Type=simple
+ExecStartPre=bash -c 'openssl rand -hex 32 | tr -d "\n" > /tmp/reth-mainnet.jwt && chmod go+r /tmp/reth-mainnet.jwt'
 ExecStart=/usr/local/bin/reth node \
     --datadir /var/lib/reth/mainnet \
     --chain mainnet \
@@ -14,7 +15,6 @@ ExecStart=/usr/local/bin/reth node \
     --authrpc.addr 127.0.0.1 \
     --authrpc.port 8551 \
     --authrpc.jwtsecret /tmp/reth-mainnet.jwt
-ExecStartPost=bash -c 'while [ ! -f /tmp/reth-mainnet.jwt ]; do sleep 1; done; chmod go+r /tmp/reth-mainnet.jwt;'
 Restart=always
 RestartSec=2
 
