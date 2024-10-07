@@ -24,8 +24,8 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
 firewall:
   port:
-    - 2121/tcp
-    - 2121/udp
+    #- 2121/tcp
+    #- 2121/udp
     - 9100/tcp
 command:
   - sudo passwd -l root
@@ -33,7 +33,7 @@ command:
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/yq || sudo pip install yq
   - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
-  - systemctl is-active celestia-archive.service || sudo systemctl restart celestia-archive.service
+  #- systemctl is-active celestia-archive.service || sudo systemctl restart celestia-archive.service
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
@@ -50,25 +50,52 @@ archive:
           post:
             - sudo systemctl daemon-reload
             - sudo systemctl start prometheus-node-exporter.service
+  #-
+  #  source: https://github.com/celestiaorg/celestia-app/releases/download/v1.12.0/celestia-app_Linux_x86_64.tar.gz
+  #  target: /tmp/celestia-app_Linux_x86_64.tar.gz
+  #  sha256: 02f92ec0df91e7e4dbfeac5924b03be13e6b13af25c0f32949c697e1e12bd5e0
+  #  extract:
+  #    -
+  #      source: celestia-appd
+  #      target: /usr/local/bin/celestia-appd
+  #      sha256: 5aa4c8e5dacb3908e36ed8d1ba27d75e9a39a1d857eea20d8d48c167092535d6
+  #      command:
+  #        pre:
+  #          - systemctl is-active --quiet celestia-archive.service && sudo systemctl stop celestia-archive.service
+  #        post:
+  #          - sudo systemctl daemon-reload
+  #          - sudo systemctl start celestia-archive.service
   -
-    source: https://github.com/celestiaorg/celestia-app/releases/download/v1.12.0/celestia-app_Linux_x86_64.tar.gz
-    target: /tmp/celestia-app_Linux_x86_64.tar.gz
-    sha256: 02f92ec0df91e7e4dbfeac5924b03be13e6b13af25c0f32949c697e1e12bd5e0
+    source: https://github.com/paradigmxyz/reth/releases/download/v1.0.8/reth-v1.0.8-x86_64-unknown-linux-gnu.tar.gz
+    target: /tmp/reth-v1.0.8-x86_64-unknown-linux-gnu.tar.gz
+    sha256: 797cc0893a89a9ccd9920246e40804298a1a80e2ecb3aef089692880a082be9a
     extract:
       -
-        source: celestia-appd
-        target: /usr/local/bin/celestia-appd
-        sha256: 5aa4c8e5dacb3908e36ed8d1ba27d75e9a39a1d857eea20d8d48c167092535d6
+        source: reth
+        target: /usr/local/bin/reth
+        sha256: 8b52b9e5b6e8e152c52be5b841bcabf4389304504355590fad5c1a988b096e6f
         command:
           pre:
-            - systemctl is-active --quiet celestia-archive.service && sudo systemctl stop celestia-archive.service
+            - systemctl is-active --quiet reth-mainnet.service && sudo systemctl stop reth-mainnet.service
           post:
             - sudo systemctl daemon-reload
-            - sudo systemctl start celestia-archive.service
-file:
+            - sudo systemctl start reth-mainnet.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/etc/cockpit/cockpit.conf
-    target: /etc/cockpit/cockpit.conf
+    source: https://github.com/sigp/lighthouse/releases/download/v5.3.0/lighthouse-v5.3.0-x86_64-unknown-linux-gnu.tar.gz
+    target: /tmp/lighthouse-v5.3.0-x86_64-unknown-linux-gnu.tar.gz
+    sha256: d10bb36a738994a048e742e179f310a091c0f2299f0bc9dcf0676dde906ccf5c
+    extract:
+      -
+        source: lighthouse
+        target: /usr/local/bin/lighthouse
+        sha256: 06d5cf10cf122a1899747ec82d90051a50c8ccea24607fe77975aa65ab89ee72
+        command:
+          pre:
+            - systemctl is-active --quiet lighthouse-beacon-mainnet.service && sudo systemctl stop lighthouse-beacon-mainnet.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start lighthouse-beacon-mainnet.service
+file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
     target: /etc/systemd/system/prometheus-node-exporter.service
@@ -80,18 +107,48 @@ file:
         - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
         - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/celestia-archive.service
-    target: /etc/systemd/system/celestia-archive.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/etc/cockpit/cockpit.conf
+    target: /etc/cockpit/cockpit.conf
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/reth-mainnet.service
+    target: /etc/systemd/system/reth-mainnet.service
     command:
       pre:
-        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
-        - systemctl is-active --quiet celestia-archive.service && sudo systemctl stop celestia-archive.service
+        - systemctl is-active --quiet lighthouse-beacon-mainnet.service && sudo systemctl stop lighthouse-beacon-mainnet.service
+        - systemctl is-active --quiet reth-mainnet.service && sudo systemctl stop reth-mainnet.service
+        - id reth || sudo useradd --system --create-home --home-dir /var/lib/reth --user-group reth
+        - sudo -u reth mkdir -p /var/lib/reth/mainnet
       post:
-        - sudo --set-home -u celestia /usr/local/bin/celestia-appd init 'черно море' --chain-id celestia
-        - sudo --set-home -u celestia /usr/local/bin/celestia-appd download-genesis celestia
         - sudo systemctl daemon-reload
-        - systemctl is-enabled celestia-archive.service || sudo systemctl enable celestia-archive.service
-        - systemctl is-active celestia-archive.service || sudo systemctl start celestia-archive.service
+        - systemctl is-enabled reth-mainnet.service || sudo systemctl enable reth-mainnet.service
+        - sudo systemctl start reth-mainnet.service
+        - sleep 10
+        - sudo systemctl start lighthouse-beacon-mainnet.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/lighthouse-beacon-mainnet.service
+    target: /etc/systemd/system/lighthouse-beacon-mainnet.service
+    command:
+      pre:
+        - systemctl is-active --quiet lighthouse-beacon-mainnet.service && sudo systemctl stop lighthouse-beacon-mainnet.service
+        - id lighthouse || sudo useradd --system --create-home --home-dir /var/lib/lighthouse --user-group lighthouse
+        - sudo -u lighthouse mkdir -p /var/lib/lighthouse/beacon/mainnet
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled lighthouse-beacon-mainnet.service || sudo systemctl enable lighthouse-beacon-mainnet.service
+        - sudo systemctl start lighthouse-beacon-mainnet.service
+  #-
+  #  source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/celestia-archive.service
+  #  target: /etc/systemd/system/celestia-archive.service
+  #  command:
+  #    pre:
+  #      - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+  #      - systemctl is-active --quiet celestia-archive.service && sudo systemctl stop celestia-archive.service
+  #    post:
+  #      - sudo --set-home -u celestia /usr/local/bin/celestia-appd init 'черно море' --chain-id celestia
+  #      - sudo --set-home -u celestia /usr/local/bin/celestia-appd download-genesis celestia
+  #      - sudo systemctl daemon-reload
+  #      - systemctl is-enabled celestia-archive.service || sudo systemctl enable celestia-archive.service
+  #      - systemctl is-active celestia-archive.service || sudo systemctl start celestia-archive.service
   #-
   #  source: https://raw.githubusercontent.com/celestiaorg/networks/master/celestia/seeds.txt
   #  target: /var/lib/celestia/.celestia-app/config/seeds.txt
@@ -104,36 +161,36 @@ file:
   #      - sudo -u celestia cat /var/lib/celestia/.celestia-app/config/seeds.txt | tr '\n' ',' | sudo -u celestia tee /var/lib/celestia/.celestia-app/config/seeds.csv
   #      - sudo -u celestia sed -i -e "s/^seeds *=.*/seeds = \"$(cat /var/lib/celestia/.celestia-app/config/seeds.csv)\"/" /var/lib/celestia/.celestia-app/config/config.toml
   #      - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/app.toml
-    target: /var/lib/celestia/.celestia-app/config/app.toml
-    chown: celestia:celestia
-    chmod: 644
-    command:
-      pre:
-        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
-        - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
-      post:
-        - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/client.toml
-    target: /var/lib/celestia/.celestia-app/config/client.toml
-    chown: celestia:celestia
-    chmod: 600
-    command:
-      pre:
-        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
-        - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
-      post:
-        - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/config.toml
-    target: /var/lib/celestia/.celestia-app/config/config.toml
-    chown: celestia:celestia
-    chmod: 644
-    command:
-      pre:
-        - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
-        - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
-      post:
-        - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
+  #-
+  #  source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/app.toml
+  #  target: /var/lib/celestia/.celestia-app/config/app.toml
+  #  chown: celestia:celestia
+  #  chmod: 644
+  #  command:
+  #    pre:
+  #      - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+  #      - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
+  #    post:
+  #      - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
+  #-
+  #  source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/client.toml
+  #  target: /var/lib/celestia/.celestia-app/config/client.toml
+  #  chown: celestia:celestia
+  #  chmod: 600
+  #  command:
+  #    pre:
+  #      - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+  #      - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
+  #    post:
+  #      - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
+  #-
+  #  source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/caveman/var/lib/celestia/.celestia-app/config/config.toml
+  #  target: /var/lib/celestia/.celestia-app/config/config.toml
+  #  chown: celestia:celestia
+  #  chmod: 644
+  #  command:
+  #    pre:
+  #      - id celestia || sudo useradd --system --create-home --home-dir /var/lib/celestia --user-group celestia
+  #      - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
+  #    post:
+  #      - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
