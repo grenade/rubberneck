@@ -44,6 +44,22 @@ scrape_configs:
         targets:
           - bob.thgttg.com
   -
+    job_name: reth
+    scheme: https
+    metrics_path: /metrics/reth
+    static_configs:
+      -
+        targets:
+          - caveman.thgttg.com
+  -
+    job_name: lighthouse-beacon
+    scheme: https
+    metrics_path: /metrics/beacon
+    static_configs:
+      -
+        targets:
+          - caveman.thgttg.com
+  -
     job_name: nimbus
     scheme: https
     metrics_path: /metrics/nimbus
