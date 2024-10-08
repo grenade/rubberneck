@@ -316,6 +316,14 @@ for intent in ${intents[@]}; do
           archive_extract_source=$(_decode_property ${archive_extract_as_base64} .source)
           archive_extract_target=$(_decode_property ${archive_extract_as_base64} .target)
           case ${archive_source_ext} in
+            bz2)
+              if [[ ${archive_extract_source} == */* ]]; then
+                strip_components="${archive_extract_source//[^\/]}"
+                archive_extract_command="sudo tar --extract --bzip2 --file ${archive_target} --directory $(dirname ${archive_extract_target}) --strip-components ${#strip_components} ${archive_extract_source}"
+              else
+                archive_extract_command="sudo tar --extract --bzip2 --file ${archive_target} --directory $(dirname ${archive_extract_target}) ${archive_extract_source}"
+              fi
+              ;;
             gz)
               if [[ ${archive_extract_source} == */* ]]; then
                 strip_components="${archive_extract_source//[^\/]}"

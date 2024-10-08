@@ -56,6 +56,94 @@ archive:
         source: PerformanceTest/pt_linux_x64
         target: /usr/local/bin/pt_linux_x64
         sha256: 0005b5400852aa0a84886310a0e780665c319cbf16f701062911574ba8886052
+  -
+    source: https://downloads.getmonero.org/cli/linux64
+    target: /tmp/monero-linux-x64-v0.18.3.4.tar.bz2
+    sha256: 51ba03928d189c1c11b5379cab17dd9ae8d2230056dc05c872d0f8dba4a87f1d
+    extract:
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monerod
+        target: /usr/local/bin/monerod
+        sha256: ed417118e114b79556bb3cf3ec513e61e036cf4e74cc83851f78e42baad217c6
+        command:
+          pre:
+            - systemctl is-active --quiet monero.service && sudo systemctl stop monero.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start monero.service
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-ancestry
+        target: /usr/local/bin/monero-blockchain-ancestry
+        sha256: 09ddce036fefe94e75d2abe4e1c76d2d72d3d1e661ba8b39356fe3eb33f481b9
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-depth
+        target: /usr/local/bin/monero-blockchain-depth
+        sha256: bd81739edfcf087aa152b20356c961e719090281189aee318f1ad7dbbc273dbf
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-export
+        target: /usr/local/bin/monero-blockchain-export
+        sha256: 0fb467cf6cc462063b68ffd469094eb83dae9038631a5a8afddb6b7f12f05690
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-import
+        target: /usr/local/bin/monero-blockchain-import
+        sha256: bc69425e26ea57cc2a5b165de1c65e397d38063c827ce9ae67df26c5633ab35c
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-mark-spent-outputs
+        target: /usr/local/bin/monero-blockchain-mark-spent-outputs
+        sha256: 819d4b9022c8c4d97a62f254a496ea62eaac42881946dfdeab3a1db43cb2348e
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-prune
+        target: /usr/local/bin/monero-blockchain-prune
+        sha256: c6e58b7d79f30f3a174432cdbacf1b5520c429efaa71cf814bf0beb1a4a849ae
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-prune-known-spent-data
+        target: /usr/local/bin/monero-blockchain-prune-known-spent-data
+        sha256: 385474c934905bebbbc9613b4594e90e96f58c85c062838f47c1da244ec1bfd0
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-stats
+        target: /usr/local/bin/monero-blockchain-stats
+        sha256: 3a6cd5cb76735faeddbb11ec8a41a6ed52e27fac1d860ecbc81a22f8f3784758
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-blockchain-usage
+        target: /usr/local/bin/monero-blockchain-usage
+        sha256: e7be6a4932efc5e7f32d501de7887a86b215735e5291c0bedf3bc9c92769e449
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-gen-ssl-cert
+        target: /usr/local/bin/monero-gen-ssl-cert
+        sha256: 7b162b6ded56e99e945db9b306b3dec13c9c75cec6d582a081e6b6f2fd0889c2
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-gen-trusted-multisig
+        target: /usr/local/bin/monero-gen-trusted-multisig
+        sha256: fd25a844e511d664fdaf14ccefad7eae3dde42ff74dc45161c2e0ad09af0fe18
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-wallet-cli
+        target: /usr/local/bin/monero-wallet-cli
+        sha256: defa4b9a0c88eb55610aadcb198edfd0465efa68d2f1d128b2756ebea5dd8de9
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/monero-wallet-rpc
+        target: /usr/local/bin/monero-wallet-rpc
+        sha256: 7f08d95060e576a15eefa60ed830a65a982f7af5cb98386c3677e4e25012d417
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/LICENSE
+        target: /etc/monero/LICENSE
+        sha256: c2fe351163f4e0cee45d38e9481f2ea60f3cb77b24f818c4a2c740383f2f4cb2
+        command:
+          pre:
+            - test -d /etc/monero || sudo mkdir /etc/monero
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/ANONYMITY_NETWORKS.md
+        target: /var/lib/monero/ANONYMITY_NETWORKS.md
+        sha256: 108bc10d079d553275376b430c77a510ed69c855677c94f58e8fca25c3fd08e9
+        command:
+          pre:
+            - id monero || sudo useradd --system --create-home --home-dir /var/lib/monero --user-group monero
+      -
+        source: monero-x86_64-linux-gnu-v0.18.3.4/README.md
+        target: /var/lib/monero/README.md
+        sha256: 275d09bc45f3dbfe6c5c78093c8bbbd45e6b7fd5a8265c7e6e69c7fe70a45131
+        command:
+          pre:
+            - id monero || sudo useradd --system --create-home --home-dir /var/lib/monero --user-group monero
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
@@ -76,3 +164,21 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/frootmig/etc/cockpit/cockpit.conf
     target: /etc/cockpit/cockpit.conf
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/monero/monerod.conf
+    target: /etc/monero/monerod.conf
+    command:
+      pre:
+        - test -d /etc/monero || sudo mkdir /etc/monero
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/monero.service
+    target: /etc/systemd/system/monero.service
+    command:
+      pre:
+        - systemctl is-active --quiet monero.service && sudo systemctl stop monero.service
+        - id monero || sudo useradd --system --create-home --home-dir /var/lib/monero --user-group monero
+        - test -d /var/log/monero || sudo mkdir /var/log/monero && sudo chown monero:monero /var/log/monero
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled monero.service || sudo systemctl enable monero.service
+        - systemctl is-active monero.service || sudo systemctl start monero.service

@@ -1,0 +1,19 @@
+[Unit]
+Description=monero full node
+After=network-online.target
+
+[Service]
+User=monero
+Group=monero
+WorkingDirectory=/var/lib/monero
+StateDirectory=/var/lib/monero
+LogsDirectory=/var/log/monero
+Type=simple
+ExecStart=/usr/local/bin/monerod \
+    --non-interactive \
+    --config-file /etc/monero/monerod.conf
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
