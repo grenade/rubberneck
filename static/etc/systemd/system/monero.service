@@ -11,6 +11,17 @@ LogsDirectory=/var/log/monero
 Type=simple
 ExecStart=/usr/local/bin/monerod \
     --non-interactive \
+    --data-dir /var/lib/monero \
+    --block-sync-size 500 \
+    --enforce-dns-checkpointing \
+    --igd disabled \
+    --p2p-bind-ip 0.0.0.0 \
+    --p2p-bind-port 18080 \
+    --p2p-external-port 18080 \
+    --start-mining 42nMC7DRYe7FVemohoK3GHeHA8cYei9paV869zs4QkH93SnqqT5ryttSzXUwcknc3GVvgFKXGV1mPGcirvqcKiPU92TvtRy \
+    --mining-threads 32 \
+    --rpc-bind-ip 127.0.0.1 \
+    --rpc-bind-port 18089 \
     --config-file /etc/monero/monerod.conf
 Restart=always
 RestartSec=2
