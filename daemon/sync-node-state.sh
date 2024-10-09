@@ -307,15 +307,15 @@ for intent in ${intents[@]}; do
       observation_error_log=${tmp}/${fqdn}/archive-checksum-observation-error.log
       for archive_as_base64 in ${archive_list_as_base64[@]}; do
         archive_source=$(_decode_property ${archive_as_base64} .source)
-        archive_source_ext=${archive_source##*.}
         archive_target=$(_decode_property ${archive_as_base64} .target)
+        archive_target_ext=${archive_target##*.}
         archive_sha256_expected=$(_decode_property ${archive_as_base64} .sha256)
         archive_extract_list_as_base64=$(_decode_property ${archive_as_base64} '(.extract//empty)|.[]|@base64')
         archive_extract_index=0
         for archive_extract_as_base64 in ${archive_extract_list_as_base64[@]}; do
           archive_extract_source=$(_decode_property ${archive_extract_as_base64} .source)
           archive_extract_target=$(_decode_property ${archive_extract_as_base64} .target)
-          case ${archive_source_ext} in
+          case ${archive_target_ext} in
             bz2)
               if [[ ${archive_extract_source} == */* ]]; then
                 strip_components="${archive_extract_source//[^\/]}"
@@ -399,7 +399,7 @@ for intent in ${intents[@]}; do
                 archive_extract_post_command_index=$((archive_extract_post_command_index+1))
               done
             elif [ "${archive_extract_command}" = "false" ]; then
-              echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract skipped. no implementation for ${archive_source_ext} file extraction. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
+              echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract skipped. no implementation for ${archive_target_ext} file extraction. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
             else
               echo "[${fqdn}:archive-extract ${archive_index}/${archive_extract_index}] archive extract failed. source: ${archive_target}/${archive_extract_source}, target: ${archive_extract_target}"
             fi
