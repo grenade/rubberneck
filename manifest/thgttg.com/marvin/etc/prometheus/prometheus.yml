@@ -69,6 +69,8 @@ scrape_configs:
           - caveman.thgttg.com
   -
     job_name: monero
+    scrape_interval: 60s
+    scrape_timeout: 30s
     scheme: https
     metrics_path: /metrics/monero
     static_configs:
