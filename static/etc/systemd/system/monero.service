@@ -12,7 +12,7 @@ Type=simple
 ExecStart=/usr/local/bin/monerod \
     --non-interactive \
     --data-dir /var/lib/monero \
-    --block-sync-size 100 \
+    --block-sync-size 50 \
     --enforce-dns-checkpointing \
     --igd disabled \
     --p2p-bind-ip 0.0.0.0 \
