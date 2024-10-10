@@ -67,6 +67,14 @@ scrape_configs:
       -
         targets:
           - caveman.thgttg.com
+  -
+    job_name: monero
+    scheme: https
+    metrics_path: /metrics/monero
+    static_configs:
+      -
+        targets:
+          - frootmig.thgttg.com
   #-
   #  job_name: tendermint
   #  scheme: https

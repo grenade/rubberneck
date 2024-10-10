@@ -24,7 +24,8 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
 firewall:
   port:
-    - 9100/tcp
+    - 9099/tcp # prometheus monero exporter
+    - 9100/tcp # prometheus node exporter
     - 18080/tcp # monero mainnet p2p
     - 18081/tcp # monero mainnet restricted rpc
 command:
@@ -33,6 +34,8 @@ command:
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/yq || sudo pip install yq
   - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
+  - systemctl is-active monero.service || sudo systemctl restart monero.service
+  - systemctl is-active prometheus-monero-exporter.service || sudo systemctl restart prometheus-monero-exporter.service
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
@@ -146,6 +149,21 @@ archive:
         command:
           pre:
             - id monero || sudo useradd --system --create-home --home-dir /var/lib/monero --user-group monero
+  -
+    source: https://github.com/cirocosta/monero-exporter/releases/download/v0.0.2/monero-exporter_0.0.2_linux_amd64.tar.gz
+    target: /tmp/monero-exporter_0.0.2_linux_amd64.tar.gz
+    sha256: 0ed697bde2edc414006882fb806561a933b1dc48784b982e22dbc8aba333184a
+    extract:
+      -
+        source: monero-exporter
+        target: /usr/local/bin/monero-exporter
+        sha256: fe52df2de175c014f9a7fc60381e7c8dd2f2bf1102bc1e4137258d50313f5467
+        command:
+          pre:
+            - systemctl is-active --quiet prometheus-monero-exporter.service && sudo systemctl stop prometheus-monero-exporter.service
+          post:
+            - sudo systemctl daemon-reload
+            - sudo systemctl start prometheus-monero-exporter.service
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
@@ -189,3 +207,13 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled monero.service || sudo systemctl enable monero.service
         - systemctl is-active monero.service || sudo systemctl start monero.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-monero-exporter.service
+    target: /etc/systemd/system/prometheus-monero-exporter.service
+    command:
+      pre:
+        - systemctl is-active --quiet prometheus-monero-exporter.service && sudo systemctl stop prometheus-monero-exporter.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled prometheus-monero-exporter.service || sudo systemctl enable prometheus-monero-exporter.service
+        - systemctl is-active prometheus-monero-exporter.service || sudo systemctl start prometheus-monero-exporter.service
