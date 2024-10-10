@@ -170,6 +170,8 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/frootmig/etc/monero/monerod.conf.gpg
     target: /etc/monero/monerod.conf
     sha256: ed123fa7a71a4820b0b61c5273c157fb51d2cc58805c85133e976072534f0522
+    chown: monero:monero
+    chmod: 'go-r'
     command:
       pre:
         - test -d /etc/monero || sudo mkdir /etc/monero
