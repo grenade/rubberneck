@@ -132,6 +132,7 @@ file:
     command:
       pre:
         - systemctl is-active --quiet xmrig-proxy.service && sudo systemctl stop xmrig-proxy.service
+        - id xmrig-proxy || sudo useradd --system --create-home --home-dir /var/lib/xmrig-proxy --user-group xmrig-proxy
       post:
         - sudo systemctl daemon-reload
         - systemctl is-enabled xmrig-proxy.service || sudo systemctl enable xmrig-proxy.service
@@ -366,7 +367,7 @@ file:
       pre:
         - >
           sudo certbot certonly
-          -m ops@thgttg.com
+          -m ops@v8r.io
           --agree-tos
           --no-eff-email
           --noninteractive
@@ -598,4 +599,26 @@ file:
           -d ilo.effrafax.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/effrafax.thgttg.com.conf /etc/nginx/sites-enabled/effrafax.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/xmr.v8r.io.conf
+    target: /etc/nginx/sites-available/xmr.v8r.io.conf
+    command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@v8r.io
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name xmr.v8r.io
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/v8r.io
+          --dns-cloudflare-propagation-seconds 60
+          -d xmr.v8r.io
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/xmr.v8r.io.conf /etc/nginx/sites-enabled/xmr.v8r.io.conf
         - sudo systemctl restart nginx.service
