@@ -121,9 +121,9 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/xmrig-proxy/config.json.gpg
     target: /etc/xmrig-proxy/config.json
     sha256: 49f065c7c01cf16473eb9dd4c9848b3974b238381584d978b844d35677dbfa94
-    chmod: go-r
-    chown: xmrig-proxy:xmrig-proxy
     command:
+      pre:
+        - sudo mkdir /etc/xmrig-proxy
       post:
         - sudo systemctl restart xmrig-proxy.service
   -
