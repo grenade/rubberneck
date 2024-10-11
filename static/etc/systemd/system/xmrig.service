@@ -1,0 +1,18 @@
+[Unit]
+Description=xmrig
+After=network-online.target
+ConditionPathExists=/etc/xmrig/config.json
+ConditionPathExists=/usr/local/bin/xmrig
+
+[Service]
+User=xmrig
+Group=xmrig
+WorkingDirectory=/var/lib/xmrig
+Type=simple
+ExecStart=/usr/local/bin/xmrig \
+    --config /etc/xmrig/config.json
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

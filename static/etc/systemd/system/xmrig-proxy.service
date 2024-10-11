@@ -1,0 +1,19 @@
+[Unit]
+Description=xmrig-proxy
+After=network-online.target
+ConditionPathExists=/etc/xmrig-proxy/config.json
+ConditionPathExists=/usr/local/bin/xmrig-proxy
+
+[Service]
+User=xmrig-proxy
+Group=xmrig-proxy
+WorkingDirectory=/var/lib/xmrig-proxy
+Type=simple
+ExecStart=/usr/local/bin/xmrig-proxy \
+    --config /etc/xmrig-proxy/config.json
+Restart=always
+RestartSec=2
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

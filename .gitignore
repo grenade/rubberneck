@@ -12,3 +12,12 @@ manifest/**/.celestia-app/**/*.json
 
 # quilibrium node secrets
 manifest/**/.node/*.yml
+
+# monero/xmrig/xmrig-proxy node secrets
+manifest/**/etc/monero/monerod.conf
+**/xmrig/config.json
+**/xmrig-proxy/config.json
+
+# ilo credentials
+credentials.json
+get-ilo-password.sh
