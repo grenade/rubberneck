@@ -628,6 +628,12 @@ file:
       post:
         - sudo ln -sfr /etc/nginx/sites-available/effrafax.thgttg.com.conf /etc/nginx/sites-enabled/effrafax.thgttg.com.conf
         - sudo systemctl restart nginx.service
+
+
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/letsencrypt/renewal-hooks/post/xmr.v8r.io.sh
+    target: /etc/letsencrypt/renewal-hooks/post/xmr.v8r.io.sh
+    chmod: +x
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/xmr.v8r.io.conf
     target: /etc/nginx/sites-available/xmr.v8r.io.conf
@@ -647,6 +653,7 @@ file:
           --dns-cloudflare-credentials /root/.cloudflare/v8r.io
           --dns-cloudflare-propagation-seconds 60
           -d xmr.v8r.io
+          --post-hook /etc/letsencrypt/renewal-hooks/post/xmr.v8r.io.sh
       post:
         - sudo ln -sfr /etc/nginx/sites-available/xmr.v8r.io.conf /etc/nginx/sites-enabled/xmr.v8r.io.conf
         - sudo systemctl restart nginx.service
