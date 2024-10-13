@@ -98,6 +98,7 @@ file:
     target: /etc/systemd/system/xmrig.service
     command:
       pre:
+        - test -d /var/lib/xmrig || sudo mkdir /var/lib/xmrig
         - sudo systemctl stop xmrig.service
       post:
         - sudo systemctl daemon-reload
