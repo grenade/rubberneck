@@ -15,7 +15,7 @@ ExecStart=/usr/local/bin/p2pool \
     --zmq-port 18084 \
     --stratum 0.0.0.0:3333 \
     --p2p 0.0.0.0:37889 \
-    --data-api /var/lib/p2pool/stats \
+    --data-api /var/lib/p2pool \
     --stratum-api
 Restart=always
 RestartSec=2
