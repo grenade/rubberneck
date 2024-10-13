@@ -28,6 +28,7 @@ firewall:
   port:
     - 3333/tcp # p2pool stratum
     - 9100/tcp # prometheus node exporter
+    - 18090/tcp # p2pool-exporter
     - 37889/tcp # p2pool p2p
 command:
   - sudo passwd -l root
