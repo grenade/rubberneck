@@ -1,0 +1,22 @@
+[Unit]
+Description=p2pool
+After=network-online.target
+ConditionPathExists=/usr/local/bin/p2pool
+
+[Service]
+User=p2pool
+Group=p2pool
+WorkingDirectory=/var/lib/p2pool
+Type=simple
+ExecStart=/usr/local/bin/p2pool \
+    --wallet 42nMC7DRYe7FVemohoK3GHeHA8cYei9paV869zs4QkH93SnqqT5ryttSzXUwcknc3GVvgFKXGV1mPGcirvqcKiPU92TvtRy \
+    --host 10.0.9.130 \
+    --rpc-port 18081 \
+    --zmq-port 18084 \
+    --stratum 0.0.0.0:3333 \
+    --p2p 0.0.0.0:37889
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

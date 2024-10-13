@@ -20,6 +20,7 @@ ExecStart=/usr/local/bin/monerod \
     --rpc-restricted-bind-port 18081 \
     --rpc-bind-ip 127.0.0.1 \
     --rpc-bind-port 18089 \
+    --zmq-pub tcp://0.0.0.0:18084 \
     --config-file /etc/monero/monerod.conf
 Restart=always
 RestartSec=2

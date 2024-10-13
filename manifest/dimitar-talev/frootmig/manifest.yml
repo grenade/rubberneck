@@ -28,6 +28,7 @@ firewall:
     - 9100/tcp # prometheus node exporter
     - 18080/tcp # monero mainnet p2p
     - 18081/tcp # monero mainnet restricted rpc
+    - 18084/tcp # monero mainnet zmq
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC

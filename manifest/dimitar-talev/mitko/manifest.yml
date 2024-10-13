@@ -26,8 +26,9 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
 firewall:
   port:
-    - 3333/tcp # xmrig-proxy
+    - 3333/tcp # p2pool stratum
     - 9100/tcp # prometheus node exporter
+    - 37889/tcp # p2pool p2p
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
@@ -35,7 +36,8 @@ command:
   - test -x /usr/local/bin/yq || sudo pip install yq
   - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
   - systemctl is-active nginx.service || sudo systemctl restart nginx.service
-  - systemctl is-active xmrig-proxy.service || sudo systemctl restart xmrig-proxy.service
+  - systemctl is-active p2pool.service || sudo systemctl restart p2pool.service
+  #- systemctl is-active xmrig-proxy.service || sudo systemctl restart xmrig-proxy.service
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
@@ -61,21 +63,36 @@ archive:
         source: PerformanceTest/pt_linux_x64
         target: /usr/local/bin/pt_linux_x64
         sha256: 0005b5400852aa0a84886310a0e780665c319cbf16f701062911574ba8886052
+  #-
+  #  source: https://github.com/xmrig/xmrig-proxy/releases/download/v6.22.0/xmrig-proxy-6.22.0-linux-static-x64.tar.gz
+  #  target: /tmp/xmrig-proxy-6.22.0-linux-static-x64.tar.gz
+  #  sha256: e132801753b4c23904238ac3b9ff6f74468dea2113c4eaccc9e0341c86c7a4c1
+  #  extract:
+  #    -
+  #      source: xmrig-proxy-6.22.0/xmrig-proxy
+  #      target: /usr/local/bin/xmrig-proxy
+  #      sha256: a93e5fa666bd469191a5312e57f0f23027c8afbb0a5d205dbf278b9ad9f1072d
+  #      command:
+  #        pre:
+  #          - systemctl is-active --quiet xmrig-proxy.service && sudo systemctl stop xmrig-proxy.service
+  #        post:
+  #          - sudo systemctl daemon-reload
+  #          - sudo systemctl start xmrig-proxy.service
   -
-    source: https://github.com/xmrig/xmrig-proxy/releases/download/v6.22.0/xmrig-proxy-6.22.0-linux-static-x64.tar.gz
-    target: /tmp/xmrig-proxy-6.22.0-linux-static-x64.tar.gz
-    sha256: e132801753b4c23904238ac3b9ff6f74468dea2113c4eaccc9e0341c86c7a4c1
+    source: https://github.com/SChernykh/p2pool/releases/download/v4.1.1/p2pool-v4.1.1-linux-x64.tar.gz
+    target: /tmp/p2pool-v4.1.1-linux-x64.tar.gz
+    sha256: 1532b58073da4acf53d57968e5eecfdc3e5c7546b8f635a35da22ea9835db0dd
     extract:
       -
-        source: xmrig-proxy-6.22.0/xmrig-proxy
-        target: /usr/local/bin/xmrig-proxy
-        sha256: a93e5fa666bd469191a5312e57f0f23027c8afbb0a5d205dbf278b9ad9f1072d
+        source: p2pool-v4.1.1-linux-x64/p2pool
+        target: /usr/local/bin/p2pool
+        sha256: 44a125ebce3ba3b658a5c24740acd1c3b1baff5eec76d00ea1682d536feddab4
         command:
           pre:
-            - systemctl is-active --quiet xmrig-proxy.service && sudo systemctl stop xmrig-proxy.service
+            - systemctl is-active --quiet p2pool.service && sudo systemctl stop p2pool.service
           post:
             - sudo systemctl daemon-reload
-            - sudo systemctl start xmrig-proxy.service
+            - sudo systemctl start p2pool.service
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/root/.cloudflare/nebra.systems.gpg
@@ -117,26 +134,37 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/cockpit/cockpit.conf
     target: /etc/cockpit/cockpit.conf
+  #-
+  #  source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/xmrig-proxy/config.json.gpg
+  #  target: /etc/xmrig-proxy/config.json
+  #  sha256: 49f065c7c01cf16473eb9dd4c9848b3974b238381584d978b844d35677dbfa94
+  #  command:
+  #    pre:
+  #      - sudo mkdir /etc/xmrig-proxy
+  #    post:
+  #      - sudo systemctl restart xmrig-proxy.service
+  #-
+  #  source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/xmrig-proxy.service
+  #  target: /etc/systemd/system/xmrig-proxy.service
+  #  command:
+  #    pre:
+  #      - systemctl is-active --quiet xmrig-proxy.service && sudo systemctl stop xmrig-proxy.service
+  #      - id xmrig-proxy || sudo useradd --system --create-home --home-dir /var/lib/xmrig-proxy --user-group xmrig-proxy
+  #    post:
+  #      - sudo systemctl daemon-reload
+  #      - systemctl is-enabled xmrig-proxy.service || sudo systemctl enable xmrig-proxy.service
+  #      - systemctl is-active xmrig-proxy.service || sudo systemctl start xmrig-proxy.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/xmrig-proxy/config.json.gpg
-    target: /etc/xmrig-proxy/config.json
-    sha256: 49f065c7c01cf16473eb9dd4c9848b3974b238381584d978b844d35677dbfa94
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/p2pool.service
+    target: /etc/systemd/system/p2pool.service
     command:
       pre:
-        - sudo mkdir /etc/xmrig-proxy
-      post:
-        - sudo systemctl restart xmrig-proxy.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/xmrig-proxy.service
-    target: /etc/systemd/system/xmrig-proxy.service
-    command:
-      pre:
-        - systemctl is-active --quiet xmrig-proxy.service && sudo systemctl stop xmrig-proxy.service
-        - id xmrig-proxy || sudo useradd --system --create-home --home-dir /var/lib/xmrig-proxy --user-group xmrig-proxy
+        - systemctl is-active --quiet p2pool.service && sudo systemctl stop p2pool.service
+        - id p2pool || sudo useradd --system --create-home --home-dir /var/lib/p2pool --user-group p2pool
       post:
         - sudo systemctl daemon-reload
-        - systemctl is-enabled xmrig-proxy.service || sudo systemctl enable xmrig-proxy.service
-        - systemctl is-active xmrig-proxy.service || sudo systemctl start xmrig-proxy.service
+        - systemctl is-enabled p2pool.service || sudo systemctl enable p2pool.service
+        - systemctl is-active p2pool.service || sudo systemctl start p2pool.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/conf.d/sites-enabled.conf
     target: /etc/nginx/conf.d/sites-enabled.conf
