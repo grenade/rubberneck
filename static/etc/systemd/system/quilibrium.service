@@ -5,22 +5,20 @@ After=network-online.target
 ConditionPathExists=/var/lib/quilibrium/.node
 ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium
 ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst
-ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.1
-ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.2
 ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.3
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.4
 ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.5
-ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.7
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.9
 ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.12
 ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.13
 ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.15
-ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.17
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.16
 
 [Service]
 Type=simple
 User=quilibrium
 Group=quilibrium
 WorkingDirectory=/var/lib/quilibrium/.node
-StateDirectory=/var/lib/quilibrium/.node
 ExecStart=/var/lib/quilibrium/.local/bin/quilibrium \
     --config /var/lib/quilibrium/.node
 Restart=always
