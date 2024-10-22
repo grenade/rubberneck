@@ -27,7 +27,9 @@ firewall:
     - 5052/tcp
     - 5064/tcp # lighthouse beacon metrics
     - 8008/tcp
-    - 8551/tcp
+    - 8545/tcp # reth http/rpc api
+    - 8546/tcp # reth ws api
+    - 8551/tcp # reth auth api (dc internal only, don't port forward)
     - 6060/tcp
     - 9000/tcp # lighthouse beacon p2p
     - 9000/udp # lighthouse beacon p2p

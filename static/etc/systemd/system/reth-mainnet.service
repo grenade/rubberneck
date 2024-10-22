@@ -12,6 +12,16 @@ ExecStart=/usr/local/bin/reth node \
     --datadir /var/lib/reth/mainnet \
     --chain mainnet \
     --metrics 0.0.0.0:9001 \
+    --http \
+    --http.api all \
+    --http.corsdomain '*' \
+    --http.addr 0.0.0.0 \
+    --http.port 8545 \
+    --ws \
+    --ws.api all \
+    --ws.origins '*' \
+    --ws.addr 0.0.0.0 \
+    --ws.port 8546 \
     --authrpc.addr 127.0.0.1 \
     --authrpc.port 8551 \
     --authrpc.jwtsecret /tmp/reth-mainnet.jwt
