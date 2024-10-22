@@ -25,11 +25,13 @@ user:
 firewall:
   port:
     - 5052/tcp
-    - 5064/tcp # lighthouse beacon mainnet metrics
+    - 5064/tcp # lighthouse beacon metrics
     - 8008/tcp
     - 8551/tcp
     - 6060/tcp
-    - 9000/udp
+    - 9000/tcp # lighthouse beacon p2p
+    - 9000/udp # lighthouse beacon p2p
+    - 9001/udp # lighthouse beacon p2p
     - 9001/tcp # reth mainnet metrics
     #- 2121/tcp
     #- 2121/udp
