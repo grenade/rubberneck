@@ -176,6 +176,12 @@ file:
       post:
         - sudo systemctl restart nginx.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/conf.d/throttle.conf
+    target: /etc/nginx/conf.d/throttle.conf
+    command:
+      post:
+        - sudo systemctl restart nginx.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/mitko.thgttg.com.conf
     target: /etc/nginx/sites-available/mitko.thgttg.com.conf
     command:
