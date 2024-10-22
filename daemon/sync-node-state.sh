@@ -152,7 +152,7 @@ for intent in ${intents[@]}; do
           is_org_member=true
           echo "[${fqdn}:user:${username}] user: ${authorized_user}, in org: ${is_org_member}"
           if [ "${authorized_user}" = "manta-ops" ] || [ "${is_org_member}" = "true" ]; then
-            if [ -s ${tmp}/authorized-keys-${authorized_user} ] || curl -sLo ${tmp}/authorized-keys-${authorized_user} https://github.com/${authorized_user}.keys 2> /dev/null; then
+            if [ -s ${tmp}/authorized-keys-${authorized_user} ] || curl --fail --silent --location --output ${tmp}/authorized-keys-${authorized_user} --url https://github.com/${authorized_user}.keys 2> /dev/null; then
               while read authorized_key; do
                 if [[ ${authorized_key} == ssh-ed25519* ]]; then
                   echo ${authorized_key} >> ${tmp}/${fqdn}/${username}/authorized_keys_raw
@@ -209,7 +209,7 @@ for intent in ${intents[@]}; do
           repository_key_sha_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sha256sum ${repo_key_path}/${repository_name}.asc 2> /dev/null | cut -d ' ' -f 1")
           if [ "${repository_key_sha_expected}" = "${repository_key_sha_observed}" ]; then
             echo "[${fqdn}:repository ${repository_index}] repository key validation succeeded. target: ${repo_key_path}/${repository_name}.asc, source: ${repository_key_url}, sha256 expected: ${repository_key_sha_expected}, observed: ${repository_key_sha_observed}"
-          elif ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${repo_key_path}/${repository_name}.asc ${repository_key_url}; then
+          elif ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl --fail --silent --location --output ${repo_key_path}/${repository_name}.asc --url ${repository_key_url}; then
             echo "[${fqdn}:repository ${repository_index}] repository key download succeeded (${repo_key_path}/${repository_name}.asc, ${repository_key_url})"
           else
             echo "[${fqdn}:repository ${repository_index}] repository key download failed (${repo_key_path}/${repository_name}.asc, ${repository_key_url})"
@@ -360,7 +360,7 @@ for intent in ${intents[@]}; do
             archive_sha256_observed=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} "sudo sha256sum ${archive_target} 2> /dev/null | cut -d ' ' -f 1" 2> ${observation_error_log})
             if [ "${archive_sha256_expected}" = "${archive_sha256_observed}" ]; then
               echo "[${fqdn}:archive ${archive_index}] sha256 validation succeeded. target: ${archive_target}, source: ${archive_source}, sha256 expected: ${archive_sha256_expected}, observed: ${archive_sha256_observed}"
-            elif ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} curl -sLo ${archive_target} ${archive_source}; then
+            elif ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} curl --fail --silent --location --output ${archive_target} --url ${archive_source}; then
               echo "[${fqdn}:archive ${archive_index}] download succeeded (${archive_target}, ${archive_source})"
             else
               echo "[${fqdn}:archive ${archive_index}] download failed (${archive_target}, ${archive_source})"
@@ -491,7 +491,7 @@ for intent in ${intents[@]}; do
           if [ "${action}" = "sync" ]; then
             if [ "${file_source_ext}" = "gpg" ] && [ ${#file_sha256_expected} -eq 64 ]; then
               tmp_file_path=/tmp/$(uuidgen)
-              if curl -sL ${file_source} | gpg --quiet --decrypt > ${tmp_file_path}; then
+              if curl --fail --silent --location --url ${file_source} | gpg --quiet --decrypt > ${tmp_file_path}; then
                 echo "[${fqdn}:file ${file_index}] secret fetch (${file_source}) and decrypt (${file_target}) suceeded"
                 rsync_optional_args=()
                 if [ -n ${file_chown} ] && [ ${file_chown} != null ]; then
@@ -523,7 +523,7 @@ for intent in ${intents[@]}; do
                 echo "[${fqdn}:file ${file_index}] secret fetch (${file_source}) and decrypt (${file_target}) failed"
               fi
               wipe -s -f ${tmp_file_path}
-            elif ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${file_target} ${file_source}; then
+            elif ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl --fail --silent --location --output ${file_target} --url ${file_source}; then
               echo "[${fqdn}:file ${file_index}] download succeeded (${file_target}, ${file_source})"
               if [ -n ${file_chown} ] && [ ${file_chown} != null ]; then
                 if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo chown ${file_chown} ${file_target}; then
@@ -637,7 +637,7 @@ for intent in ${intents[@]}; do
             service_pre_command_index=$((service_pre_command_index+1))
           done
           if [ "${action}" = "sync" ]; then
-            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl -sLo ${service_target} ${service_source}; then
+            if ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${fqdn} sudo curl --fail --silent --location --output ${service_target} --url ${service_source}; then
               echo "[${fqdn}:service ${service_index}] download succeeded (${service_target}, ${service_source})"
               declare -a service_post_command_list=()
               service_post_command_index=0
