@@ -16,6 +16,10 @@ ExecStart=/usr/local/bin/lighthouse beacon_node \
     --execution-jwt /tmp/reth-mainnet.jwt \
     --checkpoint-sync-url https://mainnet.checkpoint.sigp.io \
     --disable-deposit-contract-sync \
+    --http \
+    --http-allow-origin '*' \
+    --http-address 0.0.0.0 \
+    --http-port 5052 \
     --metrics \
     --metrics-address 0.0.0.0 \
     --metrics-port 5064 \
