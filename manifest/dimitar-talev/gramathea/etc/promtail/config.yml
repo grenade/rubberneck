@@ -6,8 +6,8 @@ positions:
   filename: /tmp/positions.yaml
 
 clients:
--
-  url: https://loki.thgttg.com/loki/api/v1/push
+  -
+    url: https://loki.thgttg.com/loki/api/v1/push
 
 scrape_configs:
   -
