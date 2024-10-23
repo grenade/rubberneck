@@ -1,0 +1,29 @@
+---
+server:
+  disable: true
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  -
+    url: https://loki.thgttg.com/loki/api/v1/push
+
+scrape_configs:
+  -
+    job_name: journal
+    journal:
+      max_age: 12h
+      json: false
+      labels:
+        job: journal
+    relabel_configs:
+      -
+        action: keep
+        source_labels:
+          - __journal__systemd_unit
+        regex: (lighthouse-beacon-mainnet|reth-mainnet).service
+      -
+        source_labels:
+          - __journal__systemd_unit
+        target_label: service_name
