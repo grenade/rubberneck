@@ -123,20 +123,50 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
         - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
-        - '(test -s /etc/letsencrypt/renewal/$(hostname -f).conf && grep webroot_path /etc/letsencrypt/renewal/$(hostname -f).conf) || sudo certbot certonly --noninteractive --cert-name $(hostname -f) --expand --allow-subset-of-names --key-type ecdsa -m ops@thgttg.com --agree-tos --no-eff-email --preferred-challenges http --webroot --webroot-path /var/www/html -d $(hostname -f)'
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/nginx/sites-available/marvin.thgttg.com.conf
     target: /etc/nginx/sites-available/marvin.thgttg.com.conf
     command:
       pre:
-        - sudo mkdir -p /etc/nginx/sites-available
-        - sudo mkdir -p /etc/nginx/sites-enabled
-        - systemctl is-active --quiet nginx.service && sudo systemctl stop nginx.service
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name marvin.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --preferred-challenges http
+          --webroot
+          --webroot-path /var/www/html
+          -d marvin.thgttg.com
       post:
         - sudo ln -sfr /etc/nginx/sites-available/marvin.thgttg.com.conf /etc/nginx/sites-enabled/marvin.thgttg.com.conf
-        - sudo systemctl daemon-reload
-        - systemctl is-enabled --quiet nginx.service || sudo systemctl enable nginx.service
-        - systemctl is-active --quiet nginx.service || sudo systemctl start nginx.service
+        - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/nginx/sites-available/loki.thgttg.com.conf
+    target: /etc/nginx/sites-available/loki.thgttg.com.conf
+    command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name loki.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --preferred-challenges http
+          --webroot
+          --webroot-path /var/www/html
+          -d loki.thgttg.com
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/loki.thgttg.com.conf /etc/nginx/sites-enabled/loki.thgttg.com.conf
+        - sudo systemctl restart nginx.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/thgttg.com/marvin/etc/grafana/grafana-base.ini
     target: /etc/grafana/grafana-base.ini
