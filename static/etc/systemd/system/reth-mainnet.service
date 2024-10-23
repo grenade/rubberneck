@@ -25,7 +25,7 @@ ExecStart=/usr/local/bin/reth node \
     --authrpc.addr 127.0.0.1 \
     --authrpc.port 8551 \
     --authrpc.jwtsecret /tmp/reth-mainnet.jwt \
-    --color off
+    --color never
 Restart=always
 RestartSec=2
 
