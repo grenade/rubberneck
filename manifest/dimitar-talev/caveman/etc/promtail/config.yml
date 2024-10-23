@@ -1,22 +1,19 @@
 ---
 server:
   disable: true
-
 positions:
   filename: /tmp/positions.yaml
-
 clients:
   -
     url: https://loki.thgttg.com/loki/api/v1/push
-
 scrape_configs:
   -
-    job_name: journal
+    job_name: dendreth
     journal:
       max_age: 12h
       json: false
       labels:
-        job: journal
+        job: dendreth
     relabel_configs:
       -
         action: keep
