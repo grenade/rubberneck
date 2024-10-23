@@ -1,0 +1,23 @@
+[Unit]
+Description=dendreth commitment mapper
+After=network-online.target
+BindsTo=valkey.service
+ConditionPathExists=/usr/local/bin/commitment-mapper
+
+[Service]
+User=dendreth
+Group=dendreth
+WorkingDirectory=/var/lib/dendreth
+Type=simple
+ExecStartPre=/bin/mkdir -p /var/lib/dendreth/data/proof
+ExecStartPre=/bin/mkdir -p /var/lib/dendreth/data/circuits
+ExecStart=/usr/local/bin/commitment-mapper \
+    --serialized-circuits-dir /var/lib/dendreth/data/circuits \
+    --proof-storage-type file \
+    --folder-name /var/lib/dendreth/data/proof \
+    --redis redis://127.0.0.1:6379
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.targets
