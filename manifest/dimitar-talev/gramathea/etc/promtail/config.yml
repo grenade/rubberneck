@@ -1,11 +1,14 @@
 ---
 server:
   disable: true
-clients:
-  -
-    url: https://loki.thgttg.com/api/v1/push
+
 positions:
-  filename: /tmp/positions.yml
+  filename: /tmp/positions.yaml
+
+clients:
+-
+  url: https://loki.thgttg.com/loki/api/v1/push
+
 scrape_configs:
   -
     job_name: journal

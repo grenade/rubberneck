@@ -51,6 +51,10 @@ command:
   - systemctl is-enabled valkey.service || sudo systemctl enable valkey.service
   - systemctl is-active valkey.service || sudo systemctl restart valkey.service
   - systemctl is-active dendreth-commitment-mapper.service || sudo systemctl restart dendreth-commitment-mapper.service
+  # todo: figure out how to run below commands once only
+  #- sudo usermod -a -G systemd-journal promtail
+  #- sudo setfacl -R -m u:promtail:rX /var/log
+  #- sudo setfacl -R -m d:u:promtail:rX /var/log
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.1/node_exporter-1.8.1.linux-amd64.tar.gz
@@ -96,6 +100,14 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/gramathea/etc/cockpit/cockpit.conf
     target: /etc/cockpit/cockpit.conf
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/gramathea/etc/promtail/config.yml
+    target: /etc/promtail/config.yml
+    command:
+      pre:
+        - systemctl is-active --quiet promtail.service && sudo systemctl stop promtail.service
+      post:
+        - sudo systemctl start promtail.service
   -
     source: https://dendreth.io/release/commitment-mapper
     target: /usr/local/bin/commitment-mapper
