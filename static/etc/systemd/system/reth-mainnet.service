@@ -7,7 +7,7 @@ User=reth
 Group=reth
 WorkingDirectory=/var/lib/reth/mainnet
 Type=simple
-ExecStartPre=bash -c 'openssl rand -hex 32 | tr -d "\n" > /tmp/reth-mainnet.jwt && chmod go+r /tmp/reth-mainnet.jwt'
+ExecStartPre=bash -c 'test -s /tmp/reth-mainnet.jwt || openssl rand -hex 32 | tr -d "\n" > /tmp/reth-mainnet.jwt && chmod go+r /tmp/reth-mainnet.jwt'
 ExecStart=/usr/local/bin/reth node \
     --datadir /var/lib/reth/mainnet \
     --chain mainnet \
@@ -24,9 +24,10 @@ ExecStart=/usr/local/bin/reth node \
     --ws.port 8546 \
     --authrpc.addr 127.0.0.1 \
     --authrpc.port 8551 \
-    --authrpc.jwtsecret /tmp/reth-mainnet.jwt
+    --authrpc.jwtsecret /tmp/reth-mainnet.jwt \
+    --color off
 Restart=always
 RestartSec=2
 
 [Install]
-WantedBy=multi-user.target
+WantedBy=multi-user.targets
