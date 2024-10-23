@@ -21,12 +21,14 @@ repository:
       sslverify=1
       sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 package:
+  - alloy
   - epel-release
   - certbot
   - dnf-automatic
   - git
   - grafana
   - jq
+  - loki
   - nginx
   - tar
 user:
