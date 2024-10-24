@@ -19,6 +19,7 @@ ExecStart=/usr/local/bin/nimbus_beacon_node \
     --metrics-address=0.0.0.0 \
     --metrics-port=8008 \
     --rest=true \
+    --rest-address=0.0.0.0 \
     --rest-port=5052 \
     --web3-url=http://127.0.0.1:8551 \
     --jwt-secret=/tmp/geth-mainnet.jwt
