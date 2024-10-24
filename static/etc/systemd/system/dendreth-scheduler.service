@@ -19,7 +19,7 @@ ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/tsc || npm insta
 ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/yarn || npm install --global yarn'
 ExecStartPre=-/bin/bash -c 'test -d /var/lib/dendreth/app/scheduler && git --git-dir=/var/lib/dendreth/app/scheduler/.git --work-tree=/var/lib/dendreth/app/scheduler pull origin diva-deployment'
 ExecStartPre=/bin/bash -c 'test -d /var/lib/dendreth/app/scheduler || git clone https://github.com/metacraft-labs/DendrETH.git --branch diva-deployment --single-branch /var/lib/dendreth/app/scheduler'
-ExecStartPre=/bin/bash -c 'cd /var/lib/dendreth/app/scheduler/beacon-light-client/plonky2/input_fetchers && yarn'
+ExecStartPre=-/bin/bash -c 'cd /var/lib/dendreth/app/scheduler/beacon-light-client/plonky2/input_fetchers && yarn'
 ExecStart=/bin/bash -c 'cd /var/lib/dendreth/app/scheduler/beacon-light-client/plonky2/input_fetchers && yarn node --import tsx validators_commitment_mapper/runnable/run_scheduler.ts --redis-host 127.0.0.1 --redis-port 6379 --take 20 --beacon-node https://lighthouse.dendreth.io https://nimbus.dendreth.io http://testing.mainnet.beacon-api.nimbus.team'
 Restart=always
 RestartSec=2
