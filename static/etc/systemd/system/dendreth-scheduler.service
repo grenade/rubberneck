@@ -14,7 +14,9 @@ WorkingDirectory=/var/lib/dendreth
 Type=simple
 ExecStartPre=/bin/bash -c 'mkdir -p /var/lib/dendreth/.local/bin'
 ExecStartPre=/bin/bash -c 'npm config set prefix /var/lib/dendreth/.local'
-ExecStartPre=/bin/bash -c 'npm install --global tsx typescript yarn'
+ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/tsx || npm install --global tsx'
+ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/tsc || npm install --global typescript'
+ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/yarn || npm install --global yarn'
 ExecStartPre=/bin/bash -c 'test -d /var/lib/dendreth/app/scheduler && git --git-dir=/var/lib/dendreth/app/scheduler/.git --work-tree=/var/lib/dendreth/app/scheduler pull origin diva-deployment'
 ExecStartPre=/bin/bash -c 'test -d /var/lib/dendreth/app/scheduler || git clone https://github.com/metacraft-labs/DendrETH.git --branch diva-deployment --single-branch /var/lib/dendreth/app/scheduler'
 ExecStartPre=/bin/bash -c 'cd /var/lib/dendreth/app/scheduler/beacon-light-client/plonky2/input_fetchers && yarn'
