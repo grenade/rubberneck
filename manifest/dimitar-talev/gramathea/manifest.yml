@@ -28,6 +28,7 @@ package:
   - git
   - ncurses-base
   - ncurses-compat-libs
+  - nodejs22
   - promtail
   - python3-pip
   - valkey
@@ -51,6 +52,7 @@ command:
   - systemctl is-enabled valkey.service || sudo systemctl enable valkey.service
   - systemctl is-active valkey.service || sudo systemctl restart valkey.service
   - systemctl is-active dendreth-commitment-mapper.service || sudo systemctl restart dendreth-commitment-mapper.service
+  - systemctl is-active dendreth-scheduler.service || sudo systemctl restart dendreth-scheduler.service
   # todo: figure out how to run below commands once only
   #- sudo usermod -a -G systemd-journal promtail
   #- sudo setfacl -R -m u:promtail:rX /var/log
@@ -133,3 +135,14 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled dendreth-commitment-mapper.service || sudo systemctl enable dendreth-commitment-mapper.service
         - systemctl is-active dendreth-commitment-mapper.service || sudo systemctl start dendreth-commitment-mapper.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/dendreth-scheduler.service
+    target: /etc/systemd/system/dendreth-scheduler.service
+    command:
+      pre:
+        - id dendreth || sudo useradd --system --create-home --home-dir /var/lib/dendreth --user-group dendreth
+        - systemctl is-active --quiet dendreth-scheduler.service && sudo systemctl stop dendreth-scheduler.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled dendreth-scheduler.service || sudo systemctl enable dendreth-scheduler.service
+        - systemctl is-active dendreth-scheduler.service || sudo systemctl start dendreth-scheduler.service
