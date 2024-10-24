@@ -137,6 +137,17 @@ file:
         - systemctl is-enabled dendreth-commitment-mapper.service || sudo systemctl enable dendreth-commitment-mapper.service
         - systemctl is-active dendreth-commitment-mapper.service || sudo systemctl start dendreth-commitment-mapper.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/dendreth-balance-aggregator.service
+    target: /etc/systemd/system/dendreth-balance-aggregator.service
+    command:
+      pre:
+        - id dendreth || sudo useradd --system --create-home --home-dir /var/lib/dendreth --user-group dendreth
+        - systemctl is-active --quiet dendreth-balance-aggregator.service && sudo systemctl stop dendreth-balance-aggregator.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled dendreth-balance-aggregator.service || sudo systemctl enable dendreth-balance-aggregator.service
+        - systemctl is-active dendreth-balance-aggregator.service || sudo systemctl start dendreth-balance-aggregator.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/dendreth-diva-scheduler.service
     target: /etc/systemd/system/dendreth-diva-scheduler.service
     command:

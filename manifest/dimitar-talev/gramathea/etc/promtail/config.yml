@@ -19,7 +19,7 @@ scrape_configs:
         action: keep
         source_labels:
           - __journal__systemd_unit
-        regex: dendreth-(commitment-mapper|diva-scheduler|scheduler).service
+        regex: dendreth-(commitment-mapper|balance-aggregator|diva-scheduler|scheduler).service
       -
         source_labels:
           - __journal__systemd_unit
