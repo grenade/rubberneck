@@ -646,7 +646,8 @@ file:
           --dns-cloudflare-credentials /root/.cloudflare/dendreth.io
           --dns-cloudflare-propagation-seconds 60
           -d dendreth.io
-          -d beacon.dendreth.io
+          -d lighthouse.dendreth.io
+          -d nimbus.dendreth.io
       post:
         - sudo ln -sfr /etc/nginx/sites-available/dendreth.io.conf /etc/nginx/sites-enabled/dendreth.io.conf
         - sudo systemctl restart nginx.service

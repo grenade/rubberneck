@@ -6,6 +6,21 @@ ssh:
   port: 52229
 os:
   name: fedora
+repository:
+  -
+    name: grafana
+    key:
+      url: https://rpm.grafana.com/gpg.key
+    list: |
+      [grafana]
+      name=grafana
+      baseurl=https://rpm.grafana.com
+      repo_gpgcheck=1
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://rpm.grafana.com/gpg.key
+      sslverify=1
+      sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 package:
   - cockpit-pcp
   - curl
@@ -13,6 +28,7 @@ package:
   - git
   - ncurses-base
   - ncurses-compat-libs
+  - promtail
   - python3-pip
 user:
   -
@@ -24,7 +40,7 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
 firewall:
   port:
-    - 5052/tcp
+    - 5052/tcp # nimbus beacon rest api
     - 8008/tcp
     - 8551/tcp
     - 6060/tcp
@@ -116,6 +132,24 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/bob/etc/cockpit/cockpit.conf
     target: /etc/cockpit/cockpit.conf
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/bob/etc/promtail/config.yml
+    target: /etc/promtail/config.yml
+    command:
+      pre:
+        - systemctl is-active --quiet promtail.service && sudo systemctl stop promtail.service
+      post:
+        - sudo systemctl start promtail.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/promtail.service
+    target: /etc/systemd/system/promtail.service
+    command:
+      pre:
+        - systemctl is-active --quiet promtail.service && sudo systemctl stop promtail.service
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled promtail.service || sudo systemctl enable promtail.service
+        - sudo systemctl start promtail.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/geth-mainnet.service
     target: /etc/systemd/system/geth-mainnet.service
