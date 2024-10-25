@@ -17,9 +17,8 @@ ExecStartPre=/bin/bash -c 'npm config set prefix /var/lib/dendreth/.local'
 ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/tsx || npm install --global tsx'
 ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/tsc || npm install --global typescript'
 ExecStartPre=/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/yarn || npm install --global yarn'
-ExecStartPre=-/bin/bash -c 'test -d /var/lib/dendreth/app/diva-scheduler && git --git-dir=/var/lib/dendreth/app/diva-scheduler/.git --work-tree=/var/lib/dendreth/app/diva-scheduler pull origin diva-deployment'
-ExecStartPre=/bin/bash -c 'test -d /var/lib/dendreth/app/diva-scheduler || git clone https://github.com/metacraft-labs/DendrETH.git --branch diva-deployment --single-branch /var/lib/dendreth/app/diva-scheduler'
-ExecStartPre=-/bin/bash -c 'cd /var/lib/dendreth/app/diva-scheduler/beacon-light-client/plonky2/input_fetchers && yarn'
+ExecStartPre=-/bin/bash -c 'test -x /var/lib/dendreth/.local/bin/git-clone-or-update-branch.sh || curl --fail --silent --location --output /var/lib/dendreth/.local/bin/git-clone-or-update-branch.sh --url https://raw.githubusercontent.com/grenade/rubberneck/main/script/git-clone-or-update-branch.sh && chmod +x /var/lib/dendreth/.local/bin/git-clone-or-update-branch.sh'
+ExecStartPre=-/bin/bash -c '/var/lib/dendreth/.local/bin/git-clone-or-update-branch.sh https://github.com/metacraft-labs/DendrETH.git /var/lib/dendreth/app/diva-scheduler diva-deployment || ( cd /var/lib/dendreth/app/diva-scheduler/beacon-light-client/plonky2/input_fetchers && yarn )'
 ExecStart=/bin/bash -c 'cd /var/lib/dendreth/app/diva-scheduler/beacon-light-client/plonky2/input_fetchers && yarn node --import tsx balance_verification/deposits_accumulator/runnable/run_pubkey_commitment_mapper_scheduler.ts --protocol diva --contract-address 0xb4B46bdAA835F8E4b4d8e208B6559cD267851051 --json-rpc http://10.0.9.105:8545'
 Restart=always
 RestartSec=2
