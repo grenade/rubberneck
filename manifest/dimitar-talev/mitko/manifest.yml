@@ -240,6 +240,30 @@ file:
         - sudo ln -sfr /etc/nginx/sites-available/allitnils.thgttg.com.conf /etc/nginx/sites-enabled/allitnils.thgttg.com.conf
         - sudo systemctl restart nginx.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/blart.thgttg.com.conf
+    target: /etc/nginx/sites-available/blart.thgttg.com.conf
+    command:
+      pre:
+        - >
+          sudo certbot certonly
+          -m ops@thgttg.com
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name blart.thgttg.com
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/thgttg.com
+          --dns-cloudflare-propagation-seconds 60
+          -d blart.thgttg.com
+          -d cockpit.blart.thgttg.com
+          -d ilo.blart.thgttg.com
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/blart.thgttg.com.conf /etc/nginx/sites-enabled/blart.thgttg.com.conf
+        - sudo systemctl restart nginx.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/colin.thgttg.com.conf
     target: /etc/nginx/sites-available/colin.thgttg.com.conf
     command:
