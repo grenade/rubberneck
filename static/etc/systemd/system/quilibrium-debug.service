@@ -1,0 +1,28 @@
+[Unit]
+Description=quilibrium node
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/var/lib/quilibrium/.node
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.1
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.3
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.4
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.5
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.7
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.8
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.13
+
+[Service]
+Type=simple
+User=quilibrium
+Group=quilibrium
+WorkingDirectory=/var/lib/quilibrium/.node
+ExecStart=/var/lib/quilibrium/.local/bin/quilibrium \
+    --config /var/lib/quilibrium/.node \
+    --debug true
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
