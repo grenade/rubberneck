@@ -99,9 +99,16 @@ file:
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
         - sudo systemctl start quilibrium.service
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64
-    target: /var/lib/quilibrium/.local/bin/quilibrium
-    sha256: 2651e573ef7fd4003bf55390f351155f61e83df18aef5d9da07b972b80266062
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/sysctl.d/90-quilibrium.conf
+    target: /etc/sysctl.d/90-quilibrium.conf
+    command:
+      post:
+        - sudo sysctl -w net.core.rmem_max=4194304
+        - sudo sysctl -w net.core.wmem_max=4194304
+  -
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64
+    sha256: 1839566969564c1fdaf24416d98e920e43e4479742f0e4f6ce266a91684903d8
     chown: quilibrium:quilibrium
     chmod: '+x'
     command:
@@ -115,51 +122,44 @@ file:
         - sudo chcon -Rv -u system_u -t bin_t /var/lib/quilibrium/.local/bin/quilibrium
         - sudo systemctl daemon-reload
         - systemctl is-enabled quilibrium.service || sudo systemctl enable quilibrium.service
-          sudo systemctl start quilibrium.service
+        - sudo systemctl start quilibrium.service
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst
-    sha256: b935f10bd291e05f01cfe0568928c265bd81fcee19e7f59bbf63ae4aa75570a5
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst
+    sha256: 9523db443f422b957ad769f24dc14122dae6a77ee559168070adccdb21c71992
     chown: quilibrium:quilibrium
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst.sig.1
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.1
-    sha256: 9bc52e31b26a3b598130a8b5292cd060c8df173443e36a7dcf1bd1a785c905f3
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst.sig.1
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst.sig.1
+    sha256: df70d7ce96cc345ce3a629d0e5a7e270e22c00bd8cfccc69993bdbd52a74382d
     chown: quilibrium:quilibrium
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst.sig.2
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.2
-    sha256: 9f039c86f0ecca36875be61463a968da717e4ceb91995cd33d4efa86ee8535b7
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst.sig.2
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst.sig.2
+    sha256: 6e8c4780d674fe328ae4d1ae673f30441e1c250664b02d7c4a3069452034007a
     chown: quilibrium:quilibrium
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst.sig.3
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.3
-    sha256: 93bfe43996dda2e2d342b8ed9212742b248dc9a6be73eccbc4890f6aaf7f2e13
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst.sig.4
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst.sig.4
+    sha256: 10dfa5357f75616bb732f33ff9069a2ec7ae74728da1e228f566368f1368536f
     chown: quilibrium:quilibrium
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst.sig.4
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.4
-    sha256: cbe542468cca61d709582fc5964b42d54e8ee980b257fd9b8024a3b8218fecbf
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst.sig.5
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst.sig.5
+    sha256: 46f9fcd2af958ad7d5ceccc6d4ca9083aafb580d538b55800972208f24f10c1d
     chown: quilibrium:quilibrium
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst.sig.5
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.5
-    sha256: de083f6e55b34f97658f23f0dd83be5317e82ae8606778e5f348bf798bf3db8e
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst.sig.7
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst.sig.7
+    sha256: dfcec9ffe34377b97cc6a6f78ee6982c42ee8722d4e0d36b084ba3c3fb677702
     chown: quilibrium:quilibrium
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst.sig.7
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.7
-    sha256: 5e96264154fc14559e35a92e8cbf48119b680d889a69d8852dbc959221974134
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst.sig.8
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst.sig.8
+    sha256: ce85f3c17e052bbe814e7e7969bf76333ee28bc6d518c94de7bd17498c97b888
     chown: quilibrium:quilibrium
   -
-    source: https://releases.quilibrium.com/node-2.0.3-linux-amd64.dgst.sig.13
-    target: /var/lib/quilibrium/.local/bin/quilibrium.dgst.sig.13
-    sha256: d5720e05afb2ff678100d5732c5aafa310e039cb7d37f24c4f298a6637f031cf
+    source: https://releases.quilibrium.com/node-2.0.3.1-linux-amd64.dgst.sig.13
+    target: /var/lib/quilibrium/.local/bin/node-2.0.3.1-linux-amd64.dgst.sig.13
+    sha256: e7e843b18c8571dc09ec91a4a961b82bceda23fbd4d0d8d66c5b63a28e53f1d4
     chown: quilibrium:quilibrium
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/sysctl.d/90-quilibrium.conf
-    target: /etc/sysctl.d/90-quilibrium.conf
-    command:
-      post:
-        - sudo sysctl -w net.core.rmem_max=4194304
-        - sudo sysctl -w net.core.wmem_max=4194304
