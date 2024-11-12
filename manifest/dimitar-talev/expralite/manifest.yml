@@ -27,6 +27,7 @@ package:
   - dnf-automatic
   - git
   - influxdb2
+  - lshw
   - ncurses-base
   - ncurses-compat-libs
   - python3-pip
@@ -40,7 +41,8 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
 firewall:
   port:
-    - 9100/tcp
+    - 8086/tcp # influxdb http api
+    - 9100/tcp # prometheus node metrics
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
