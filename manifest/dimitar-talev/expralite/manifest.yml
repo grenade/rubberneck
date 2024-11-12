@@ -75,6 +75,14 @@ archive:
         source: PerformanceTest/pt_linux_x64
         target: /usr/local/bin/pt_linux_x64
         sha256: 0005b5400852aa0a84886310a0e780665c319cbf16f701062911574ba8886052
+  -
+    source: https://download.influxdata.com/influxdb/releases/influxdb2-client-2.7.5-linux-amd64.tar.gz
+    target: /tmp/influxdb2-client-2.7.5-linux-amd64.tar.gz
+    sha256: 496dffcd70bed2bb3dc3d614e3d9c97e312e092dfe0577d332027566bbb7d8cd
+      -
+        source: influx
+        target: /usr/local/bin/influx
+        sha256: d92421584132219500587f364794249dde338fccd0ac8e4a06dfdd5d5997c89e
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
