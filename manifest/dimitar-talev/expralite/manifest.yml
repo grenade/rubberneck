@@ -15,7 +15,6 @@ repository:
       [influxdata]
       name=influxdata
       baseurl=https://repos.influxdata.com/stable/${basearch}/main
-      repo_gpgcheck=1
       enabled=1
       gpgcheck=1
       gpgkey=https://repos.influxdata.com/influxdata-archive.key
