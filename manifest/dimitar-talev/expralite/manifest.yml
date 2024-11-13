@@ -81,7 +81,7 @@ archive:
     sha256: 496dffcd70bed2bb3dc3d614e3d9c97e312e092dfe0577d332027566bbb7d8cd
     extract:
       -
-        source: influx
+        source: ./influx
         target: /usr/local/bin/influx
         sha256: d92421584132219500587f364794249dde338fccd0ac8e4a06dfdd5d5997c89e
 file:
