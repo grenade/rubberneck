@@ -79,6 +79,7 @@ archive:
     source: https://download.influxdata.com/influxdb/releases/influxdb2-client-2.7.5-linux-amd64.tar.gz
     target: /tmp/influxdb2-client-2.7.5-linux-amd64.tar.gz
     sha256: 496dffcd70bed2bb3dc3d614e3d9c97e312e092dfe0577d332027566bbb7d8cd
+    extract:
       -
         source: influx
         target: /usr/local/bin/influx
