@@ -677,3 +677,26 @@ file:
       post:
         - sudo ln -sfr /etc/nginx/sites-available/dendreth.io.conf /etc/nginx/sites-enabled/dendreth.io.conf
         - sudo systemctl restart nginx.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/dimitar-talev/mitko/etc/nginx/sites-available/qbtc.zone.conf
+    target: /etc/nginx/sites-available/qbtc.zone.conf
+    command:
+      pre:
+        - sudo mkdir -p /var/lib/qbtc/release
+        - >
+          sudo certbot certonly
+          -m ops@qbtc.zone
+          --agree-tos
+          --no-eff-email
+          --noninteractive
+          --cert-name qbtc.zone
+          --expand
+          --allow-subset-of-names
+          --key-type ecdsa
+          --dns-cloudflare
+          --dns-cloudflare-credentials /root/.cloudflare/qbtc.zone
+          --dns-cloudflare-propagation-seconds 60
+          -d qbtc.zone
+      post:
+        - sudo ln -sfr /etc/nginx/sites-available/qbtc.zone.conf /etc/nginx/sites-enabled/qbtc.zone.conf
+        - sudo systemctl restart nginx.service
