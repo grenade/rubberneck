@@ -2,14 +2,14 @@
 Description=qbtc node
 Wants=network-online.target
 After=network-online.target
-ConditionPathExists=/usr/local/bin/qbtc
+ConditionPathExists=/usr/local/bin/qbtcd
 
 [Service]
 Type=simple
 User=qbtc
 Group=qbtc
 WorkingDirectory=/var/lib/qbtc
-ExecStart=/usr/local/bin/qbtc \
+ExecStart=/usr/local/bin/qbtcd \
     --config /var/lib/qbtc/.node
 Restart=always
 RestartSec=3
