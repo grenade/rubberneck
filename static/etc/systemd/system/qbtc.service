@@ -12,8 +12,8 @@ WorkingDirectory=/var/lib/qbtc
 ExecStart=/usr/local/bin/qbtcd \
     --testnet \
     --datadir /var/lib/qbtc \
-    --listen 0.0.0.0:8333 \
-    --addpeer 10.0.9.104:8333 \
+    --listen 0.0.0.0:18333 \
+    --addpeer 10.0.9.104:18333 \
     --maxpeers 125 \
     --banthreshold 100 \
     --banduration=24h \
