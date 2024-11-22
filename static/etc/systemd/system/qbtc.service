@@ -10,7 +10,14 @@ User=qbtc
 Group=qbtc
 WorkingDirectory=/var/lib/qbtc
 ExecStart=/usr/local/bin/qbtcd \
-    --config /var/lib/qbtc/.node
+    --testnet \
+    --datadir /var/lib/qbtc \
+    --listen 0.0.0.0:8333 \
+    --addpeer 10.0.9.104:8333 \
+    --maxpeers 125 \
+    --banthreshold 100 \
+    --banduration=24h \
+    --whitelist 10.0.9.0/24
 Restart=always
 RestartSec=3
 
