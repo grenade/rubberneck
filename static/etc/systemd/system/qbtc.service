@@ -16,7 +16,7 @@ ExecStart=/usr/local/bin/qbtcd \
     --addpeer 10.0.9.104:18333 \
     --maxpeers 125 \
     --banthreshold 100 \
-    --banduration=24h \
+    --banduration 24h \
     --whitelist 10.0.9.0/24
 Restart=always
 RestartSec=3
