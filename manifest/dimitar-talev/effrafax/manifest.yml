@@ -15,6 +15,7 @@ package:
   - ncurses-base
   - ncurses-compat-libs
   - python3-pip
+  - rsyslog-gnutls
 user:
   -
     username: grenade
@@ -82,6 +83,7 @@ file:
     target: /etc/systemd/system/qbtc.service
     command:
       pre:
+        - id qbtc || sudo useradd --system --create-home --home-dir /var/lib/qbtc --user-group qbtc
         - systemctl is-active --quiet qbtc.service && sudo systemctl stop qbtc.service
       post:
         - sudo systemctl daemon-reload
@@ -90,9 +92,18 @@ file:
   -
     source: https://qbtc.zone/release/qbtcd
     target: /usr/local/bin/qbtcd
-    sha256: 76a42a1ec72644a3926f660122d613f4e594ec693ac19cfa1241834d341e013e
+    sha256: 32c38ef94c2bb43b2f158a02017a24c2813c31d9defa18a8a13990915f8e66c6
     command:
       pre:
         - systemctl is-active --quiet qbtc.service && sudo systemctl stop qbtc.service
       post:
         - sudo systemctl start qbtc.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/papertrail/papertrail-bundle.pem
+    target: /etc/papertrail/papertrail-bundle.pem
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/rsyslog.d/papertrail.conf
+    target: /etc/rsyslog.d/papertrail.conf
+    command:
+      post:
+        - sudo systemctl reload rsyslog.service
