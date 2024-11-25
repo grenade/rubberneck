@@ -31,9 +31,10 @@ for remote_artifact in ${remote_artifacts[@]}; do
             echo "auto-updater: failed to download ${local_artifact_path} from ${remote_artifact_url}"
         fi
     fi
+    sudo -u ${quilibrium_user} /usr/bin/ln -sfr ${local_artifact_path} ${local_artifact_link}
     if [ "${remote_artifact}" = "node-${latest_version}-linux-amd64" ] && [ ! -x ${local_artifact_path} ]; then
         chmod +x ${local_artifact_path}
         chcon -Rv -u system_u -t bin_t ${local_artifact_path}
+        chcon -Rv -u system_u -t bin_t ${local_artifact_link}
     fi
-    sudo -u ${quilibrium_user} /usr/bin/ln -sfr ${local_artifact_path} ${local_artifact_link}
 done
