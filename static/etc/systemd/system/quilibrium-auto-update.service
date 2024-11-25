@@ -1,0 +1,28 @@
+[Unit]
+Description=quilibrium node
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/var/lib/quilibrium/.node
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium
+ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst
+
+[Service]
+Type=simple
+User=quilibrium
+Group=quilibrium
+WorkingDirectory=/var/lib/quilibrium/.node
+ExecStartPre=+/usr/bin/curl \
+    --fail \
+    --silent \
+    --location \
+    --output /usr/local/bin/quilibrium-self-upgrade.sh \
+    --url https://raw.githubusercontent.com/grenade/rubberneck/main/script/quilibrium-self-upgrade.sh
+ExecStartPre=+/usr/bin/chmod +x /usr/local/bin/quilibrium-self-upgrade.sh
+ExecStartPre=+/usr/local/bin/quilibrium-self-upgrade.sh
+ExecStart=/var/lib/quilibrium/.local/bin/quilibrium \
+    --config /var/lib/quilibrium/.node
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
