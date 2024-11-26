@@ -15,6 +15,7 @@ ExecStart=/usr/local/bin/qbtcd \
     --listen 0.0.0.0:11334 \
     --addpeer 10.0.9.104:11334 \
     --addpeer 10.0.9.106:11334 \
+    --addpeer 10.0.9.130:11334 \
     --addpeer 10.0.9.131:11334 \
     --maxpeers 125 \
     --banthreshold 100 \
