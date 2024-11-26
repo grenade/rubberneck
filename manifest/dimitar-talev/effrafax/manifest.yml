@@ -40,9 +40,15 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPRO2rPB5URKyMSGeMwFd9Npzl/XywJWO9F2N/xylCVm
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGILqCEkUGPF3c+riHfLtkpsSP3nw/HjQUvTs66JsZ6a
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIBUKD/88J7TtZdFiRTtCBtez8PwbCVQhKvJcwk5CtU7k
+  -
+    username: illuzen
+    authorized:
+      keys:
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQECYM1EUmvtmjbe0nVgh+gkL6676TjSNRmq7AFlf2h
 firewall:
   port:
     - 9100/tcp
+    - 11334/tcp
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
@@ -114,6 +120,18 @@ file:
         - systemctl is-enabled promtail.service || sudo systemctl enable promtail.service
         - sudo systemctl start promtail.service
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/papertrail/papertrail-bundle.pem
+    target: /etc/papertrail/papertrail-bundle.pem
+    command:
+      pre:
+        - sudo mkdir -p /etc/papertrail
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/rsyslog.d/papertrail.conf
+    target: /etc/rsyslog.d/papertrail.conf
+    command:
+      post:
+        - sudo systemctl reload rsyslog.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/qbtc.service
     target: /etc/systemd/system/qbtc.service
     command:
@@ -133,15 +151,3 @@ file:
         - systemctl is-active --quiet qbtc.service && sudo systemctl stop qbtc.service
       post:
         - sudo systemctl start qbtc.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/papertrail/papertrail-bundle.pem
-    target: /etc/papertrail/papertrail-bundle.pem
-    command:
-      pre:
-        - sudo mkdir -p /etc/papertrail
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/rsyslog.d/papertrail.conf
-    target: /etc/rsyslog.d/papertrail.conf
-    command:
-      post:
-        - sudo systemctl reload rsyslog.service
