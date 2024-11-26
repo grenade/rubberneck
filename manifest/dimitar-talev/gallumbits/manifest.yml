@@ -30,6 +30,7 @@ package:
   - ncurses-compat-libs
   - promtail
   - python3-pip
+  - rsyslog-gnutls
 user:
   -
     username: grenade
@@ -45,14 +46,15 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQECYM1EUmvtmjbe0nVgh+gkL6676TjSNRmq7AFlf2h
 firewall:
   port:
-    - 9100/tcp
-    - 11334/tcp
+    - 9100/tcp # prometheus node metrics
+    - 11334/tcp # (qbtc) qtestnet
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/yq || sudo pip install yq
   - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
+  - systemctl is-active qbtc.service || sudo systemctl restart qbtc.service
   - sudo semanage port -a -t syslogd_port_t -p tcp 32755
 archive:
   -
@@ -138,6 +140,7 @@ file:
       pre:
         - systemctl is-active --quiet qbtc.service && sudo systemctl stop qbtc.service
       post:
+        - sudo chmod +x /usr/local/bin/qbtcd
         - sudo systemctl start qbtc.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/sysctl.d/90-xx.conf
