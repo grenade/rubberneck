@@ -135,7 +135,7 @@ file:
   -
     source: https://qbtc.zone/release/qbtcd
     target: /usr/local/bin/qbtcd
-    sha256: 32c38ef94c2bb43b2f158a02017a24c2813c31d9defa18a8a13990915f8e66c6
+    sha256: 90f12e857976b70287b5a14b653a39476640280dd7229cd785ce1b8a241488ec
     command:
       pre:
         - systemctl is-active --quiet qbtc.service && sudo systemctl stop qbtc.service
