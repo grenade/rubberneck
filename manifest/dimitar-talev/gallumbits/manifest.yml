@@ -22,7 +22,6 @@ repository:
       sslverify=1
       sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 package:
-  - cockpit-pcp
   - curl
   - dnf-automatic
   - git
