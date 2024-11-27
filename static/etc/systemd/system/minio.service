@@ -1,0 +1,19 @@
+[Unit]
+Description=minio
+Wants=network-online.target
+After=network-online.target
+ConditionPathExists=/usr/local/bin/minio
+
+[Service]
+Type=simple
+User=minio
+Group=minio
+WorkingDirectory=/var/lib/minio
+ExecStart=/usr/local/bin/minio \
+    server \
+    /var/lib/minio
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

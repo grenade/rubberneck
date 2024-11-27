@@ -241,3 +241,23 @@ file:
   #      - sudo -u celestia mkdir -p /var/lib/celestia/.celestia-app/config
   #    post:
   #      - systemctl is-active --quiet celestia-archive.service && sudo systemctl restart celestia-archive.service
+  -
+    source: https://dl.min.io/server/minio/release/linux-amd64/minio
+    target: /usr/local/bin/minio
+    chmod: '+x'
+    command:
+      pre:
+        - systemctl is-active --quiet minio.service && sudo systemctl stop minio.service
+      post:
+        - sudo systemctl start minio.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/minio.service
+    target: /etc/systemd/system/minio.service
+    command:
+      pre:
+        - systemctl is-active --quiet minio.service && sudo systemctl stop minio.service
+        - id minio || sudo useradd --system --create-home --home-dir /var/lib/minio --user-group minio
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled minio.service || sudo systemctl enable minio.service
+        - sudo systemctl start minio.service
