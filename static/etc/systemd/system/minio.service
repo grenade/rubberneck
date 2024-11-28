@@ -13,6 +13,8 @@ EnvironmentFile=/etc/minio/.env
 WorkingDirectory=/var/lib/minio
 ExecStart=/usr/local/bin/minio \
     server \
+    --address '0.0.0.0:35734' \
+    --console-address '0.0.0.0:35733' \
     /var/lib/minio
 Restart=always
 RestartSec=3

@@ -54,6 +54,8 @@ firewall:
     #- 2121/tcp
     #- 2121/udp
     - 9100/tcp # prometheus node metrics
+    - 35734/tcp # minio api
+    - 35733/tcp # minio webui
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
