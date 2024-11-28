@@ -34,7 +34,14 @@ for remote_artifact in ${remote_artifacts[@]}; do
     sudo -u ${quilibrium_user} /usr/bin/ln -sfr ${local_artifact_path} ${local_artifact_link}
     if [ "${remote_artifact}" = "node-${latest_version}-linux-amd64" ] && [ ! -x ${local_artifact_path} ]; then
         chmod +x ${local_artifact_path}
-        chcon -Rv -u system_u -t bin_t ${local_artifact_path}
-        chcon -Rv -u system_u -t bin_t ${local_artifact_link}
+        semanage fcontext -a -t bin_t ${local_artifact_path}
+        chcon -v -u system_u -t bin_t ${local_artifact_path}
+        semanage fcontext -a -t bin_t ${local_artifact_link}
+        chcon -v -u system_u -t bin_t ${local_artifact_link}
+    else
+        semanage fcontext -a -t var_lib_t ${local_artifact_path}
+        chcon -v -u system_u -t var_lib_t ${local_artifact_path}
+        semanage fcontext -a -t var_lib_t ${local_artifact_link}
+        chcon -v -u system_u -t var_lib_t ${local_artifact_link}
     fi
 done
