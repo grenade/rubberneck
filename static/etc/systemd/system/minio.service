@@ -2,12 +2,14 @@
 Description=minio
 Wants=network-online.target
 After=network-online.target
+ConditionPathExists=/etc/minio/.env
 ConditionPathExists=/usr/local/bin/minio
 
 [Service]
 Type=simple
 User=minio
 Group=minio
+EnvironmentFile=/etc/minio/.env
 WorkingDirectory=/var/lib/minio
 ExecStart=/usr/local/bin/minio \
     server \
