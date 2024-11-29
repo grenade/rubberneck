@@ -8,15 +8,19 @@ fi
 #sudo setenforce 0
 #sudo setenforce 1
 #sudo systemctl stop quilibrium.service
+
+quilibrium_home=/var/lib/quilibrium
+quilibrium_user=quilibrium
+
 for sig in ${quilibrium_home}/.local/bin/quilibrium.dgst.sig.{1..20}; do
     if sudo -u ${quilibrium_user} test -e ${sig}; then
         sudo -u ${quilibrium_user} rm ${sig};
     fi
 done;
-quilibrium_home=/var/lib/quilibrium
-quilibrium_user=quilibrium
+
 remote_artifacts=($(curl -sL https://releases.quilibrium.com/release | grep linux-amd64))
 latest_version=$(echo ${remote_artifacts[0]} | cut -d \- -f 2)
+
 for remote_artifact in ${remote_artifacts[@]}; do
     remote_artifact_url=https://releases.quilibrium.com/${remote_artifact}
     local_artifact_path=${quilibrium_home}/.local/bin/${remote_artifact}
