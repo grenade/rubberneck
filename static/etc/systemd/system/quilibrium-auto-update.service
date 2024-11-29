@@ -10,6 +10,7 @@ ConditionPathExists=/var/lib/quilibrium/.local/bin/quilibrium.dgst
 Type=simple
 User=quilibrium
 Group=quilibrium
+TimeoutStartSec=300
 WorkingDirectory=/var/lib/quilibrium/.node
 ExecStartPre=+/usr/bin/curl \
     --fail \
