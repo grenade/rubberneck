@@ -38,12 +38,8 @@ else
   exit 1
 fi
 
-ops_username=grenade
-if [ "$(hostname -s)" = "kavula" ]; then
-  ops_private_key=${HOME}/.ssh/id_${ops_username}
-else
-  ops_private_key=${HOME}/.ssh/id_ed25519
-fi
+ops_username=$(whoami)
+ops_private_key=${HOME}/.ssh/id_${ops_username}
 
 curl \
   --silent \

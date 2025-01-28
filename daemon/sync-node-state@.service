@@ -1,0 +1,19 @@
+[Unit]
+Description=sync node state %i
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=%i
+Group=%i
+Environment=HOME=/var/lib/%i
+Environment=intent_list=%i
+ExecStartPre=curl -sLo /usr/local/bin/sync-node-state-%i.sh https://raw.githubusercontent.com/grenade/rubberneck/main/daemon/sync-node-state.sh
+ExecStartPre=chmod +x /usr/local/bin/sync-node-state-%i.sh
+ExecStart=/usr/local/bin/sync-node-state-%i.sh
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
