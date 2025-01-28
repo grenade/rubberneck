@@ -183,7 +183,7 @@ for intent in ${intents[@]}; do
 
       if [[ ${dnf_os[@]} =~ ${os} ]]; then
         package_manager=dnf
-        package_verifier='dnf list installed'
+        package_verifier='dnf list --installed'
         repo_list_path=/etc/yum.repos.d
         repo_list_ext=repo
       elif [[ ${apt_os[@]} =~ ${os} ]]; then
