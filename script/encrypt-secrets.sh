@@ -8,9 +8,25 @@ targets+=( ${repo_path}/manifest/dimitar-talev/quordlepleen/var/lib/quilibrium/.
 targets+=( ${repo_path}/manifest/dimitar-talev/frootmig/etc/monero/monerod.conf )
 targets+=( ${repo_path}/manifest/dimitar-talev/mitko/etc/xmrig-proxy/config.json )
 targets+=( ${repo_path}/static/etc/xmrig/config.json )
+targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-qbtc-dev-ubuntu-rust.toml )
+targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-ci.toml )
+targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-infra.toml )
+targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-ci.toml )
+targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-infra.toml )
+targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-rust.toml )
 
 for target in ${targets[@]}; do
     if [ -s ${target} ]; then
+        #case "${target}" in
+        #    ${repo_path}/manifest/resonance/*)
+        #        # resonance
+        #        recipient=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+        #        ;;
+        #    *)
+        #        # kavula
+        #        recipient=872E0C00FDC2E9CE9AD7509285F3DBFFC1A8E01B
+        #        ;;
+        #esac
         observed_sha256=$(sha256sum ${target} | cut -d ' ' -f 1 | tee ${target}.sha256)
         encrypted_sha256=$(cat ${target}.gpg.sha256 2> /dev/null)
         if [ -s ${target}.gpg ] && [ "${observed_sha256}" = "${encrypted_sha256}" ]; then
