@@ -104,14 +104,20 @@ file:
     target: /etc/systemd/system/gitlab-runner@.service
     command:
       pre:
+        - systemctl is-active gitlab-runner.service && sudo systemctl stop gitlab-runner.service
+        - systemctl is-enabled gitlab-runner.service && sudo systemctl disable gitlab-runner.service
         - sudo systemctl stop 'gitlab-runner@*.service'
       post:
         - sudo systemctl daemon-reload
+        - sudo -u gitlab-runner mkdir -p /var/lib/gitlab-runner/resonance-fedora-ci
         - systemctl is-enabled gitlab-runner@resonance-fedora-ci.service || sudo systemctl enable gitlab-runner@resonance-fedora-ci.service
-        - systemctl is-active gitlab-runner@resonance-fedora-ci.service || sudo systemctl start gitlab-runner@resonance-fedora-ci.service
+        - sudo systemctl start gitlab-runner@resonance-fedora-ci.service
+        - sudo -u gitlab-runner mkdir -p /var/lib/gitlab-runner/resonance-fedora-infra
         - systemctl is-enabled gitlab-runner@resonance-fedora-infra.service || sudo systemctl enable gitlab-runner@resonance-fedora-infra.service
-        - systemctl is-active gitlab-runner@resonance-fedora-infra.service || sudo systemctl start gitlab-runner@resonance-fedora-infra.service
+        - sudo systemctl start gitlab-runner@resonance-fedora-infra.service
+        - sudo -u gitlab-runner mkdir -p /var/lib/gitlab-runner/resonance-ubuntu-ci
         - systemctl is-enabled gitlab-runner@resonance-ubuntu-ci.service || sudo systemctl enable gitlab-runner@resonance-ubuntu-ci.service
-        - systemctl is-active gitlab-runner@resonance-ubuntu-ci.service || sudo systemctl start gitlab-runner@resonance-ubuntu-ci.service
+        - sudo systemctl start gitlab-runner@resonance-ubuntu-ci.service
+        - sudo -u gitlab-runner mkdir -p /var/lib/gitlab-runner/resonance-ubuntu-infra
         - systemctl is-enabled gitlab-runner@resonance-ubuntu-infra.service || sudo systemctl enable gitlab-runner@resonance-ubuntu-infra.service
-        - systemctl is-active gitlab-runner@resonance-ubuntu-infra.service || sudo systemctl start gitlab-runner@resonance-ubuntu-infra.service
+        - sudo systemctl start gitlab-runner@resonance-ubuntu-infra.service

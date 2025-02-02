@@ -2,14 +2,13 @@
 Description=gitlab runner %i
 ConditionFileIsExecutable=/usr/local/bin/gitlab-runner
 ConditionPathExists=/etc/gitlab-runner/config-%i.toml
+ConditionPathIsDirectory=/var/lib/gitlab-runner/%i
 After=network.target 
 
 [Service]
 StartLimitInterval=5
 StartLimitBurst=10
 EnvironmentFile=-/etc/sysconfig/gitlab-runner
-ExecStartPre=mkdir -p /var/lib/gitlab-runner/%i
-ExecStartPre=chown -R gitlab-runner:gitlab-runner /var/lib/gitlab-runner/%i
 ExecStart=/usr/local/bin/gitlab-runner \
     run \
     --config /etc/gitlab-runner/config-%i.toml \
