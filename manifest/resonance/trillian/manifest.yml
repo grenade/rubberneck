@@ -82,22 +82,27 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-ci.toml.gpg
     target: /etc/gitlab-runner/config-resonance-fedora-ci.toml
-    sha256: 43de51339609abb8a24a103d6c97cb9f5e1476acaf840f3666fd7af5d009333c
+    sha256: 0140d44b5a3812c3ca7f7abc4a7ee8d7853a75768f0b319f2cdcd26dc663bb3f
     chmod: 600
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-infra.toml.gpg
     target: /etc/gitlab-runner/config-resonance-fedora-infra.toml
-    sha256: 115217d07c3e2089a68d5ccafaab150c845a10e3d8474e82f10db809a29f06f6
+    sha256: 7a6dfec68617a23f962d5eb3bc8a16cd007ef836552667b9c443b1775e7a681e
     chmod: 600
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-ci.toml.gpg
     target: /etc/gitlab-runner/config-resonance-ubuntu-ci.toml
-    sha256: 5d7b976e75a32770780013631d5f855a701b3d8b3b38185ad9053fef022f05c9
+    sha256: 5fe66408843982d8754681de807171e0b854e129449f6ed307923e8278ba1523
     chmod: 600
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-infra.toml.gpg
     target: /etc/gitlab-runner/config-resonance-ubuntu-infra.toml
-    sha256: 58b2cd535e132b4566ca4a8e248341fd22d952fa565000ac6113705a6f637020
+    sha256: 6287ad59d8ac046c9b0c198fb7119725584b65564edcd0b36460b016204cde80
+    chmod: 600
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-rust.toml.gpg
+    target: /etc/gitlab-runner/config-resonance-ubuntu-rust.toml
+    sha256: 5655face3d2c8d6080d5a671a5e0fb5adf61c67dbf3b99cc27f842bc83d4911f
     chmod: 600
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/gitlab-runner@.service
@@ -121,3 +126,6 @@ file:
         - sudo -u gitlab-runner mkdir -p /var/lib/gitlab-runner/resonance-ubuntu-infra
         - systemctl is-enabled gitlab-runner@resonance-ubuntu-infra.service || sudo systemctl enable gitlab-runner@resonance-ubuntu-infra.service
         - sudo systemctl start gitlab-runner@resonance-ubuntu-infra.service
+        - sudo -u gitlab-runner mkdir -p /var/lib/gitlab-runner/resonance-ubuntu-rust
+        - systemctl is-enabled gitlab-runner@resonance-ubuntu-rust.service || sudo systemctl enable gitlab-runner@resonance-ubuntu-rust.service
+        - sudo systemctl start gitlab-runner@resonance-ubuntu-rust.service
