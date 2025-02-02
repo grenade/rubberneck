@@ -84,26 +84,41 @@ file:
     target: /etc/gitlab-runner/config-resonance-fedora-ci.toml
     sha256: 0140d44b5a3812c3ca7f7abc4a7ee8d7853a75768f0b319f2cdcd26dc663bb3f
     chmod: 600
+    command:
+      post:
+        - sudo systemctl restart gitlab-runner@resonance-fedora-ci.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-infra.toml.gpg
     target: /etc/gitlab-runner/config-resonance-fedora-infra.toml
     sha256: 7a6dfec68617a23f962d5eb3bc8a16cd007ef836552667b9c443b1775e7a681e
     chmod: 600
+    command:
+      post:
+        - sudo systemctl restart gitlab-runner@resonance-fedora-infra.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-ci.toml.gpg
     target: /etc/gitlab-runner/config-resonance-ubuntu-ci.toml
     sha256: abd9f36e8a747b612513d90abe9621f74b863cf7f6595253e58732f37969a67a
     chmod: 600
+    command:
+      post:
+        - sudo systemctl restart gitlab-runner@resonance-ubuntu-ci.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-infra.toml.gpg
     target: /etc/gitlab-runner/config-resonance-ubuntu-infra.toml
     sha256: 6287ad59d8ac046c9b0c198fb7119725584b65564edcd0b36460b016204cde80
     chmod: 600
+    command:
+      post:
+        - sudo systemctl restart gitlab-runner@resonance-ubuntu-infra.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-rust.toml.gpg
     target: /etc/gitlab-runner/config-resonance-ubuntu-rust.toml
     sha256: 5655face3d2c8d6080d5a671a5e0fb5adf61c67dbf3b99cc27f842bc83d4911f
     chmod: 600
+    command:
+      post:
+        - sudo systemctl restart gitlab-runner@resonance-ubuntu-rust.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/gitlab-runner@.service
     target: /etc/systemd/system/gitlab-runner@.service
