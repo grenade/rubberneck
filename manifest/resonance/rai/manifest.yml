@@ -21,7 +21,11 @@ user:
     username: resonance
     authorized:
       keys:
+        # rubberneck (resonance@kavula)
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGxhedWcnCqs5Kdw/aMgYH0ofFhKK9cH4bR3vlRQm6Rd
+
+        # infra (gitlab-runner@trillian)
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPtD6fJHw5s3xmlJS2NUEkI31tQ0Fm9SGtFVp+KpOh4u
 firewall:
   port:
     - 9100/tcp
