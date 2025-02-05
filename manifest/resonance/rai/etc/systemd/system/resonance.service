@@ -1,0 +1,32 @@
+[Unit]
+Description=resonance
+Wants=network-online.target
+After=network-online.target
+ConditionFileIsExecutable=/usr/local/bin/resonance
+ConditionPathExists=/var/lib/resonance/%l-node.key
+
+[Service]
+User=resonance
+Group=resonance
+ExecStart=/usr/local/bin/resonance \
+    --name %l \
+    --base-path /var/lib/resonance \
+    --node-key-file /var/lib/resonance/%l-node.key \
+    --blocks-pruning archive-canonical \
+    --state-pruning archive-canonical \
+    --prometheus-external \
+    --rpc-methods safe \
+    --rpc-external \
+    --rpc-port 9105 \
+    --rpc-cors all \
+    --port 30105 \
+    --public-addr /dns/a3.i.res.fm/tcp/30215/p2p/12D3KooWMpmEQmCB31Dz84YdnxL48aiSFQydEiq5MZv6VtZouXRd \
+    --bootnodes \
+        /dns/a1.i.res.fm/tcp/30104/p2p/12D3KooWGmDZ95J13cggsv56mSepAj3WiVPR3foqqh728umZrhPr \
+        /dns/a2.i.res.fm/tcp/30105/p2p/12D3KooWPPv8nrVEN5mjcMruDnAEdcpfppSfSbij2A7FXWNGt8JL \
+    --telemetry-url 'wss://t0.i.res.fm/submit 1'
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target
