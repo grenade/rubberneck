@@ -19,7 +19,8 @@ ExecStart=/usr/local/bin/resonance \
     --rpc-external \
     --rpc-port 9105 \
     --rpc-cors all \
-    --port 30105 \
+    --port 30215 \
+    --listen-addr /ip4/0.0.0.0/tcp/30215 \
     --public-addr /dns/a3.i.res.fm/tcp/30215/p2p/12D3KooWMpmEQmCB31Dz84YdnxL48aiSFQydEiq5MZv6VtZouXRd \
     --bootnodes \
         /dns/a1.i.res.fm/tcp/30104/p2p/12D3KooWGmDZ95J13cggsv56mSepAj3WiVPR3foqqh728umZrhPr \
