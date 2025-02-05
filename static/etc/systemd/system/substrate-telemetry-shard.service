@@ -1,0 +1,18 @@
+[Unit]
+Description=substrate telemetry shard
+Wants=network-online.target
+After=network-online.target
+ConditionFileIsExecutable=/usr/local/bin/substrate_telemetry_shard
+
+[Service]
+Type=simple
+User=substrate
+Group=substrate
+ExecStart=/usr/local/bin/substrate_telemetry_shard \
+    --core 10.9.1.101:8000 \
+    --listen 0.0.0.0:8001
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target

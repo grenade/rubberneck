@@ -29,8 +29,11 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPtD6fJHw5s3xmlJS2NUEkI31tQ0Fm9SGtFVp+KpOh4u
 firewall:
   port:
-    - 9100/tcp
-    - 30104/tcp
+    - 8001/tcp # substrate telemetry shard
+    - 9100/tcp # prometheus node exporter
+    - 9615/tcp # resonance metrics
+    - 9944/tcp # resonance rpc/ws
+    - 30104/tcp # resonance p2p
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
@@ -95,3 +98,13 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl start resonance.service
         - systemctl is-enabled resonance.service || sudo systemctl enable resonance.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/substrate-telemetry-shard.service
+    target: /etc/systemd/system/substrate-telemetry-shard.service
+    command:
+      pre:
+        - systemctl is-active --quiet substrate-telemetry-shard.service && sudo systemctl stop substrate-telemetry-shard.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl start substrate-telemetry-shard.service
+        - systemctl is-enabled substrate-telemetry-shard.service || sudo systemctl enable substrate-telemetry-shard.service
