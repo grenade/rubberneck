@@ -30,6 +30,7 @@ user:
 firewall:
   port:
     - 9100/tcp
+    - 30215/tcp
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
