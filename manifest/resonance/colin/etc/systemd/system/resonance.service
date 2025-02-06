@@ -9,7 +9,8 @@ ConditionPathExists=/var/lib/resonance/%l-node.key
 User=resonance
 Group=resonance
 ExecStart=/usr/local/bin/resonance \
-    --name %l \
+    --validator \
+    --name a2-i-res-fm \
     --base-path /var/lib/resonance \
     --node-key-file /var/lib/resonance/%l-node.key \
     --blocks-pruning archive-canonical \
