@@ -9,7 +9,6 @@ ConditionPathExists=/var/lib/resonance/%l-node.key
 User=resonance
 Group=resonance
 ExecStart=/usr/local/bin/resonance \
-    --validator \
     --name a2-i-res-fm \
     --base-path /var/lib/resonance \
     --node-key-file /var/lib/resonance/%l-node.key \
@@ -18,7 +17,7 @@ ExecStart=/usr/local/bin/resonance \
     --prometheus-external \
     --prometheus-port 9615 \
     --rpc-methods safe \
-    --unsafe-rpc-external \
+    --rpc-external \
     --rpc-port 9944 \
     --rpc-cors all \
     --listen-addr /ip4/0.0.0.0/tcp/30105 \
