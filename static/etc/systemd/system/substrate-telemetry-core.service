@@ -1,0 +1,17 @@
+[Unit]
+Description=substrate telemetry core
+Wants=network-online.target
+After=network-online.target
+ConditionFileIsExecutable=/usr/local/bin/substrate_telemetry_core
+
+[Service]
+Type=simple
+User=substrate
+Group=substrate
+ExecStart=/usr/local/bin/substrate_telemetry_core \
+    --listen 0.0.0.0:8000
+Restart=always
+RestartSec=2
+
+[Install]
+WantedBy=multi-user.target
