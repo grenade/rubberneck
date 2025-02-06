@@ -18,7 +18,7 @@ ExecStart=/usr/local/bin/resonance \
     --prometheus-external \
     --prometheus-port 9615 \
     --rpc-methods safe \
-    --rpc-external \
+    --unsafe-rpc-external \
     --rpc-port 9944 \
     --rpc-cors all \
     --listen-addr /ip4/0.0.0.0/tcp/30104 \
