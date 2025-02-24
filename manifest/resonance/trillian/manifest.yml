@@ -95,7 +95,7 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-infra.toml.gpg
     target: /etc/gitlab-runner/config-resonance-fedora-infra.toml
-    sha256: af66cef9ce67c3b2aa4a3cbe4ae09a39e6020dfcc4f8570688752336a5e543dd
+    sha256: c9a92dba2fac43f9d290c0e04c30ac941530d053bad55bf4709456bd9396b729
     chmod: 600
     command:
       post:
@@ -111,7 +111,7 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-infra.toml.gpg
     target: /etc/gitlab-runner/config-resonance-ubuntu-infra.toml
-    sha256: 0b94ba5acfbd57d8c1e70e6eda1f38967583e810b1b7eb093eec49d3352c1f95
+    sha256: cf9bb1d0e456a3dcbf66080058761c134e2e1352911d18568661c76f98f86ba2
     chmod: 600
     command:
       post:
