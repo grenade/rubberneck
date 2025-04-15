@@ -138,16 +138,10 @@
                                 </xsl:variable>
                                 <xsl:variable name="icon">
                                     <xsl:choose>
-                                        <xsl:when test="$extn = 'mp3'">
+                                        <xsl:when test="contains('|mp3|wav|', concat('|', $extn, '|'))">
                                             bi bi-cassette-fill
                                         </xsl:when>
-                                        <xsl:when test="$extn = 'wav'">
-                                            bi bi-cassette-fill
-                                        </xsl:when>
-                                        <xsl:when test="$extn = 'mp4'">
-                                            bi bi-play-btn-fill
-                                        </xsl:when>
-                                        <xsl:when test="$extn = 'avi'">
+                                        <xsl:when test="contains('|avi|mov|mp4|', concat('|', $extn, '|'))">
                                             bi bi-play-btn-fill
                                         </xsl:when>
                                         <xsl:otherwise>
