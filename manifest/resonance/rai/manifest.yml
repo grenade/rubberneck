@@ -39,7 +39,8 @@ command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
-  - systemctl is-active resonance.service || sudo systemctl restart resonance.service
+  - systemctl is-active resonance-miner.service || sudo systemctl restart resonance-miner.service
+  - systemctl is-active resonance-node.service || sudo systemctl restart resonance-node.service
   - systemctl is-active substrate-telemetry-shard.service || sudo systemctl restart substrate-telemetry-shard.service
   - test -x /usr/local/bin/yq || sudo pip install yq
   - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
@@ -104,15 +105,25 @@ file:
       post:
         - sudo systemctl reload rsyslog.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/rai/etc/systemd/system/resonance.service
-    target: /etc/systemd/system/resonance.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/rai/etc/systemd/system/resonance-miner.service
+    target: /etc/systemd/system/resonance-miner.service
     command:
       pre:
-        - systemctl is-active --quiet resonance.service && sudo systemctl stop resonance.service
+        - systemctl is-active --quiet resonance-miner.service && sudo systemctl stop resonance-miner.service
       post:
         - sudo systemctl daemon-reload
-        - sudo systemctl start resonance.service
-        - systemctl is-enabled resonance.service || sudo systemctl enable resonance.service
+        - sudo systemctl start resonance-miner.service
+        - systemctl is-enabled resonance-miner.service || sudo systemctl enable resonance-miner.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/rai/etc/systemd/system/resonance-node.service
+    target: /etc/systemd/system/resonance-node.service
+    command:
+      pre:
+        - systemctl is-active --quiet resonance-node.service && sudo systemctl stop resonance-node.service
+      post:
+        - sudo systemctl daemon-reload
+        - sudo systemctl start resonance-node.service
+        - systemctl is-enabled resonance-node.service || sudo systemctl enable resonance-node.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/substrate-telemetry-shard.service
     target: /etc/systemd/system/substrate-telemetry-shard.service
