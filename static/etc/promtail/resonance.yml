@@ -1,0 +1,25 @@
+server:
+  disable: true
+clients:
+  -
+    url: https://loki.res.fm/loki/api/v1/push
+positions:
+  filename: /tmp/promtail-positions.yml
+scrape_configs:
+  -
+    job_name: journal
+    journal:
+      max_age: 12h
+      json: false
+      labels:
+        job: journal
+    relabel_configs:
+      -
+        action: keep
+        source_labels:
+          - __journal__systemd_unit
+        regex: (resonance|ssh).service
+      -
+        source_labels:
+          - __journal__systemd_unit
+        target_label: unit
