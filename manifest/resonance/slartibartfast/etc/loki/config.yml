@@ -5,6 +5,10 @@ server:
   grpc_listen_port: 9096
   log_level: debug
   grpc_server_max_concurrent_streams: 1000
+  # 100MB
+  grpc_server_max_recv_msg_size: 1.048576e+08
+  grpc_server_max_send_msg_size: 1.048576e+08
+  http_server_read_timeout: 600s
 
 common:
   instance_addr: 127.0.0.1
