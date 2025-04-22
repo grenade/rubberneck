@@ -7,10 +7,26 @@ ssh:
   port: 22
 os:
   name: fedora
+repository:
+  -
+    name: grafana
+    key:
+      url: https://rpm.grafana.com/gpg.key
+    list: |
+      [grafana]
+      name=grafana
+      baseurl=https://rpm.grafana.com
+      repo_gpgcheck=1
+      enabled=1
+      gpgcheck=1
+      gpgkey=https://rpm.grafana.com/gpg.key
+      sslverify=1
+      sslcacert=/etc/pki/tls/certs/ca-bundle.crt
 package:
   - curl
   - dnf-automatic
   - git
+  - loki
   - lshw
   - ncurses-base
   - ncurses-compat-libs
@@ -27,6 +43,7 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGxhedWcnCqs5Kdw/aMgYH0ofFhKK9cH4bR3vlRQm6Rd
 firewall:
   port:
+    - 3100/tcp # loki
     - 9100/tcp # prometheus node exporter
 command:
   - sudo passwd -l root
