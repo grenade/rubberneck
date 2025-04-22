@@ -152,7 +152,7 @@ file:
         - systemctl is-enabled substrate-telemetry-shard.service || sudo systemctl enable substrate-telemetry-shard.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/promtail/resonance.yml
-    target: /etc/promtail/promtail.yml
+    target: /etc/promtail/config.yml
     command:
       pre:
         - sudo mkdir -p /etc/promtail
