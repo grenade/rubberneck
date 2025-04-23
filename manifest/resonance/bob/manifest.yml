@@ -50,7 +50,7 @@ firewall:
     - 9100/tcp # prometheus node exporter
     - 9615/tcp # resonance metrics
     - 9944/tcp # resonance rpc/ws
-    - 30104/tcp # resonance p2p
+    - 30201/tcp # resonance p2p
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC

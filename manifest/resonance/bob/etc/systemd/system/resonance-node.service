@@ -24,6 +24,7 @@ ExecStart=/usr/local/bin/resonance-node \
     --unsafe-rpc-external \
     --rpc-port 9944 \
     --rpc-cors all \
+    --port 30201 \
     --listen-addr /ip4/0.0.0.0/tcp/30201 \
     --public-addr /dns/a1.t.res.fm/tcp/30201/p2p/12D3KooWGmDZ95J13cggsv56mSepAj3WiVPR3foqqh728umZrhPr \
     --bootnodes \
