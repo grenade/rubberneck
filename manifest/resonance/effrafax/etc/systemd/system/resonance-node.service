@@ -4,6 +4,8 @@ Wants=network-online.target
 After=network-online.target
 Requires=resonance-miner.service
 After=resonance-miner.service
+Requires=substrate-telemetry-shard.service
+After=substrate-telemetry-shard.service
 ConditionFileIsExecutable=/usr/local/bin/resonance-node
 ConditionPathExists=/var/lib/resonance/%l-node.key
 
