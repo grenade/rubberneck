@@ -1,0 +1,37 @@
+[Unit]
+Description=resonance node
+Wants=network-online.target
+After=network-online.target
+Requires=resonance-miner.service
+After=resonance-miner.service
+ConditionFileIsExecutable=/usr/local/bin/resonance-node
+ConditionPathExists=/var/lib/resonance/%l-node.key
+
+[Service]
+User=resonance
+Group=resonance
+ExecStart=/usr/local/bin/resonance-node \
+    --chain live_testnet \
+    --validator \
+    --name %l \
+    --base-path /var/lib/resonance \
+    --node-key-file /var/lib/resonance/%l-node.key \
+    --external-miner-url http://127.0.0.1:9833 \
+    --rewards-address 0x0f1c587727b874fd8383f24ec32e6c55d70c854ba9f2072bef720c1fd21bf214 \
+    --prometheus-external \
+    --prometheus-port 9615 \
+    --rpc-methods auto \
+    --unsafe-rpc-external \
+    --rpc-port 9944 \
+    --rpc-cors all \
+    --listen-addr /ip4/0.0.0.0/tcp/30203 \
+    --public-addr /dns/a2.t.res.fm/tcp/30203/p2p/12D3KooWPPv8nrVEN5mjcMruDnAEdcpfppSfSbij2A7FXWNGt8JL \
+    --bootnodes \
+        /dns/a1.t.res.fm/tcp/30201/p2p/12D3KooWGmDZ95J13cggsv56mSepAj3WiVPR3foqqh728umZrhPr \
+        /dns/a3.t.res.fm/tcp/30202/p2p/12D3KooWMpmEQmCB31Dz84YdnxL48aiSFQydEiq5MZv6VtZouXRd \
+    --telemetry-url 'ws://127.0.0.1:8001/submit 1'
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target
