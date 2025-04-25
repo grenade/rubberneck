@@ -1,0 +1,78 @@
+auth_enabled: false
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  log_level: debug
+  grpc_server_max_concurrent_streams: 1000
+  # 100MB
+  grpc_server_max_recv_msg_size: 1.048576e+08
+  grpc_server_max_send_msg_size: 1.048576e+08
+  http_server_read_timeout: 600s
+
+common:
+  instance_addr: 127.0.0.1
+  path_prefix: /var/lib/loki
+  storage:
+    filesystem:
+      chunks_directory: /var/lib/loki/chunks
+      rules_directory: /var/lib/loki/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+query_range:
+  results_cache:
+    cache:
+      embedded_cache:
+        enabled: true
+        max_size_mb: 100
+
+limits_config:
+  metric_aggregation_enabled: true
+  retention_period: 360h
+  retention_stream:
+  -
+    selector: '{namespace="dev"}'
+    priority: 1
+    period: 24h
+  per_tenant_override_config: /etc/loki/overrides.yml
+
+compactor:
+  working_directory: /var/lib/loki/retention
+  compaction_interval: 10m
+  retention_enabled: true
+  retention_delete_delay: 2h
+  retention_delete_worker_count: 150
+  delete_request_store: filesystem
+
+schema_config:
+  configs:
+    -
+      from: 2020-10-24
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  tsdb_shipper:
+    active_index_directory: /var/lib/loki/index
+    cache_location: /var/lib/loki/index_cache
+
+pattern_ingester:
+  enabled: true
+  metric_aggregation:
+    loki_address: localhost:3100
+
+ruler:
+  alertmanager_url: http://localhost:9093
+
+frontend:
+  encoding: protobuf
+
+analytics:
+  reporting_enabled: false
