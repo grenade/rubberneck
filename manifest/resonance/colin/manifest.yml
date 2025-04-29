@@ -39,11 +39,14 @@ user:
     system: true
     authorized:
       keys:
-        # rubberneck (resonance@kavula)
+        # rubberneck (used by resonance@kavula)
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGxhedWcnCqs5Kdw/aMgYH0ofFhKK9cH4bR3vlRQm6Rd
 
-        # infra (gitlab-runner@trillian)
+        # infra (used by gitlab-runner@trillian)
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPtD6fJHw5s3xmlJS2NUEkI31tQ0Fm9SGtFVp+KpOh4u
+
+        # engineering
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJnmT8wFTfEMxa+yTlAOZcCrq/5bJzUZc6os8fisMUfW
 firewall:
   port:
     - 8001/tcp # substrate telemetry shard
@@ -157,6 +160,8 @@ file:
       pre:
         - sudo mkdir -p /etc/promtail
         - systemctl is-active --quiet promtail.service && sudo systemctl stop promtail.service
+        - sudo setfacl -R -m u:promtail:rX /var/log
+        - sudo usermod -a -G systemd-journal promtail
       post:
         - sudo systemctl daemon-reload
         - sudo systemctl start promtail.service
