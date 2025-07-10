@@ -12,7 +12,7 @@ ConditionPathExists=/var/lib/resonance/%l-node.key
 [Service]
 User=resonance
 Group=resonance
-ExecStart=/usr/local/bin/resonance-node \
+ExecStart=/usr/local/bin/quantus-node \
     --chain live_resonance \
     --validator \
     --name %l \
