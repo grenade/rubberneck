@@ -13,13 +13,12 @@ ConditionPathExists=/var/lib/resonance/%l-node.key
 User=resonance
 Group=resonance
 ExecStart=/usr/local/bin/resonance-node \
-    --chain live_testnet \
+    --chain live_resonance \
     --validator \
     --name %l \
     --base-path /var/lib/resonance \
-    --node-key-file /var/lib/resonance/%l-node.key \
-    --external-miner-url http://127.0.0.1:9833 \
-    --rewards-address 0x0f1c587727b874fd8383f24ec32e6c55d70c854ba9f2072bef720c1fd21bf214 \
+    --node-key-file /var/lib/resonance/chains/resonance/network/secret_dilithium \
+    --rewards-address qzn6C9EKUpuNPm5qbe5jSq7uiCHV7ruixuzNM4DQQQGZxe2du \
     --prometheus-external \
     --prometheus-port 9615 \
     --rpc-methods auto \
@@ -27,10 +26,10 @@ ExecStart=/usr/local/bin/resonance-node \
     --rpc-port 9944 \
     --rpc-cors all \
     --port 30201 \
-    --public-addr /dns/a1.t.res.fm/tcp/30201/p2p/12D3KooWGmDZ95J13cggsv56mSepAj3WiVPR3foqqh728umZrhPr \
+    --public-addr /dns/a1.t.res.fm/tcp/30201/p2p/QmYpbayBgKbhfHGn2kNWWhh3DHwBnPaLDMYvaGmT78oAP7 \
     --bootnodes \
-        /dns/a2.t.res.fm/tcp/30203/p2p/12D3KooWPPv8nrVEN5mjcMruDnAEdcpfppSfSbij2A7FXWNGt8JL \
-        /dns/a3.t.res.fm/tcp/30202/p2p/12D3KooWMpmEQmCB31Dz84YdnxL48aiSFQydEiq5MZv6VtZouXRd \
+        /dns/a2.t.res.fm/tcp/30203/p2p/QmeN9H9CBdBESd6wib9xetPiYsCLYPTAJn8sxajWi2Bjkb \
+        /dns/a3.t.res.fm/tcp/30202/p2p/QmQLf3wj7KqqtTjtrq7iQZY5JokQ3k7HHLGe5hNvHSxnFr \
     --telemetry-url 'ws://127.0.0.1:8001/submit 1'
 Restart=always
 RestartSec=120
