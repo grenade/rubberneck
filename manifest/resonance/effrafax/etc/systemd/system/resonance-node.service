@@ -26,6 +26,7 @@ ExecStart=/usr/local/bin/quantus-node \
     --rpc-port 9944 \
     --rpc-cors all \
     --in-peers 256 \
+    --out-peers 256 \
     --port 30203 \
     --public-addr /dns/a2.t.res.fm/tcp/30203/p2p/QmeN9H9CBdBESd6wib9xetPiYsCLYPTAJn8sxajWi2Bjkb \
     --bootnodes \
