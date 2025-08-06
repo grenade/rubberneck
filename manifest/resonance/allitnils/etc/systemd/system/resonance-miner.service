@@ -2,13 +2,13 @@
 Description=resonance miner
 Wants=network-online.target
 After=network-online.target
-ConditionFileIsExecutable=/usr/local/bin/resonance-miner
+ConditionFileIsExecutable=/usr/local/bin/quantus-miner
 
 [Service]
 User=resonance
 Group=resonance
 Environment=RUST_LOG=info
-ExecStart=/usr/local/bin/resonance-miner
+ExecStart=/usr/local/bin/quantus-miner
 Restart=always
 RestartSec=120
 
