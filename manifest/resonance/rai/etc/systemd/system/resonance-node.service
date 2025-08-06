@@ -4,19 +4,18 @@ Wants=network-online.target
 After=network-online.target
 Requires=resonance-miner.service
 After=resonance-miner.service
-ConditionFileIsExecutable=/usr/local/bin/resonance-node
-ConditionPathExists=/var/lib/resonance/%l-node.key
+ConditionFileIsExecutable=/usr/local/bin/quantus-node
+ConditionPathExists=/var/lib/resonance/chains/local_resonance/network/secret_dilithium
 
 [Service]
 User=resonance
 Group=resonance
-ExecStart=/usr/local/bin/resonance-node \
+ExecStart=/usr/local/bin/quantus-node \
     --validator \
     --name %l \
     --base-path /var/lib/resonance \
-    --node-key-file /var/lib/resonance/%l-node.key \
-    --external-miner-url http://127.0.0.1:9833 \
-    --rewards-address 0x0f1c587727b874fd8383f24ec32e6c55d70c854ba9f2072bef720c1fd21bf214 \
+    --node-key-file /var/lib/resonance/chains/local_resonance/network/secret_dilithium \
+    --rewards-address qzn6C9EKUpuNPm5qbe5jSq7uiCHV7ruixuzNM4DQQQGZxe2du \
     --prometheus-external \
     --prometheus-port 9615 \
     --rpc-methods auto \
@@ -24,11 +23,12 @@ ExecStart=/usr/local/bin/resonance-node \
     --rpc-port 9944 \
     --rpc-cors all \
     --listen-addr /ip4/0.0.0.0/tcp/30215 \
-    --public-addr /dns/a3.i.res.fm/tcp/30215/p2p/12D3KooWMpmEQmCB31Dz84YdnxL48aiSFQydEiq5MZv6VtZouXRd \
+    --public-addr /dns/a3.i.res.fm/tcp/30215/p2p/QmNZH7cLXAnNTeS6tw29KRmFYygFgL18GXjk6pXGHfRvAe \
     --bootnodes \
-        /dns/a1.i.res.fm/tcp/30104/p2p/12D3KooWGmDZ95J13cggsv56mSepAj3WiVPR3foqqh728umZrhPr \
-        /dns/a2.i.res.fm/tcp/30105/p2p/12D3KooWPPv8nrVEN5mjcMruDnAEdcpfppSfSbij2A7FXWNGt8JL \
-    --telemetry-url 'ws://127.0.0.1:8001/submit 1'
+        /dns/a1.i.res.fm/tcp/30104/p2p/QmQ5UgQyHs3UiGyvruYxXTmfgrJnciobqiUe5peXZqnjvq \
+        /dns/a2.i.res.fm/tcp/30105/p2p/QmWwvxdtnaej2qxn4yqS2z8S1TrVfrxz1zjJ8f8Y8LK8Wq \
+    --telemetry-url 'ws://127.0.0.1:8001/submit 1' \
+    --external-miner-url http://127.0.0.1:9833
 Restart=always
 RestartSec=120
 
