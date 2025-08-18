@@ -8,7 +8,9 @@ ConditionFileIsExecutable=/usr/local/bin/quantus-miner
 User=resonance
 Group=resonance
 Environment=RUST_LOG=info
-ExecStart=/usr/local/bin/quantus-miner
+ExecStart=/usr/local/bin/quantus-miner \
+    --num-cores 2 \
+    --port 9833
 Restart=always
 RestartSec=120
 
