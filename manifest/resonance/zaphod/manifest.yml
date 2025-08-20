@@ -98,7 +98,7 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/graylog/graylog.env.gpg
     target: /etc/graylog/graylog.env
-    sha256: 5313b10a6ae8b331124527602340862686257d59553af7677a10ad7f8dd8d201
+    sha256: 0040983f5fe64da5b0ec671e343d31bb793c837bc1f406817af3ad1038b37048
     command:
       pre:
         - test -d /etc/graylog || sudo install -d -m 0755 /etc/graylog
