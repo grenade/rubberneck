@@ -82,16 +82,10 @@ archive:
           post:
             - sudo systemctl daemon-reload
             - sudo systemctl start prometheus-node-exporter.service
-  -
-    source: https://www.passmark.com/downloads/pt_linux_x64.zip
-    target: /tmp/pt_linux_x64.zip
-    sha256: abd1fefd5e1f912c09244a7e56cf8c3ef9dd8b90c89f1e4c402cc0bfdeb92098
-    extract:
-      -
-        source: PerformanceTest/pt_linux_x64
-        target: /usr/local/bin/pt_linux_x64
-        sha256: 0005b5400852aa0a84886310a0e780665c319cbf16f701062911574ba8886052
 file:
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/colin/etc/vector/vector.yaml
+    target: /etc/vector/vector.yaml
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
     target: /etc/ssh/sshd_config.d/39-ed25519-only.conf
@@ -114,18 +108,6 @@ file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/pki/tls/openssl.d/oqs-provider.conf
     target: /etc/pki/tls/openssl.d/oqs-provider.conf
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/papertrail/papertrail-bundle.pem
-    target: /etc/papertrail/papertrail-bundle.pem
-    command:
-      pre:
-        - sudo mkdir -p /etc/papertrail
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/rsyslog.d/papertrail.conf
-    target: /etc/rsyslog.d/papertrail.conf
-    command:
-      post:
-        - sudo systemctl reload rsyslog.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/colin/etc/systemd/system/resonance-miner.service
     target: /etc/systemd/system/resonance-miner.service
@@ -156,15 +138,3 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl start substrate-telemetry-shard.service
         - systemctl is-enabled substrate-telemetry-shard.service || sudo systemctl enable substrate-telemetry-shard.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/promtail/resonance.yml
-    target: /etc/promtail/config.yml
-    command:
-      pre:
-        - sudo mkdir -p /etc/promtail
-        - systemctl is-active --quiet promtail.service && sudo systemctl stop promtail.service
-        - sudo setfacl -R -m u:promtail:rX /var/log
-        - sudo usermod -a -G systemd-journal promtail
-      post:
-        - sudo systemctl daemon-reload
-        - sudo systemctl start promtail.service

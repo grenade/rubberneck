@@ -1,0 +1,23 @@
+sources:
+  journald:
+    type: journald
+    include_units:
+      - resonance-miner.service
+      - resonance-node.service
+      - sshd.service
+      - substrate-telemetry-shard.service
+transforms:
+  add_meta:
+    type: remap
+    inputs:
+      - journald
+    source: |
+      .host = get_hostname!()
+      .service = ._SYSTEMD_UNIT
+sinks:
+  graylog:
+    type: gelf
+    inputs:
+      - add_meta
+    address: "tcp://zaphod.res.fm:12201"
+    compression: "gzip"
