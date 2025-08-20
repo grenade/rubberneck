@@ -7,7 +7,7 @@ Wants=network-online.target
 Image=docker.io/opensearchproject/opensearch:2.15.0
 ContainerName=opensearch
 EnvironmentFile=/etc/opensearch/opensearch.env
-Pod=log-aggregator-pod
+Pod=log-aggregator
 Volume=os-data:/usr/share/opensearch/data
 Environment=discovery.type=single-node
 Environment="OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"

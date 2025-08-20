@@ -96,6 +96,18 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/pki/tls/openssl.d/oqs-provider.conf
     target: /etc/pki/tls/openssl.d/oqs-provider.conf
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/log-aggregator.pod
+    target: /etc/containers/systemd/log-aggregator.pod
+    command:
+      pre:
+        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled log-aggregator.pod || sudo systemctl enable log-aggregator.pod
+        - systemctl is-active mongo.service && sudo systemctl restart mongo.service
+        - systemctl is-active opensearch.service && sudo systemctl restart opensearch.service
+        - systemctl is-active graylog.service && sudo systemctl restart graylog.service
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/graylog/graylog.env.gpg
     target: /etc/graylog/graylog.env
     sha256: 0040983f5fe64da5b0ec671e343d31bb793c837bc1f406817af3ad1038b37048
@@ -161,13 +173,3 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled graylog.service || sudo systemctl enable graylog.service
         - systemctl is-active graylog.service || sudo systemctl start graylog.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/log-aggregator.pod
-    target: /etc/containers/systemd/log-aggregator.pod
-    command:
-      pre:
-        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
-      post:
-        - sudo systemctl daemon-reload
-        - systemctl is-enabled log-aggregator.pod || sudo systemctl enable log-aggregator.pod
-        - sudo systemctl restart mongo.service opensearch.service graylog.service

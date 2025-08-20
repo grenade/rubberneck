@@ -6,7 +6,7 @@ Wants=network-online.target
 [Container]
 Image=docker.io/library/mongo:7
 ContainerName=mongo
-Pod=log-aggregator-pod
+Pod=log-aggregator
 Volume=mongo-data:/data/db
 # Keep it small; Graylog stores only metadata here
 Environment=MONGO_INITDB_DATABASE=graylog
