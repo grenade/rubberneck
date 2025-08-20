@@ -4,7 +4,7 @@ After=network-online.target mongo.service opensearch.service
 Wants=network-online.target mongo.service opensearch.service
 
 [Container]
-Image=graylog/graylog:6.3
+Image=docker.io/graylog/graylog:6.3
 ContainerName=graylog
 EnvironmentFile=/etc/graylog/graylog.env
 PublishPort=9000:9000
