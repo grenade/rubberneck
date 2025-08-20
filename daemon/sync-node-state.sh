@@ -202,7 +202,15 @@ for intent in ${intents[@]}; do
       for repository_as_base64 in ${repository_list_as_base64[@]}; do
         repository_name=$(_decode_property ${repository_as_base64} .name)
         repository_list=$(_decode_property ${repository_as_base64} .list)
+        repository_trusted_keys_as_base64=$(_decode_property ${repository_as_base64} '.trust//empty' | jq -r '.[] | @base64')
         # dnf key urls should be in the .repo file. ie: `cat /etc/yum.repos.d/*.repo | grep gpgkey`
+        # dnf key urls should also be in the trust list in order to support establishing trust, before attempting installs
+        for repository_trusted_key_as_base64 in ${repository_trusted_keys_as_base64[@]}; do
+          repository_trusted_key_url=$(_decode_property ${repository_trusted_key_as_base64} .)
+          repository_trust_key_stdout=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${ssh_address} "sudo rpm --import  ${repository_trusted_key_url}")
+          repository_trust_key_exit_code=$?
+          echo "[${fqdn}:repository ${repository_index}] repository key trust returned exit code ${repository_trust_key_exit_code}, for ${repository_trusted_key_url}, stdout: ${repository_trust_key_stdout/$'\n'/}"
+        done
         if [[ ${dnf_os[@]} =~ ${os} ]]; then
           repository_key_url=$(_decode_property ${repository_as_base64} .key.url)
           repository_key_sha_expected=$(_decode_property ${repository_as_base64} .key.sha)
