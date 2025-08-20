@@ -14,6 +14,7 @@ declare -a targets=()
 #targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-infra.toml )
 #targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-rust.toml )
 targets+=( ${repo_path}/manifest/resonance/zaphod/etc/graylog/graylog.env )
+targets+=( ${repo_path}/manifest/resonance/zaphod/etc/opensearch/opensearch.env )
 
 for target in ${targets[@]}; do
     if [ -s ${target} ]; then

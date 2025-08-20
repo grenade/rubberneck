@@ -6,7 +6,7 @@ Wants=network-online.target
 [Container]
 Image=docker.io/opensearchproject/opensearch:2.15.0
 ContainerName=opensearch
-# Required Linux settings are handled via sysctl.d
+EnvironmentFile=/etc/opensearch/opensearch.env
 PublishPort=9200:9200
 PublishPort=9600:9600
 Volume=os-data:/usr/share/opensearch/data

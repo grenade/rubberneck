@@ -102,6 +102,12 @@ file:
       pre:
         - test -d /etc/graylog || sudo install -d -m 0755 /etc/graylog
   -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/opensearch/opensearch.env.gpg
+    target: /etc/opensearch/opensearch.env
+    command:
+      pre:
+        - test -d /etc/opensearch || sudo install -d -m 0755 /etc/opensearch
+  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/sysctl.d/99-opensearch.conf
     target: /etc/sysctl.d/99-opensearch.conf
     command:
