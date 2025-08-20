@@ -124,13 +124,13 @@ file:
     target: /etc/containers/systemd/mongo.volume
     command:
       pre:
-        - sudo mkdir -p /etc/containers/systemd
+        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/mongo.container
     target: /etc/containers/systemd/mongo.container
     command:
       pre:
-        - sudo mkdir -p /etc/containers/systemd
+        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
       post:
         - sudo systemctl daemon-reload
         - systemctl is-enabled mongo.service || sudo systemctl enable mongo.service
@@ -140,13 +140,13 @@ file:
     target: /etc/containers/systemd/opensearch.volume
     command:
       pre:
-        - sudo mkdir -p /etc/containers/systemd
+        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/opensearch.container
     target: /etc/containers/systemd/opensearch.container
     command:
       pre:
-        - sudo mkdir -p /etc/containers/systemd
+        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
       post:
         - sudo systemctl daemon-reload
         - systemctl is-enabled opensearch.service || sudo systemctl enable opensearch.service
@@ -156,8 +156,18 @@ file:
     target: /etc/containers/systemd/graylog.container
     command:
       pre:
-        - sudo mkdir -p /etc/containers/systemd
+        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
       post:
         - sudo systemctl daemon-reload
         - systemctl is-enabled graylog.service || sudo systemctl enable graylog.service
         - systemctl is-active graylog.service || sudo systemctl start graylog.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/log-aggregator.pod
+    target: /etc/containers/systemd/log-aggregator.pod
+    command:
+      pre:
+        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled log-aggregator.pod || sudo systemctl enable log-aggregator.pod
+        - sudo systemctl restart mongo.service opensearch.service graylog.service
