@@ -207,9 +207,11 @@ for intent in ${intents[@]}; do
         # dnf key urls should also be in the trust list in order to support establishing trust, before attempting installs
         for repository_trusted_key_as_base64 in ${repository_trusted_keys_as_base64[@]}; do
           repository_trusted_key_url=$(_decode_property ${repository_trusted_key_as_base64} .)
-          repository_trust_key_stdout=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${ssh_address} "sudo rpm --import  ${repository_trusted_key_url}")
-          repository_trust_key_exit_code=$?
-          echo "[${fqdn}:repository ${repository_index}] repository key trust returned exit code ${repository_trust_key_exit_code}, for ${repository_trusted_key_url}, stdout: ${repository_trust_key_stdout/$'\n'/}"
+          if [ -n "${repository_trusted_key_url}" ]; then
+            repository_trust_key_stdout=$(ssh -o ConnectTimeout=${ssh_timeout} -i ${ops_private_key} -p ${ssh_port} ${ops_username}@${ssh_address} "sudo rpm --import  ${repository_trusted_key_url}")
+            repository_trust_key_exit_code=$?
+            echo "[${fqdn}:repository ${repository_index}] repository key trust returned exit code ${repository_trust_key_exit_code}, for ${repository_trusted_key_url}, stdout: ${repository_trust_key_stdout/$'\n'/}"
+          fi
         done
         if [[ ${dnf_os[@]} =~ ${os} ]]; then
           repository_key_url=$(_decode_property ${repository_as_base64} .key.url)
