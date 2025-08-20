@@ -1,0 +1,28 @@
+[Unit]
+Description=OpenSearch 2.15 for Graylog (Podman Quadlet)
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=docker.io/opensearchproject/opensearch:2.15.0
+ContainerName=opensearch
+# Required Linux settings are handled via sysctl.d
+PublishPort=9200:9200
+PublishPort=9600:9600
+Volume=os-data:/usr/share/opensearch/data
+Environment=discovery.type=single-node
+Environment=OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g
+Environment=plugins.security.disabled=true
+Environment=bootstrap.memory_lock=true
+Ulimit=memlock=-1:-1
+Ulimit=nofile=65536:65536
+# Health
+HealthCmd=curl -sf http://127.0.0.1:9200/_cluster/health
+HealthInterval=30s
+HealthRetries=20
+HealthTimeout=5s
+# Security
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target

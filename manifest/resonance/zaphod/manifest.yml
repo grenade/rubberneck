@@ -29,11 +29,12 @@ package:
   - curl
   - dnf-automatic
   - git
-  - loki
+  - jq
   - lshw
   - ncurses-base
   - ncurses-compat-libs
   - oqsprovider
+  - podman
   - python3-pip
   - vector
 user:
@@ -46,8 +47,10 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGxhedWcnCqs5Kdw/aMgYH0ofFhKK9cH4bR3vlRQm6Rd
 firewall:
   port:
-    - 3100/tcp # loki
     - 9100/tcp # prometheus node exporter
+    - 9000/tcp # graylog
+    - 12201/tcp # graylog ingest
+    - 12201/udp # graylog ingest
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
@@ -69,15 +72,6 @@ archive:
           post:
             - sudo systemctl daemon-reload
             - sudo systemctl start prometheus-node-exporter.service
-  -
-    source: https://www.passmark.com/downloads/pt_linux_x64.zip
-    target: /tmp/pt_linux_x64.zip
-    sha256: abd1fefd5e1f912c09244a7e56cf8c3ef9dd8b90c89f1e4c402cc0bfdeb92098
-    extract:
-      -
-        source: PerformanceTest/pt_linux_x64
-        target: /usr/local/bin/pt_linux_x64
-        sha256: 0005b5400852aa0a84886310a0e780665c319cbf16f701062911574ba8886052
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
@@ -102,10 +96,56 @@ file:
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/pki/tls/openssl.d/oqs-provider.conf
     target: /etc/pki/tls/openssl.d/oqs-provider.conf
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/loki/config.yml
-    target: /etc/loki/config.yml
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/graylog/graylog.env.gpg
+    target: /etc/graylog/graylog.env
     command:
       pre:
-        - systemctl is-active loki.service && sudo systemctl stop loki.service
+        - test -d /etc/graylog || sudo install -d -m 0755 /etc/graylog
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/sysctl.d/99-opensearch.conf
+    target: /etc/sysctl.d/99-opensearch.conf
+    command:
       post:
-        - sudo systemctl start loki.service
+        - sudo sysctl --system
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/mongo.volume
+    target: /etc/containers/systemd/mongo.volume
+    command:
+      pre:
+        - sudo mkdir -p /etc/containers/systemd
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/mongo.container
+    target: /etc/containers/systemd/mongo.container
+    command:
+      pre:
+        - sudo mkdir -p /etc/containers/systemd
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled mongo.service || sudo systemctl enable mongo.service
+        - systemctl is-active mongo.service || sudo systemctl start mongo.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/opensearch.volume
+    target: /etc/containers/systemd/opensearch.volume
+    command:
+      pre:
+        - sudo mkdir -p /etc/containers/systemd
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/opensearch.container
+    target: /etc/containers/systemd/opensearch.container
+    command:
+      pre:
+        - sudo mkdir -p /etc/containers/systemd
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled opensearch.service || sudo systemctl enable opensearch.service
+        - systemctl is-active opensearch.service || sudo systemctl start opensearch.service
+  -
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/graylog.container
+    target: /etc/containers/systemd/graylog.container
+    command:
+      pre:
+        - sudo mkdir -p /etc/containers/systemd
+      post:
+        - sudo systemctl daemon-reload
+        - systemctl is-enabled graylog.service || sudo systemctl enable graylog.service
+        - systemctl is-active graylog.service || sudo systemctl start graylog.service

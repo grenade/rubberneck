@@ -9,10 +9,11 @@ declare -a targets=()
 #targets+=( ${repo_path}/static/etc/xmrig/config.json )
 #targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-qbtc-dev-ubuntu-rust.toml )
 #targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-ci.toml )
-targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-infra.toml )
+#targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-fedora-infra.toml )
 #targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-ci.toml )
-targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-infra.toml )
+#targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-infra.toml )
 #targets+=( ${repo_path}/manifest/resonance/trillian/etc/gitlab-runner/config-resonance-ubuntu-rust.toml )
+targets+=( ${repo_path}/manifest/resonance/zaphod/etc/graylog/graylog.env )
 
 for target in ${targets[@]}; do
     if [ -s ${target} ]; then
