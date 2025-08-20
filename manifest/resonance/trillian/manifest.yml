@@ -7,6 +7,24 @@ ssh:
   port: 22
 os:
   name: fedora
+repository:
+  -
+    name: vector
+    list: |
+      [vector]
+      name = Vector
+      baseurl = https://yum.vector.dev/stable/vector-0/$basearch/
+      enabled=1
+      gpgcheck=1
+      repo_gpgcheck=1
+      priority=1
+      gpgkey=https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
+             https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public
+             https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
+    trust:
+      - https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
+      - https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public
+      - https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
 package:
   - curl
   - dnf-automatic
@@ -16,6 +34,7 @@ package:
   - ncurses-compat-libs
   - oqsprovider
   - python3-pip
+  - vector
 user:
   -
     username: resonance
@@ -31,7 +50,6 @@ command:
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/yq || sudo pip install yq
-  - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
   #- sudo chcon -Rt svirt_sandbox_file_t /var/lib/gitlab-runner/.ssh
   #- sudo chcon -Rt svirt_sandbox_file_t /var/lib/gitlab-runner/.ssh/known_hosts
   #- sudo chcon -Rt svirt_sandbox_file_t /var/lib/gitlab-runner/.ssh/id_ed25519

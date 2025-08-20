@@ -9,19 +9,22 @@ os:
   name: fedora
 repository:
   -
-    name: grafana
-    key:
-      url: https://rpm.grafana.com/gpg.key
+    name: vector
     list: |
-      [grafana]
-      name=grafana
-      baseurl=https://rpm.grafana.com
-      repo_gpgcheck=1
+      [vector]
+      name = Vector
+      baseurl = https://yum.vector.dev/stable/vector-0/$basearch/
       enabled=1
       gpgcheck=1
-      gpgkey=https://rpm.grafana.com/gpg.key
-      sslverify=1
-      sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+      repo_gpgcheck=1
+      priority=1
+      gpgkey=https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
+             https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public
+             https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
+    trust:
+      - https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
+      - https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public
+      - https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
 package:
   - curl
   - dnf-automatic
@@ -32,7 +35,7 @@ package:
   - ncurses-compat-libs
   - oqsprovider
   - python3-pip
-  - rsyslog-gnutls
+  - vector
 user:
   -
     username: resonance
@@ -50,7 +53,6 @@ command:
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - test -x /usr/local/bin/yq || sudo pip install yq
-  - test -s /tmp/passmark-$(date --iso).json || ( cd /tmp && sudo TERM=xterm /usr/local/bin/pt_linux_x64 -D 2 -R 3 && yq . /tmp/results_all.yml > /tmp/passmark-$(date --iso).json )
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
