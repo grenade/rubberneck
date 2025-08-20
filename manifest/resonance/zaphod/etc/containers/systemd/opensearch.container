@@ -11,7 +11,7 @@ PublishPort=9200:9200
 PublishPort=9600:9600
 Volume=os-data:/usr/share/opensearch/data
 Environment=discovery.type=single-node
-Environment=OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g
+Environment="OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"
 Environment=plugins.security.disabled=true
 Environment=bootstrap.memory_lock=true
 Ulimit=memlock=-1:-1
