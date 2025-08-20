@@ -7,8 +7,8 @@ Wants=network-online.target mongo.service opensearch.service
 Image=graylog/graylog:6.3
 ContainerName=graylog
 EnvironmentFile=/etc/graylog/graylog.env
-PublishPort=9000:9000     # Web UI & API
-PublishPort=12201:12201   # GELF TCP
+PublishPort=9000:9000
+PublishPort=12201:12201
 PublishPort=12201:12201/udp
 # Health
 HealthCmd=curl -sf http://127.0.0.1:9000/api/system/lbstatus
