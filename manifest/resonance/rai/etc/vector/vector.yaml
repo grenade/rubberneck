@@ -14,22 +14,20 @@ transforms:
       - journald
     source: |
       .version = "1.1"
-
       .timestamp = to_float( to_unix_timestamp(.timestamp) ?? to_unix_timestamp(now()) )
       .host = get_hostname!()
-      ._service = to_string(._SYSTEMD_UNIT) ?? "unknown"
-
+      .short_message = (to_string(.message) ?? to_string(.MESSAGE) ?? to_string(.SYSLOG_MESSAGE) ?? "<no message>")
+      .full_message  = (to_string(.message) ?? to_string(.MESSAGE) ?? "")
+      ._service = to_string(._SYSTEMD_UNIT) ?? to_string(.SYSLOG_IDENTIFIER) ?? "unknown"
       if exists(.PRIORITY) {
         .level = to_int(.PRIORITY) ?? 6
         if .level < 0 { .level = 0 }
         if .level > 7 { .level = 7 }
       }
-
-      .short_message = to_string(.MESSAGE) ?? "<no message>"
-      .full_message  = to_string(.MESSAGE) ?? ""
-
       del(.SYSLOG_FACILITY)
       del(._SOURCE_MONOTONIC_TIMESTAMP)
+      del(.message)
+      del(.MESSAGE)
 
   includes_message:
     type: filter
@@ -38,13 +36,6 @@ transforms:
     condition: '.short_message != "<no message>"'
 
 sinks:
-  debug:
-    type: console
-    inputs:
-      - add_meta
-    target: stdout
-    encoding:
-      codec: json
   graylog:
     type: socket
     inputs:
