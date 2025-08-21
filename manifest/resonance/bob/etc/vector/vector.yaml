@@ -12,11 +12,26 @@ transforms:
     inputs:
       - journald
     source: |
+      .version = "1.1"
+
+      # GELF timestamp (seconds, float); fall back to now() if missing
+      .timestamp = to_unix_timestamp!(.timestamp ?? now())
+
       .host = get_hostname!()
-      .service = ._SYSTEMD_UNIT
-      if exists(.PRIORITY) { .level = to_int!(.PRIORITY) }
-      .short_message = string!(.MESSAGE)
-      .full_message = string!(.MESSAGE)
+
+      # Service name (as an additional GELF field must start with "_")
+      ._service = to_string(._SYSTEMD_UNIT) ?? "unknown"
+
+      # Syslog level 0..7 if present
+      if exists(.PRIORITY) { 
+        .level = to_int(.PRIORITY) ?? .PRIORITY 
+      }
+
+      # Message fields (safe conversion + defaults)
+      .short_message = to_string(.MESSAGE) ?? "<no message>"
+      .full_message  = to_string(.MESSAGE) ?? ""
+
+      # Optional tidy-up (safe even if absent)
       del(.SYSLOG_FACILITY)
       del(._SOURCE_MONOTONIC_TIMESTAMP)
 sinks:
