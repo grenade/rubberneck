@@ -27,8 +27,8 @@ sinks:
     address: "logs.res.fm:12201"
     mode: tcp
     framing:
-      method: character_delimited
-      character: "\0"
+      character_delimited:
+        character: "\0"
     encoding:
       codec: json
     buffer:
