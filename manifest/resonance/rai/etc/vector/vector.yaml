@@ -38,6 +38,13 @@ transforms:
     condition: '.short_message != "<no message>"'
 
 sinks:
+  debug:
+    type: console
+    inputs:
+      - add_meta
+    target: stdout
+    encoding:
+      codec: json
   graylog:
     type: socket
     inputs:
