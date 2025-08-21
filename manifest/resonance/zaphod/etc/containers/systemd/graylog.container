@@ -14,7 +14,7 @@ Environment=GRAYLOG_MONGODB_URI=mongodb://mongo:27017/graylog
 Environment=GRAYLOG_TRUSTED_PROXIES=127.0.0.1/32
 Network=graylog
 NetworkAlias=graylog
-PublishPort=9000:9000
+PublishPort=127.0.0.1:9000:9000
 PublishPort=12201:12201
 PublishPort=12201:12201/udp
 HealthCmd=curl -sf http://127.0.0.1:9000/api/system/lbstatus
