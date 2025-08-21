@@ -20,7 +20,6 @@ HealthInterval=30s
 HealthRetries=20
 HealthTimeout=5s
 NoNewPrivileges=yes
-PullPolicy=always
 RestartPolicy=on-failure:5
 
 [Install]
