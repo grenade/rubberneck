@@ -27,9 +27,7 @@ HealthCmd=curl -fsS http://127.0.0.1:4180/ping
 HealthInterval=30s
 HealthTimeout=5s
 HealthRetries=5
-RestartPolicy=on-failure:5
 NoNewPrivileges=yes
-PullPolicy=always
 
 [Install]
 WantedBy=multi-user.target
