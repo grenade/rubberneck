@@ -1,13 +1,15 @@
 [Unit]
 Description=OpenSearch 2.15 for Graylog (Podman Quadlet)
-After=network-online.target
-Wants=network-online.target
+After=network-online.target graylog.network
+Wants=network-online.target graylog.network
 
 [Container]
 Image=docker.io/opensearchproject/opensearch:2.15.0
 ContainerName=opensearch
 EnvironmentFile=/etc/opensearch/opensearch.env
-Pod=log-aggregator
+Network=graylog
+PublishPort=9200:9200
+PublishPort=9600:9600
 Volume=os-data:/usr/share/opensearch/data
 Environment=discovery.type=single-node
 Environment="OPENSEARCH_JAVA_OPTS=-Xms4g -Xmx4g"

@@ -1,20 +1,27 @@
 [Unit]
 Description=Graylog Server (Podman Quadlet)
-After=network-online.target mongo.service opensearch.service
-Wants=network-online.target mongo.service opensearch.service
+After=network-online.target graylog.network mongo.service opensearch.service
+Wants=network-online.target graylog.network mongo.service opensearch.service
 
 [Container]
 Image=docker.io/graylog/graylog:6.3
 ContainerName=graylog
 EnvironmentFile=/etc/graylog/graylog.env
-Pod=log-aggregator
-# Health
+Environment=GRAYLOG_HTTP_EXTERNAL_URI=https://logs.res.fm/
+Environment="GRAYLOG_SERVER_JAVA_OPTS=-Xms2g -Xmx2g"
+Environment=GRAYLOG_ELASTICSEARCH_HOSTS=http://opensearch:9200
+Environment=GRAYLOG_MONGODB_URI=mongodb://mongo:27017/graylog
+Network=graylog
+PublishPort=9000:9000
+PublishPort=12201:12201
+PublishPort=12201:12201/udp
 HealthCmd=curl -sf http://127.0.0.1:9000/api/system/lbstatus
 HealthInterval=30s
 HealthRetries=20
 HealthTimeout=5s
-# Security
 NoNewPrivileges=yes
+PullPolicy=always
+RestartPolicy=on-failure:5
 
 [Install]
 WantedBy=multi-user.target
