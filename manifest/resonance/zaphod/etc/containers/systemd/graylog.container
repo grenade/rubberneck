@@ -11,6 +11,7 @@ Environment=GRAYLOG_HTTP_EXTERNAL_URI=https://logs.res.fm/
 Environment="GRAYLOG_SERVER_JAVA_OPTS=-Xms2g -Xmx2g"
 Environment=GRAYLOG_ELASTICSEARCH_HOSTS=http://opensearch:9200
 Environment=GRAYLOG_MONGODB_URI=mongodb://mongo:27017/graylog
+Environment=GRAYLOG_TRUSTED_PROXIES=127.0.0.1/32
 Network=graylog
 NetworkAlias=graylog
 PublishPort=9000:9000

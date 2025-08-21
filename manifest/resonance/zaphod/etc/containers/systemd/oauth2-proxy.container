@@ -1,0 +1,35 @@
+[Unit]
+Description=oauth2-proxy for graylog (github sso)
+After=network-online.target
+Wants=network-online.target
+
+[Container]
+Image=quay.io/oauth2-proxy/oauth2-proxy:v7.6.0
+ContainerName=oauth2-proxy
+PublishPort=127.0.0.1:4180:4180
+EnvironmentFile=/etc/oauth2-proxy/oauth2-proxy.env
+Environment=OAUTH2_PROXY_PROVIDER=github
+Environment=OAUTH2_PROXY_EMAIL_DOMAINS=*
+Environment=OAUTH2_PROXY_SCOPE=read:org,user:email
+Environment=OAUTH2_PROXY_GITHUB_ORG=qsafe-af
+
+Environment=OAUTH2_PROXY_REDIRECT_URL=https://logs.res.fm/oauth2/callback
+Environment=OAUTH2_PROXY_COOKIE_SECURE=true
+Environment=OAUTH2_PROXY_COOKIE_DOMAINS=logs.res.fm
+Environment=OAUTH2_PROXY_REVERSE_PROXY=true
+Environment=OAUTH2_PROXY_SET_XAUTHREQUEST=true
+Environment=OAUTH2_PROXY_PASS_USER_HEADERS=true
+
+Environment=OAUTH2_PROXY_UPSTREAMS=static://200
+Environment=OAUTH2_PROXY_HTTP_ADDRESS=0.0.0.0:4180
+
+HealthCmd=curl -fsS http://127.0.0.1:4180/ping
+HealthInterval=30s
+HealthTimeout=5s
+HealthRetries=5
+RestartPolicy=on-failure:5
+NoNewPrivileges=yes
+PullPolicy=always
+
+[Install]
+WantedBy=multi-user.target
