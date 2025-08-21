@@ -124,16 +124,6 @@ file:
       post:
         - systemctl is-active opensearch.service && sudo systemctl restart opensearch.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/oauth2-proxy/oauth2-proxy.env.gpg
-    target: /etc/oauth2-proxy/oauth2-proxy.env
-    sha256: 28d47cd5dccb9c27baee406844e6021f1b077dfd84e3a3a9510a07541c14c83a
-    chmod: 600
-    command:
-      pre:
-        - test -d /etc/oauth2-proxy || sudo install -d -m 0755 /etc/oauth2-proxy
-      post:
-        - systemctl is-active oauth2-proxy.service && sudo systemctl restart oauth2-proxy.service
-  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/sysctl.d/99-opensearch.conf
     target: /etc/sysctl.d/99-opensearch.conf
     command:
@@ -181,16 +171,6 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled graylog.service || sudo systemctl enable graylog.service
         - systemctl is-active graylog.service || sudo systemctl start graylog.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/oauth2-proxy.container
-    target: /etc/containers/systemd/oauth2-proxy.container
-    command:
-      pre:
-        - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
-      post:
-        - sudo systemctl daemon-reload
-        - systemctl is-enabled oauth2-proxy.service || sudo systemctl enable oauth2-proxy.service
-        - systemctl is-active oauth2-proxy.service || sudo systemctl start oauth2-proxy.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/nginx/sites-available/logs.res.fm.conf
     target: /etc/nginx/sites-available/logs.res.fm.conf
