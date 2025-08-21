@@ -28,6 +28,7 @@ repository:
 package:
   - curl
   - dnf-automatic
+  - firewalld
   - git
   - jq
   - podman
@@ -44,7 +45,6 @@ user:
 firewall:
   port:
     - 9100/tcp # prometheus node exporter
-    - 9000/tcp # graylog
     - 12201/tcp # graylog ingest
     - 12201/udp # graylog ingest
 command:
