@@ -26,8 +26,11 @@ sinks:
       - add_meta
     address: "logs.res.fm:12201"
     mode: tcp
+    framing:
+      method: character_delimited
+      character: "\0"
     encoding:
-      codec: gelf
+      codec: json
     buffer:
       type: disk
       max_size: 536870912
