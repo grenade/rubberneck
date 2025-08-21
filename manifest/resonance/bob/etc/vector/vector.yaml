@@ -29,7 +29,7 @@ sinks:
     framing:
       method: character_delimited
       character_delimited:
-        character: "\0"
+        delimiter: "\0"
     encoding:
       codec: json
     buffer:
