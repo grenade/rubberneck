@@ -6,6 +6,7 @@ sources:
       - resonance-node.service
       - sshd.service
       - substrate-telemetry-shard.service
+
 transforms:
   add_meta:
     type: remap
@@ -13,21 +14,34 @@ transforms:
       - journald
     source: |
       .version = "1.1"
+
       .timestamp = to_float( to_unix_timestamp(.timestamp) ?? to_unix_timestamp(now()) )
       .host = get_hostname!()
       ._service = to_string(._SYSTEMD_UNIT) ?? "unknown"
-      if exists(.PRIORITY) { .level = to_int(.PRIORITY) ?? .PRIORITY }
-      if exists(.level) { .level = max(0, min(7, to_int(.level) ?? 6)) }
-      if is_null(.MESSAGE) { drop() }
+
+      if exists(.PRIORITY) {
+        .level = to_int(.PRIORITY) ?? 6
+        if .level < 0 { .level = 0 }
+        if .level > 7 { .level = 7 }
+      }
+
       .short_message = to_string(.MESSAGE) ?? "<no message>"
       .full_message  = to_string(.MESSAGE) ?? ""
+
       del(.SYSLOG_FACILITY)
       del(._SOURCE_MONOTONIC_TIMESTAMP)
+
+  includes_message:
+    type: filter
+    inputs:
+      - add_meta
+    condition: '.short_message != "<no message>"'
+
 sinks:
   graylog:
     type: socket
     inputs:
-      - add_meta
+      - includes_message
     address: "logs.res.fm:12201"
     mode: tcp
     framing:
@@ -38,5 +52,5 @@ sinks:
       codec: json
     buffer:
       type: disk
-      max_size: 536870912
+      max_size: 536870912   # bytes
       when_full: block
