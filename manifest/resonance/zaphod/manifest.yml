@@ -186,15 +186,15 @@ file:
         - systemctl is-enabled graylog.service || sudo systemctl enable graylog.service
         - systemctl is-active graylog.service || sudo systemctl start graylog.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/auth2-proxy.container
-    target: /etc/containers/systemd/auth2-proxy.container
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/containers/systemd/oauth2-proxy.container
+    target: /etc/containers/systemd/oauth2-proxy.container
     command:
       pre:
         - test -d /etc/containers/systemd || sudo mkdir -p /etc/containers/systemd
       post:
         - sudo systemctl daemon-reload
-        - systemctl is-enabled auth2-proxy.service || sudo systemctl enable auth2-proxy.service
-        - systemctl is-active auth2-proxy.service || sudo systemctl start auth2-proxy.service
+        - systemctl is-enabled oauth2-proxy.service || sudo systemctl enable oauth2-proxy.service
+        - systemctl is-active oauth2-proxy.service || sudo systemctl start oauth2-proxy.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/zaphod/etc/nginx/sites-available/logs.res.fm.conf
     target: /etc/nginx/sites-available/logs.res.fm.conf
