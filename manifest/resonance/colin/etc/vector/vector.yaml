@@ -29,5 +29,5 @@ sinks:
       codec: gelf
     buffer:
       type: disk
-      max_size: 512mb
+      max_size: 536870912
       when_full: block
