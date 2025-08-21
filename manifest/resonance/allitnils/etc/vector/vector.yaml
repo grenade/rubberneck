@@ -17,7 +17,8 @@ transforms:
       if exists(.PRIORITY) { .level = to_int!(.PRIORITY) }
       .short_message = string!(.MESSAGE)
       .full_message = string!(.MESSAGE)
-      del(.SYSLOG_FACILITY, ._SOURCE_MONOTONIC_TIMESTAMP)
+      del(.SYSLOG_FACILITY)
+      del(._SOURCE_MONOTONIC_TIMESTAMP)
 sinks:
   graylog:
     type: socket
