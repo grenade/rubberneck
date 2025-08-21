@@ -8,31 +8,43 @@ sources:
       - substrate-telemetry-shard.service
 
 transforms:
-  add_meta:
+  to_gelf:
     type: remap
     inputs:
       - journald
     source: |
+      ._orig = .
+      ts = to_unix_timestamp(.timestamp) ?? to_unix_timestamp(now())
+      lvl = 6
+      if exists(.PRIORITY) { lvl = to_int(.PRIORITY) ?? 6 }
+      if lvl < 0 { lvl = 0 }
+      if lvl > 7 { lvl = 7 }
+      sm = to_string(.message)
+      if is_null(sm) { sm = to_string(.MESSAGE) }
+      if is_null(sm) { sm = to_string(.SYSLOG_MESSAGE) }
+      if is_null(sm) { sm = to_string(._orig.SYSLOG_IDENTIFIER) }
+      if is_null(sm) { sm = "<log>" }
+      fm = to_string(.message)
+      if is_null(fm) { fm = to_string(.MESSAGE) }
+      if is_null(fm) { fm = "" }
+      svc = to_string(._SYSTEMD_UNIT)
+      if is_null(svc) { svc = to_string(.SYSLOG_IDENTIFIER) }
+      if is_null(svc) { svc = "unknown" }
+      . = {}
       .version = "1.1"
-      .timestamp = to_float( to_unix_timestamp(.timestamp) ?? to_unix_timestamp(now()) )
+      .timestamp = to_float(ts)
       .host = get_hostname!()
-      .short_message = (to_string(.message) ?? to_string(.MESSAGE) ?? to_string(.SYSLOG_MESSAGE) ?? "<no message>")
-      .full_message  = (to_string(.message) ?? to_string(.MESSAGE) ?? "")
-      ._service = to_string(._SYSTEMD_UNIT) ?? to_string(.SYSLOG_IDENTIFIER) ?? "unknown"
-      if exists(.PRIORITY) {
-        .level = to_int(.PRIORITY) ?? 6
-        if .level < 0 { .level = 0 }
-        if .level > 7 { .level = 7 }
-      }
-      del(.SYSLOG_FACILITY)
-      del(._SOURCE_MONOTONIC_TIMESTAMP)
-      del(.message)
-      del(.MESSAGE)
+      .short_message = sm
+      .full_message = fm
+      .level = lvl
+      ._service = svc
+      ._unit = svc
+      del(._orig)
 
   includes_message:
     type: filter
     inputs:
-      - add_meta
+      - to_gelf
     condition: '.short_message != "<no message>"'
 
 sinks:
