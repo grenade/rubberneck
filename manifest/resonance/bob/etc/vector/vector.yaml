@@ -7,7 +7,7 @@ sources:
       - sshd.service
       - substrate-telemetry-shard.service
 transforms:
-  shape_for_gelf:
+  add_meta:
     type: remap
     inputs:
       - journald
@@ -20,8 +20,14 @@ transforms:
       del(.SYSLOG_FACILITY, ._SOURCE_MONOTONIC_TIMESTAMP)
 sinks:
   graylog:
-    type: gelf
+    type: socket
     inputs:
-      - shape_for_gelf
-    address: "tcp://logs.res.fm:12201"
-    compression: gzip
+      - add_meta
+    address: "logs.res.fm:12201"
+    mode: tcp
+    encoding:
+      codec: gelf
+    buffer:
+      type: disk
+      max_size: 512mb
+      when_full: block

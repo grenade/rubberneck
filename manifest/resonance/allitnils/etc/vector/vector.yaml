@@ -14,10 +14,20 @@ transforms:
     source: |
       .host = get_hostname!()
       .service = ._SYSTEMD_UNIT
+      if exists(.PRIORITY) { .level = to_int!(.PRIORITY) }
+      .short_message = string!(.MESSAGE)
+      .full_message = string!(.MESSAGE)
+      del(.SYSLOG_FACILITY, ._SOURCE_MONOTONIC_TIMESTAMP)
 sinks:
   graylog:
-    type: gelf
+    type: socket
     inputs:
       - add_meta
-    address: "tcp://zaphod.res.fm:12201"
-    compression: "gzip"
+    address: "logs.res.fm:12201"
+    mode: tcp
+    encoding:
+      codec: gelf
+    buffer:
+      type: disk
+      max_size: 512mb
+      when_full: block
