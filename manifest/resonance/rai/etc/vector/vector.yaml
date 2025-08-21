@@ -15,25 +15,22 @@ transforms:
     source: |
       ._orig = .
       ts = to_unix_timestamp(.timestamp) ?? to_unix_timestamp(now())
-      lvl = 6
-      if exists(.PRIORITY) {
-        lvl_tmp = to_int(.PRIORITY) ?? null
-        if !is_null(lvl_tmp) { lvl = lvl_tmp }
-        if lvl < 0 { lvl = 0 }
-        if lvl > 7 { lvl = 7 }
-      }
+      lvl_num = to_int(.PRIORITY) ?? 6
+      if lvl_num < 0 { lvl_num = 0 }
+      if lvl_num > 7 { lvl_num = 7 }
       sm = to_string(.message) ?? (to_string(.MESSAGE) ?? (to_string(.SYSLOG_MESSAGE) ?? "<log>"))
       fm = to_string(.message) ?? (to_string(.MESSAGE) ?? "")
       svc = to_string(._SYSTEMD_UNIT) ?? (to_string(.SYSLOG_IDENTIFIER) ?? "unknown")
+
       . = {}
       .version = "1.1"
       .timestamp = to_float(ts)
       .host = get_hostname!()
       .short_message = sm
       .full_message  = fm
-      .level = lvl
+      .level = lvl_num
       ._service = svc
-      ._unit = svc
+      ._unit    = svc
 
   includes_message:
     type: filter
