@@ -12,6 +12,7 @@ Environment="GRAYLOG_SERVER_JAVA_OPTS=-Xms2g -Xmx2g"
 Environment=GRAYLOG_ELASTICSEARCH_HOSTS=http://opensearch:9200
 Environment=GRAYLOG_MONGODB_URI=mongodb://mongo:27017/graylog
 Network=graylog
+NetworkAlias=graylog
 PublishPort=9000:9000
 PublishPort=12201:12201
 PublishPort=12201:12201/udp

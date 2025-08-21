@@ -8,6 +8,7 @@ Image=docker.io/opensearchproject/opensearch:2.15.0
 ContainerName=opensearch
 EnvironmentFile=/etc/opensearch/opensearch.env
 Network=graylog
+NetworkAlias=opensearch
 PublishPort=9200:9200
 PublishPort=9600:9600
 Volume=os-data:/usr/share/opensearch/data
