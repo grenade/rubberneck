@@ -8,33 +8,34 @@ sources:
       - substrate-telemetry-shard.service
 
 transforms:
-  add_meta:
+  to_gelf:
     type: remap
     inputs:
       - journald
     source: |
+      ._orig = .
+      ts = to_unix_timestamp(.timestamp) ?? to_unix_timestamp(now())
+      lvl_num = to_int(.PRIORITY) ?? 6
+      if lvl_num < 0 { lvl_num = 0 }
+      if lvl_num > 7 { lvl_num = 7 }
+      sm = to_string(.message) ?? (to_string(.MESSAGE) ?? (to_string(.SYSLOG_MESSAGE) ?? "<log>"))
+      fm = to_string(.message) ?? (to_string(.MESSAGE) ?? "")
+      svc = to_string(._SYSTEMD_UNIT) ?? (to_string(.SYSLOG_IDENTIFIER) ?? "unknown")
+
+      . = {}
       .version = "1.1"
-
-      .timestamp = to_float( to_unix_timestamp(.timestamp) ?? to_unix_timestamp(now()) )
+      .timestamp = to_float(ts)
       .host = get_hostname!()
-      ._service = to_string(._SYSTEMD_UNIT) ?? "unknown"
-
-      if exists(.PRIORITY) {
-        .level = to_int(.PRIORITY) ?? 6
-        if .level < 0 { .level = 0 }
-        if .level > 7 { .level = 7 }
-      }
-
-      .short_message = to_string(.MESSAGE) ?? "<no message>"
-      .full_message  = to_string(.MESSAGE) ?? ""
-
-      del(.SYSLOG_FACILITY)
-      del(._SOURCE_MONOTONIC_TIMESTAMP)
+      .short_message = sm
+      .full_message  = fm
+      .level = lvl_num
+      ._service = svc
+      ._unit    = svc
 
   includes_message:
     type: filter
     inputs:
-      - add_meta
+      - to_gelf
     condition: '.short_message != "<no message>"'
 
 sinks:
@@ -52,5 +53,5 @@ sinks:
       codec: json
     buffer:
       type: disk
-      max_size: 536870912   # bytes
+      max_size: 536870912
       when_full: block
