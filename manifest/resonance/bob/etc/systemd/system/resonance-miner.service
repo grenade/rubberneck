@@ -2,7 +2,7 @@
 Description=resonance miner
 Wants=network-online.target
 After=network-online.target
-ConditionFileIsExecutable=/usr/local/bin/resonance-miner-optimised
+ConditionFileIsExecutable=/usr/local/bin/quantus-miner-optimised
 
 [Service]
 User=resonance
