@@ -56,6 +56,7 @@ firewall:
     - 8001/tcp # substrate telemetry shard
     - 9100/tcp # prometheus node exporter
     - 9615/tcp # resonance metrics
+    - 9919/tcp # miner metrics
     - 9944/tcp # resonance rpc/ws
     - 30215/tcp # resonance p2p
 command:
@@ -121,10 +122,12 @@ file:
     command:
       pre:
         - systemctl is-active --quiet resonance-miner.service && sudo systemctl stop resonance-miner.service
+        - systemctl is-active --quiet resonance-miner.service && sudo systemctl stop resonance-miner.service
       post:
         - sudo systemctl daemon-reload
         - sudo systemctl start resonance-miner.service
         - systemctl is-enabled resonance-miner.service || sudo systemctl enable resonance-miner.service
+        - systemctl is-active --quiet resonance-node.service || sudo systemctl start resonance-node.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/rai/etc/systemd/system/resonance-node.service
     target: /etc/systemd/system/resonance-node.service
