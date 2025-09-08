@@ -6,7 +6,7 @@ Requires=resonance-miner.service
 After=resonance-miner.service
 Requires=substrate-telemetry-shard.service
 After=substrate-telemetry-shard.service
-ConditionFileIsExecutable=/usr/local/bin/resonance-node
+ConditionFileIsExecutable=/usr/local/bin/quantus-node
 ConditionPathExists=/var/lib/resonance/%l-node.key
 
 [Service]
@@ -32,7 +32,8 @@ ExecStart=/usr/local/bin/quantus-node \
     --bootnodes \
         /dns/a1.t.res.fm/tcp/30201/p2p/QmYpbayBgKbhfHGn2kNWWhh3DHwBnPaLDMYvaGmT78oAP7 \
         /dns/a3.t.res.fm/tcp/30202/p2p/QmQLf3wj7KqqtTjtrq7iQZY5JokQ3k7HHLGe5hNvHSxnFr \
-    --telemetry-url 'ws://127.0.0.1:8001/submit 1'
+    --telemetry-url 'ws://127.0.0.1:8001/submit 1' \
+    --external-miner-url http://127.0.0.1:9833
 Restart=always
 RestartSec=120
 
