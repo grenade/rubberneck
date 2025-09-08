@@ -12,7 +12,8 @@ ExecStart=/usr/local/bin/quantus-miner \
     --cores 4 \
     --engine cpu-baseline \
     --port 9833 \
-    --metrics-port 9919
+    --metrics-port 9919 \
+    --progress-chunk-ms 2000
 Restart=always
 RestartSec=120
 
