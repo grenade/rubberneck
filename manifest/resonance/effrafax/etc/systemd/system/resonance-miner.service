@@ -2,13 +2,13 @@
 Description=resonance miner
 Wants=network-online.target
 After=network-online.target
-ConditionFileIsExecutable=/usr/local/bin/quantus-miner-optimised
+ConditionFileIsExecutable=/usr/local/bin/quantus-miner
 
 [Service]
 User=resonance
 Group=resonance
 Environment=RUST_LOG=info,miner=debug
-ExecStart=/usr/local/bin/quantus-miner-optimised \
+ExecStart=/usr/local/bin/quantus-miner \
     --cores 4 \
     --engine cpu-baseline \
     --port 9833 \
