@@ -56,6 +56,7 @@ firewall:
     - 8001/tcp # substrate telemetry shard
     - 9100/tcp # prometheus node exporter
     - 9615/tcp # resonance metrics
+    - 9919/tcp # resonance metrics
     - 9944/tcp # resonance rpc/ws
     - 30104/tcp # resonance p2p
 command:
