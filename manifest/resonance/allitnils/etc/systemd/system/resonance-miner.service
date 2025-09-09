@@ -9,7 +9,7 @@ User=resonance
 Group=resonance
 Environment=RUST_LOG=info,miner=debug
 ExecStart=/usr/local/bin/quantus-miner \
-    --cores 4 \
+    --workers 4 \
     --engine cpu-baseline \
     --port 9833 \
     --metrics-port 9919 \
