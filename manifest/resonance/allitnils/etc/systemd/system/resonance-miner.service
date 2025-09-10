@@ -13,7 +13,7 @@ ExecStart=/usr/local/bin/quantus-miner \
     --engine cpu-montgomery \
     --port 9833 \
     --metrics-port 9919 \
-    --progress-chunk-ms 2000
+    --progress-chunk-ms 5000
 Restart=always
 RestartSec=120
 
