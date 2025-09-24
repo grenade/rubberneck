@@ -7,7 +7,7 @@ After=schroedinger-miner.service
 Requires=substrate-telemetry-shard.service
 After=substrate-telemetry-shard.service
 ConditionFileIsExecutable=/usr/local/bin/quantus-node
-ConditionPathExists=/var/lib/schroedinger/chains/heisenberg/network/secret_dilithium
+ConditionPathExists=/var/lib/schroedinger/chains/schroedinger/network/secret_dilithium
 
 [Service]
 User=schroedinger
@@ -16,8 +16,8 @@ ExecStart=/usr/local/bin/quantus-node \
     --validator \
     --name %l \
     --base-path /var/lib/schroedinger \
-    --node-key-file /var/lib/schroedinger/chains/heisenberg/network/secret_dilithium \
-    --rewards-address qzoWGSP5ZaPssu6fvdn55xH2x1C1dhoNCFc3BZBWJ7fFVDUxc \
+    --node-key-file /var/lib/schroedinger/chains/schroedinger/network/secret_dilithium \
+    --rewards-address qzq6AsTmxoaTANy3mETvEKDHhFGjxLN9SPgi2rmcxttQfJenn \
     --prometheus-external \
     --prometheus-port 9615 \
     --rpc-methods auto \
