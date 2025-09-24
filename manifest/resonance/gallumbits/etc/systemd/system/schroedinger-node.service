@@ -1,0 +1,38 @@
+[Unit]
+Description=schroedinger node
+Wants=network-online.target
+After=network-online.target
+Requires=schroedinger-miner.service
+After=schroedinger-miner.service
+Requires=substrate-telemetry-shard.service
+After=substrate-telemetry-shard.service
+ConditionFileIsExecutable=/usr/local/bin/quantus-node
+ConditionPathExists=/var/lib/schroedinger/chains/heisenberg/network/secret_dilithium
+
+[Service]
+User=schroedinger
+Group=schroedinger
+ExecStart=/usr/local/bin/quantus-node \
+    --validator \
+    --name %l \
+    --base-path /var/lib/schroedinger \
+    --node-key-file /var/lib/schroedinger/chains/heisenberg/network/secret_dilithium \
+    --rewards-address qzkWXABT5pmd2ixBgCcXoXevaYn5AuK7XA5Fu155VTTDnZDXy \
+    --prometheus-external \
+    --prometheus-port 9615 \
+    --rpc-methods auto \
+    --unsafe-rpc-external \
+    --rpc-port 9944 \
+    --rpc-cors all \
+    --listen-addr /ip4/0.0.0.0/tcp/30208 \
+    --public-addr /dns/a2.quantu.se/tcp/30208/p2p/QmdZTV2ms8kEmTUBFdKTJ9rrTEN12ikVckd5XLTvYByL9m \
+    --bootnodes \
+        /dns/a1.quantu.se/tcp/30205/p2p/QmUbo4cXQ1dognDfgQYNHgnsyaeS5mz1MLvKghHjJFE9vw \
+        /dns/a3.quantu.se/tcp/30102/p2p/QmbbbsXb18FjpR77Pv2QxsQ44kH2V74vcsaANd7YeRY4s7 \
+    --telemetry-url 'ws://127.0.0.1:8001/submit 1' \
+    --external-miner-url http://127.0.0.1:9833
+Restart=always
+RestartSec=120
+
+[Install]
+WantedBy=multi-user.target
