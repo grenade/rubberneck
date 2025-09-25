@@ -30,8 +30,7 @@ ExecStart=/usr/local/bin/quantus-node \
     --bootnodes \
         /dns/a2.quantu.se/tcp/30208/p2p/QmPUeRrypSFPA2AVdE2vW7N64DTx9hWfrgQaTqja45d9GL \
         /dns/a3.quantu.se/tcp/30102/p2p/QmVDQEK3NtJMgUhCNkfUbxvoKPcowkcu16cKCrqqemPbEq \
-    --telemetry-url 'ws://127.0.0.1:8001/submit 1' \
-    --external-miner-url http://127.0.0.1:9833
+    --telemetry-url 'ws://127.0.0.1:8001/submit 1'
 Restart=always
 RestartSec=120
 
