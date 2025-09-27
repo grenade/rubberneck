@@ -83,6 +83,20 @@ archive:
           post:
             - sudo systemctl daemon-reload
             - sudo systemctl start prometheus-node-exporter.service
+  -
+    source: https://github.com/Quantus-Network/chain/releases/download/v0.2.5/quantus-node-v0.2.5-x86_64-unknown-linux-gnu.tar.gz
+    target: /tmp/quantus-node-v0.2.5-x86_64-unknown-linux-gnu.tar.gz
+    sha256: 52a1db67b6d515a2329ee6853505d988b08ba0cc9a9cfcbe800dc9fa713ff6af
+    extract:
+      -
+        source: quantus-node
+        target: /usr/local/bin/quantus-node
+        sha256: dc2f79e13a1d2145edb347c64e266379e85a1a88f5785af61c719c8f2722b338
+        command:
+          pre:
+            - systemctl is-active --quiet schroedinger-node.service && sudo systemctl stop schroedinger-node.service
+          post:
+            - sudo systemctl start schroedinger-node.service
 file:
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/gallumbits/etc/vector/vector.yaml

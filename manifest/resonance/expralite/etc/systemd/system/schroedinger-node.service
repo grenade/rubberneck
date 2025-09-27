@@ -13,7 +13,7 @@ ConditionPathExists=/var/lib/schroedinger/chains/schroedinger/network/secret_dil
 User=schroedinger
 Group=schroedinger
 ExecStart=/usr/local/bin/quantus-node \
-    --chain /usr/local/share/schroedinger.json \
+    --chain schrodinger \
     --validator \
     --name %l \
     --base-path /var/lib/schroedinger \
