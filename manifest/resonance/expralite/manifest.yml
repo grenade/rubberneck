@@ -84,7 +84,7 @@ archive:
             - sudo systemctl daemon-reload
             - sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://github.com/Quantus-Network/chain/releases/download/v0.2.6/quantus-node-v0.2.7-x86_64-unknown-linux-gnu.tar.gz
+    source: https://github.com/Quantus-Network/chain/releases/download/v0.2.7/quantus-node-v0.2.7-x86_64-unknown-linux-gnu.tar.gz
     target: /tmp/quantus-node-v0.2.7-x86_64-unknown-linux-gnu.tar.gz
     sha256: c530ddeb37b4370d9e0e5452c4ee37442cb932a64dcdba980cbce6e1e8520fee
     extract:
