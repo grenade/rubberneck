@@ -10,7 +10,7 @@ Group=resonance
 Environment=RUST_LOG=info,miner=debug
 ExecStart=/usr/local/bin/quantus-miner \
     --workers 4 \
-    --engine cpu-montgomery \
+    --engine cpu-fast \
     --port 9833 \
     --metrics-port 9919 \
     --progress-chunk-ms 2000
