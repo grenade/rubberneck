@@ -42,6 +42,11 @@ user:
     authorized:
       keys:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGxhedWcnCqs5Kdw/aMgYH0ofFhKK9cH4bR3vlRQm6Rd
+
+        # engineering
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJnmT8wFTfEMxa+yTlAOZcCrq/5bJzUZc6os8fisMUfW
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGFqCub+5eqxv99NfoPo0rbMIGOvETjJndVC4QPGEP9E
+        - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQFXWITZHUHb/N4OElaN2+DnoVLHlHDct98u8Pp97DT
 firewall:
   port:
     - 9100/tcp
