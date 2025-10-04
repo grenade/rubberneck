@@ -9,8 +9,7 @@ User=schroedinger
 Group=schroedinger
 Environment=RUST_LOG=info,miner=debug
 ExecStart=/usr/local/bin/quantus-miner \
-    --workers 4 \
-    --engine cpu-fast \
+    --engine cpu-montgomery \
     --port 9833 \
     --metrics-port 9919 \
     --progress-chunk-ms 5000
