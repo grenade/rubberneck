@@ -84,14 +84,14 @@ archive:
             - sudo systemctl daemon-reload
             - sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://github.com/Quantus-Network/chain/releases/download/v0.2.7/quantus-node-v0.2.7-x86_64-unknown-linux-gnu.tar.gz
-    target: /tmp/quantus-node-v0.2.7-x86_64-unknown-linux-gnu.tar.gz
-    sha256: c530ddeb37b4370d9e0e5452c4ee37442cb932a64dcdba980cbce6e1e8520fee
+    source: https://github.com/Quantus-Network/chain/releases/download/v0.2.8/quantus-node-v0.2.8-x86_64-unknown-linux-gnu.tar.gz
+    target: /tmp/quantus-node-v0.2.8-x86_64-unknown-linux-gnu.tar.gz
+    sha256: aaa78fd7bfdcbd56c00db3f1310eaf120719587e5d2035dbb9c14aaaede0dbec
     extract:
       -
         source: quantus-node
         target: /usr/local/bin/quantus-node
-        sha256: 2ad092878a42d71e0b80321081996c3c38f17225add3b58937c184bc0c8036bf
+        sha256: b0b27349fa5ce9ae29ddbba14b06564a774477c0e1c6f611933991e5cec5d10d
         command:
           pre:
             - systemctl is-active --quiet schroedinger-node.service && sudo systemctl stop schroedinger-node.service
