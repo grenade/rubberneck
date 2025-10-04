@@ -25,6 +25,8 @@ ExecStart=/usr/local/bin/quantus-node \
     --unsafe-rpc-external \
     --rpc-port 9944 \
     --rpc-cors all \
+    --in-peers 256 \
+    --out-peers 256 \
     --listen-addr /ip4/0.0.0.0/tcp/30208 \
     --public-addr /dns/a2.quantu.se/tcp/30208/p2p/QmPUeRrypSFPA2AVdE2vW7N64DTx9hWfrgQaTqja45d9GL \
     --bootnodes \
