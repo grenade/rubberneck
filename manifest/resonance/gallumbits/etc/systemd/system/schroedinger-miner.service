@@ -7,7 +7,6 @@ ConditionFileIsExecutable=/usr/local/bin/quantus-miner
 [Service]
 User=schroedinger
 Group=schroedinger
-Environment=RUST_LOG=info,miner=debug
 ExecStart=/usr/local/bin/quantus-miner \
     --engine cpu-montgomery \
     --port 9833 \
