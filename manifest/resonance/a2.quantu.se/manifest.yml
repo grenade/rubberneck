@@ -33,7 +33,6 @@ command:
   - systemctl is-active prometheus-node-exporter.service || sudo systemctl restart prometheus-node-exporter.service
   - systemctl is-active schroedinger-miner.service || sudo systemctl restart schroedinger-miner.service
   - systemctl is-active schroedinger-node.service || sudo systemctl restart schroedinger-node.service
-  - systemctl is-active substrate-telemetry-shard.service || sudo systemctl restart substrate-telemetry-shard.service
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
@@ -118,13 +117,3 @@ file:
         - sudo systemctl daemon-reload
         - sudo systemctl start schroedinger-node.service
         - systemctl is-enabled schroedinger-node.service || sudo systemctl enable schroedinger-node.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/substrate-telemetry-shard.service
-    target: /etc/systemd/system/substrate-telemetry-shard.service
-    command:
-      pre:
-        - systemctl is-active --quiet substrate-telemetry-shard.service && sudo systemctl stop substrate-telemetry-shard.service
-      post:
-        - sudo systemctl daemon-reload
-        - sudo systemctl start substrate-telemetry-shard.service
-        - systemctl is-enabled substrate-telemetry-shard.service || sudo systemctl enable substrate-telemetry-shard.service

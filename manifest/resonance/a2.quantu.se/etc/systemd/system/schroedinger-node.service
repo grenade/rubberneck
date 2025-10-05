@@ -4,8 +4,6 @@ Wants=network-online.target
 After=network-online.target
 Requires=schroedinger-miner.service
 After=schroedinger-miner.service
-Requires=substrate-telemetry-shard.service
-After=substrate-telemetry-shard.service
 ConditionFileIsExecutable=/usr/local/bin/quantus-node
 ConditionPathExists=/var/lib/schroedinger/chains/schrodinger/network/secret_dilithium
 
@@ -32,7 +30,6 @@ ExecStart=/usr/local/bin/quantus-node \
     --bootnodes \
         /dns/a1.quantu.se/tcp/30205/p2p/QmdEk5BbraqEHwB6eG6sPkupkogsAKP9uFMFaAo6A6H3ZM \
         /dns/a3.quantu.se/tcp/30102/p2p/QmVDQEK3NtJMgUhCNkfUbxvoKPcowkcu16cKCrqqemPbEq \
-    --telemetry-url 'ws://127.0.0.1:8001/submit 1' \
     --external-miner-url http://127.0.0.1:9833
 Restart=always
 RestartSec=120
