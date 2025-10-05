@@ -95,7 +95,7 @@ file:
       post:
         - sudo systemctl start schroedinger-miner.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/gallumbits/etc/systemd/system/schroedinger-miner.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/a2.quantu.se/etc/systemd/system/schroedinger-miner.service
     target: /etc/systemd/system/schroedinger-miner.service
     command:
       pre:
@@ -108,7 +108,7 @@ file:
         - systemctl is-enabled schroedinger-miner.service || sudo systemctl enable schroedinger-miner.service
         - systemctl is-active --quiet schroedinger-node.service || sudo systemctl start schroedinger-node.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/gallumbits/etc/systemd/system/schroedinger-node.service
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/a2.quantu.se/etc/systemd/system/schroedinger-node.service
     target: /etc/systemd/system/schroedinger-node.service
     command:
       pre:
