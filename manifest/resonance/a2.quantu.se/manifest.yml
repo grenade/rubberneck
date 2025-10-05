@@ -1,40 +1,16 @@
 ---
-hostname: gallumbits
-domain: thgttg.com
+hostname: a2
+domain: quantu.se
 action: sync
 ssh:
-  address: 10.9.1.208
+  address: 117.55.193.58
   port: 22
 os:
-  name: fedora
-repository:
-  -
-    name: vector
-    list: |
-      [vector]
-      name = Vector
-      baseurl = https://yum.vector.dev/stable/vector-0/$basearch/
-      enabled=1
-      gpgcheck=1
-      repo_gpgcheck=1
-      priority=1
-      gpgkey=https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
-             https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public
-             https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
-    trust:
-      - https://keys.datadoghq.com/DATADOG_RPM_KEY_CURRENT.public
-      - https://keys.datadoghq.com/DATADOG_RPM_KEY_B01082D3.public
-      - https://keys.datadoghq.com/DATADOG_RPM_KEY_FD4BF915.public
+  name: ubuntu
 package:
   - curl
-  - dnf-automatic
   - git
-  - lshw
-  - ncurses-base
-  - ncurses-compat-libs
-  - oqsprovider
   - python3-pip
-  - vector
 user:
   -
     username: resonance
@@ -51,14 +27,6 @@ user:
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJnmT8wFTfEMxa+yTlAOZcCrq/5bJzUZc6os8fisMUfW
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGFqCub+5eqxv99NfoPo0rbMIGOvETjJndVC4QPGEP9E
         - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEQFXWITZHUHb/N4OElaN2+DnoVLHlHDct98u8Pp97DT
-firewall:
-  port:
-    - 8001/tcp # substrate telemetry shard
-    - 9100/tcp # prometheus node exporter
-    - 9615/tcp # schroedinger metrics
-    - 9919/tcp # miner metrics
-    - 9944/tcp # schroedinger rpc/ws
-    - 30108/tcp # schroedinger p2p
 command:
   - sudo passwd -l root
   - timedatectl show | grep Timezone=UTC &> /dev/null || sudo timedatectl set-timezone UTC
@@ -66,7 +34,6 @@ command:
   - systemctl is-active schroedinger-miner.service || sudo systemctl restart schroedinger-miner.service
   - systemctl is-active schroedinger-node.service || sudo systemctl restart schroedinger-node.service
   - systemctl is-active substrate-telemetry-shard.service || sudo systemctl restart substrate-telemetry-shard.service
-  - test -x /usr/local/bin/yq || sudo pip install yq
 archive:
   -
     source: https://github.com/prometheus/node_exporter/releases/download/v1.8.2/node_exporter-1.8.2.linux-amd64.tar.gz
@@ -99,16 +66,6 @@ archive:
             - sudo systemctl start schroedinger-node.service
 file:
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/gallumbits/etc/vector/vector.yaml
-    target: /etc/vector/vector.yaml
-    command:
-      pre:
-        - systemctl is-active --quiet vector.service && sudo systemctl stop vector.service
-      post:
-        - sudo systemctl daemon-reload
-        - systemctl is-enabled vector.service || sudo systemctl enable vector.service
-        - sudo systemctl start vector.service
-  -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-ed25519-only.conf
     target: /etc/ssh/sshd_config.d/39-ed25519-only.conf
     command:
@@ -124,9 +81,6 @@ file:
         - sudo systemctl daemon-reload
         - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
         - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
-  -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/manifest/resonance/gallumbits/etc/cockpit/cockpit.conf
-    target: /etc/cockpit/cockpit.conf
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/pki/tls/openssl.d/oqs-provider.conf
     target: /etc/pki/tls/openssl.d/oqs-provider.conf
