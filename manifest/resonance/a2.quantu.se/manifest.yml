@@ -81,9 +81,6 @@ file:
         - systemctl is-enabled prometheus-node-exporter.service || sudo systemctl enable prometheus-node-exporter.service
         - systemctl is-active prometheus-node-exporter.service || sudo systemctl start prometheus-node-exporter.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/pki/tls/openssl.d/oqs-provider.conf
-    target: /etc/pki/tls/openssl.d/oqs-provider.conf
-  -
     source: https://cdn.res.fm/quantus-miner/0.3.0/quantus-miner
     target: /usr/local/bin/quantus-miner
     sha256: e24e6dc5f59113a916f4a23e30aea05b2b78addeb1658acc1e4595fa4438092c
