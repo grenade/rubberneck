@@ -101,11 +101,10 @@ file:
       post:
         - sudo systemctl restart sshd.service
   -
-    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/crypto-policies/local.d/opensshserver.config
-    target: /etc/crypto-policies/local.d/opensshserver.config
+    source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/ssh/sshd_config.d/39-pq-kex.conf
+    target: /etc/ssh/sshd_config.d/39-pq-kex.conf
     command:
       post:
-        - sudo update-crypto-policies --set DEFAULT:LOCAL
         - sudo systemctl restart sshd.service
   -
     source: https://raw.githubusercontent.com/grenade/rubberneck/main/static/etc/systemd/system/prometheus-node-exporter.service
